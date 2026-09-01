@@ -1,3 +1,35 @@
+// SillyTavern Standalone Adapter
+// Pokemon Phone Forum standalone extension
+(function(){
+'use strict';
+const EXT_NAME='Pokemon Phone Forum Standalone';
+const ST = window;
+const log=(...a)=>console.log('[PKMN Forum]',...a);
+
+window.PKMN_FORUM_SELFTEST={
+ started: true,
+ tavernHelper: !!window.TavernHelper,
+ jquery: !!window.jQuery,
+ document: !!document,
+ storage: !!window.localStorage,
+ errors: []
+};
+
+function storageAdapter(){
+ return {
+  get(k,d=null){try{return JSON.parse(localStorage.getItem(k)) ?? d}catch(e){return d}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}}
+ };
+}
+window.PKMN_FORUM_ADAPTER={
+ storage:storageAdapter(),
+ worldBook:{available:false,entries:[]},
+ api:{available:!!window.TavernHelper}
+};
+
+window.addEventListener('load',()=>log('loaded',window.PKMN_FORUM_SELFTEST));
+})();
+
 (function () {
     'use strict';
 
@@ -31,7 +63,7 @@
     const lifecycleStops = new Set();
 
     function trackedSetInterval(fn, ms) {
-        const id = setInterval(fn, ms);
+        const id = trackedSetInterval(fn, ms);
         lifecycleTimers.add(id);
         return id;
     }
@@ -83,24 +115,6 @@
     // Tavern Helper 兼容层
     // ============================================================
 
-    // SillyTavern 原生上下文：扩展版不再强制依赖酒馆助手。
-    // 如果酒馆助手存在，则继续优先使用其更丰富的世界书/提示词接口。
-    const ST = (() => {
-        try {
-            return window.SillyTavern || window.parent?.SillyTavern || {};
-        } catch (_) {
-            return {};
-        }
-    })();
-
-    function getSTContext() {
-        try {
-            return typeof ST.getContext === 'function' ? ST.getContext() : {};
-        } catch (_) {
-            return {};
-        }
-    }
-
     const THAPI = (() => {
         try {
             return window.TavernHelper ||
@@ -119,15 +133,7 @@
                 : (
                     typeof THAPI.getChatMessages === 'function'
                         ? THAPI.getChatMessages
-                        : ((range) => {
-                            const ctx = getSTContext();
-                            const chat = Array.isArray(ctx.chat) ? ctx.chat : (Array.isArray(ST.chat) ? ST.chat : []);
-                            if (typeof range === 'number') {
-                                return range === 0 ? chat : chat.slice(range);
-                            }
-                            const n = Math.max(1, Math.abs(parseInt(range, 10) || 12));
-                            return String(range).startsWith('-') ? chat.slice(-n) : chat.slice(0, n);
-                        })
+                        : null
                 ),
 
         getLastMessageId:
@@ -160,12 +166,7 @@
         getCharacterName:
             typeof getCurrentCharacterName === 'function'
                 ? getCurrentCharacterName
-                : (() => {
-                    try {
-                        const ctx = getSTContext();
-                        return ctx.name2 || ST.name2 || '';
-                    } catch (_) { return ''; }
-                }),
+                : null,
 
         getVariables:
             typeof getVariables === 'function'
@@ -182,18 +183,7 @@
                 : (
                     typeof THAPI.eventOn === 'function'
                         ? THAPI.eventOn
-                        : ((eventName, handler) => {
-                            try {
-                                const ctx = getSTContext();
-                                if (ctx.eventSource && typeof ctx.eventSource.on === 'function') {
-                                    ctx.eventSource.on(eventName, handler);
-                                    return () => {
-                                        try { ctx.eventSource.removeListener?.(eventName, handler); } catch (_) {}
-                                    };
-                                }
-                            } catch (_) {}
-                            return null;
-                        })
+                        : null
                 ),
 
         // 新版酒馆助手使用 injectPrompts / uninjectPrompts。
@@ -204,17 +194,7 @@
                 : (
                     typeof THAPI.injectPrompts === 'function'
                         ? THAPI.injectPrompts
-                        : ((prompts) => {
-                            try {
-                                const ctx = getSTContext();
-                                if (typeof ctx.setExtensionPrompt !== 'function') return null;
-                                const p = prompts?.[0];
-                                if (!p) return null;
-                                const role = p.role === 'system' ? 0 : (p.role === 'assistant' ? 2 : 1);
-                                ctx.setExtensionPrompt(p.id, p.content || '', 1, Number(p.depth) || 0, !!p.should_scan, role);
-                                return { uninject: () => { try { ctx.setExtensionPrompt(p.id, '', -1, 0, false, role); } catch (_) {} } };
-                            } catch (_) { return null; }
-                        })
+                        : null
                 ),
 
         uninjectPrompts:
@@ -223,13 +203,7 @@
                 : (
                     typeof THAPI.uninjectPrompts === 'function'
                         ? THAPI.uninjectPrompts
-                        : ((ids) => {
-                            try {
-                                const ctx = getSTContext();
-                                if (typeof ctx.setExtensionPrompt !== 'function') return;
-                                for (const id of (ids || [])) ctx.setExtensionPrompt(id, '', -1, 0, false, 1);
-                            } catch (_) {}
-                        })
+                        : null
                 ),
 
         updateChatMetadata:
@@ -238,16 +212,7 @@
                 : (
                     typeof THAPI.updateChatMetadata === 'function'
                         ? THAPI.updateChatMetadata
-                        : ((values, reset = false) => {
-                            try {
-                                const ctx = getSTContext();
-                                if (!ctx.chatMetadata) return;
-                                if (reset) {
-                                    Object.keys(ctx.chatMetadata).forEach(k => delete ctx.chatMetadata[k]);
-                                }
-                                Object.assign(ctx.chatMetadata, values || {});
-                            } catch (_) {}
-                        })
+                        : null
                 ),
 
         saveChat:
@@ -256,12 +221,7 @@
                 : (
                     typeof THAPI.saveChat === 'function'
                         ? THAPI.saveChat
-                        : (async () => {
-                            try {
-                                const ctx = getSTContext();
-                                if (typeof ctx.saveMetadata === 'function') await ctx.saveMetadata();
-                            } catch (_) {}
-                        })
+                        : null
                 )
     };
 
@@ -527,17 +487,6 @@
                 }
             }
 
-        } catch (_) {}
-
-        // 扩展原生 API。
-        try {
-            if (typeof ST.getCurrentChatId === 'function') {
-                const id = ST.getCurrentChatId();
-                if (id !== undefined && id !== null) return 'chat:' + String(id);
-            }
-            const ctx = getSTContext();
-            if (ctx.chatId !== undefined && ctx.chatId !== null) return 'chat:' + String(ctx.chatId);
-            if (ST.chatId !== undefined && ST.chatId !== null) return 'chat:' + String(ST.chatId);
         } catch (_) {}
 
         // 某些版本可能直接把 getCurrentChatId 暴露为全局函数
@@ -823,9 +772,7 @@
                 window.SillyTavern ||
                 window.parent?.SillyTavern;
 
-            const ctx = getSTContext();
             const metadata =
-                ctx?.chatMetadata ||
                 st?.chatMetadata ||
                 (typeof chatMetadata !== 'undefined' ? chatMetadata : null);
 

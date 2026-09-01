@@ -1,11 +1,13 @@
 {
-  "display_name": "宝可梦小手机论坛",
+  "display_name": "Pokemon Phone Forum Standalone",
   "loading_order": 10,
   "requires": [],
-  "optional": [],
-  "js": "index.js",
-  "css": "",
-  "author": "Converted from user-provided script",
-  "version": "0.38.1",
-  "auto_update": true
+  "js": [
+    "index.js"
+  ],
+  "css": [
+    "style.css"
+  ],
+  "author": "converted",
+  "version": "1.0.0"
 }
