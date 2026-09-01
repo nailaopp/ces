@@ -1,42 +1,58 @@
-// SillyTavern Standalone Adapter
-// Pokemon Phone Forum standalone extension
-(function(){
-'use strict';
-const EXT_NAME='Pokemon Phone Forum Standalone';
-const ST = window;
-const log=(...a)=>console.log('[PKMN Forum]',...a);
-
-window.PKMN_FORUM_SELFTEST={
- started: true,
- tavernHelper: !!window.TavernHelper,
- jquery: !!window.jQuery,
- document: !!document,
- storage: !!window.localStorage,
- errors: []
-};
-
-function storageAdapter(){
- return {
-  get(k,d=null){try{return JSON.parse(localStorage.getItem(k)) ?? d}catch(e){return d}},
-  set(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}}
- };
-}
-window.PKMN_FORUM_ADAPTER={
- storage:storageAdapter(),
- worldBook:{available:false,entries:[]},
- api:{available:!!window.TavernHelper}
-};
-
-window.addEventListener('load',()=>log('loaded',window.PKMN_FORUM_SELFTEST));
-})();
+/**
+ * 宝可梦小手机论坛 - SillyTavern 扩展版 (v0.40)
+ * 从酒馆助手脚本 0.39「正文读取与时间修正版」转换。
+ * 完全脱离 Tavern Helper，使用原生 SillyTavern.getContext() / setExtensionPrompt / eventSource。
+ *
+ * 安装方式：
+ * 1. 把整个 pkmn-phone-forum 文件夹放到
+ *    data/<你的用户名>/extensions/pkmn-phone-forum/
+ *    或 public/scripts/extensions/third-party/pkmn-phone-forum/
+ * 2. 刷新 SillyTavern，在「扩展」面板启用「宝可梦小手机论坛」
+ * 3. 页面右下角会出现洛托姆手机悬浮按钮
+ */
 
 (function () {
     'use strict';
 
+    // 扩展可能在 body 尚未就绪时被加载，延后启动避免失败
+    function whenReady(fn) {
+        let started = false;
+        const run = () => {
+            if (started) return;
+            started = true;
+            try { fn(); } catch (e) {
+                console.error('[宝可梦小手机论坛] 启动失败:', e);
+                try {
+                    if (window.toastr) toastr.error('宝可梦论坛扩展启动失败，请看控制台');
+                } catch (_) {}
+            }
+        };
+        if (document.body) {
+            try {
+                const ctx = (window.SillyTavern && SillyTavern.getContext) ? SillyTavern.getContext() : null;
+                if (ctx && ctx.eventSource && ctx.eventTypes) {
+                    const ev = ctx.eventTypes.APP_READY || 'app_ready';
+                    if (typeof ctx.eventSource.once === 'function') {
+                        ctx.eventSource.once(ev, () => setTimeout(run, 100));
+                    } else if (typeof ctx.eventSource.on === 'function') {
+                        ctx.eventSource.on(ev, () => setTimeout(run, 100));
+                    }
+                }
+            } catch (_) {}
+            setTimeout(run, 800);
+            setTimeout(run, 3000);
+            return;
+        }
+        document.addEventListener('DOMContentLoaded', () => setTimeout(run, 500));
+        setTimeout(run, 2500);
+    }
+
+    whenReady(function startPkmnPhoneForum() {
+
     const NS = 'pkmn_phone_forum_v9';
     const LEGACY_NS = 'pkmn_phone_forum_v7';
     const LEGACY_NS_2 = 'pkmn_phone_forum_v5';
-    const VERSION = 31;
+    const VERSION = 40; // Extension build
 
     let topDoc = document;
 
@@ -47,56 +63,42 @@ window.addEventListener('load',()=>log('loaded',window.PKMN_FORUM_SELFTEST));
     } catch (_) {}
 
     // ============================================================
-    // 实例生命周期：重新执行脚本时清理旧监听器/定时器
+    // 0.39 生命周期管理
     // ============================================================
-
-    const LIFECYCLE_KEY = '__pkmn_phone_forum_v9_lifecycle__';
-
+    const LIFECYCLE_KEY = '__pkmn_phone_forum_v039_lifecycle__';
     try {
-        const oldLifecycle = window[LIFECYCLE_KEY];
-        if (oldLifecycle && typeof oldLifecycle.destroy === 'function') {
-            oldLifecycle.destroy();
-        }
+        const old = window[LIFECYCLE_KEY];
+        if (old && typeof old.destroy === 'function') old.destroy();
     } catch (_) {}
 
-    const lifecycleTimers = new Set();
-    const lifecycleStops = new Set();
+    const lifecycle = {
+        timers: new Set(),
+        cleanups: new Set(),
+        destroyed: false,
+        trackTimer(id) { this.timers.add(id); return id; },
+        trackCleanup(fn) { if (typeof fn === 'function') this.cleanups.add(fn); return fn; },
+        destroy() {
+            this.destroyed = true;
+            for (const id of Array.from(this.timers)) {
+                try { clearInterval(id); } catch (_) {}
+                try { clearTimeout(id); } catch (_) {}
+            }
+            this.timers.clear();
+            for (const fn of Array.from(this.cleanups)) {
+                try { fn(); } catch (_) {}
+            }
+            this.cleanups.clear();
+        }
+    };
+    window[LIFECYCLE_KEY] = lifecycle;
 
     function trackedSetInterval(fn, ms) {
-        const id = trackedSetInterval(fn, ms);
-        lifecycleTimers.add(id);
-        return id;
-    }
-
-    function trackedSetTimeout(fn, ms) {
-        const id = setTimeout(() => {
-            lifecycleTimers.delete(id);
-            fn();
+        const id = setInterval(() => {
+            if (lifecycle.destroyed) return;
+            try { fn(); } catch (_) {}
         }, ms);
-        lifecycleTimers.add(id);
-        return id;
+        return lifecycle.trackTimer(id);
     }
-
-    function trackEventStop(stop) {
-        if (typeof stop === 'function') lifecycleStops.add(stop);
-        return stop;
-    }
-
-    function destroyLifecycle() {
-        lifecycleTimers.forEach(id => {
-            try { clearInterval(id); clearTimeout(id); } catch (_) {}
-        });
-        lifecycleTimers.clear();
-
-        lifecycleStops.forEach(stop => {
-            try { stop(); } catch (_) {}
-        });
-        lifecycleStops.clear();
-    }
-
-    window[LIFECYCLE_KEY] = {
-        destroy: destroyLifecycle
-    };
 
     // ============================================================
     // 清理旧实例
@@ -115,115 +117,196 @@ window.addEventListener('load',()=>log('loaded',window.PKMN_FORUM_SELFTEST));
     // Tavern Helper 兼容层
     // ============================================================
 
-    const THAPI = (() => {
+
+    // ============================================================
+    // Native SillyTavern adapter (replaces Tavern Helper)
+    // ============================================================
+
+    function getSTContext() {
         try {
-            return window.TavernHelper ||
-                window.parent?.TavernHelper ||
-                {};
-        } catch (_) {
-            return {};
-        }
-    })();
+            if (typeof SillyTavern !== 'undefined' && typeof SillyTavern.getContext === 'function') {
+                return SillyTavern.getContext();
+            }
+        } catch (_) {}
+        try {
+            if (typeof getContext === 'function') return getContext();
+        } catch (_) {}
+        return null;
+    }
 
     const TH = {
+        getChatMessages(range, options) {
+            const ctx = getSTContext();
+            if (!ctx || !Array.isArray(ctx.chat)) return [];
+            const chat = ctx.chat;
+            let start = 0, end = chat.length;
+            if (typeof range === 'string' && range.startsWith('-')) {
+                const n = parseInt(range.slice(1), 10) || 12;
+                start = Math.max(0, chat.length - n);
+            } else if (typeof range === 'number') {
+                start = range;
+                end = range + 1;
+            }
+            return chat.slice(start, end).map((m, i) => ({
+                name: m.name || (m.is_user ? (ctx.name1 || '玩家') : (ctx.name2 || '角色')),
+                role: m.is_user ? 'user' : 'assistant',
+                message: m.mes || m.message || m.content || '',
+                content: m.mes || m.message || m.content || '',
+                mes: m.mes || m.message || m.content || '',
+                is_user: !!m.is_user,
+                index: start + i
+            }));
+        },
 
-        getChatMessages:
-            typeof getChatMessages === 'function'
-                ? getChatMessages
-                : (
-                    typeof THAPI.getChatMessages === 'function'
-                        ? THAPI.getChatMessages
-                        : null
-                ),
+        getLastMessageId() {
+            const ctx = getSTContext();
+            if (!ctx || !Array.isArray(ctx.chat)) return -1;
+            return ctx.chat.length - 1;
+        },
 
-        getLastMessageId:
-            typeof getLastMessageId === 'function'
-                ? getLastMessageId
-                : (
-                    typeof THAPI.getLastMessageId === 'function'
-                        ? THAPI.getLastMessageId
-                        : null
-                ),
+        getWorldbookNames() {
+            try {
+                // Prefer global world_names if available
+                if (typeof world_names !== 'undefined' && Array.isArray(world_names)) {
+                    return [...world_names];
+                }
+            } catch (_) {}
+            const ctx = getSTContext();
+            // Some versions expose via context
+            if (ctx && Array.isArray(ctx.worldInfo?.names)) return [...ctx.worldInfo.names];
+            // Fallback: try to read from DOM or settings
+            try {
+                const select = document.querySelector('#world_info, select[name="world_info"]');
+                if (select) {
+                    return Array.from(select.options).map(o => o.value || o.text).filter(Boolean);
+                }
+            } catch (_) {}
+            return [];
+        },
 
-        getWorldbookNames:
-            typeof getWorldbookNames === 'function'
-                ? getWorldbookNames
-                : (
-                    typeof THAPI.getWorldbookNames === 'function'
-                        ? THAPI.getWorldbookNames
-                        : null
-                ),
+        async getWorldbook(name) {
+            try {
+                // Dynamic import of world-info module (works in extension context)
+                const mod = await import('/scripts/world-info.js');
+                if (typeof mod.loadWorldInfo === 'function') {
+                    const data = await mod.loadWorldInfo(name);
+                    if (data && Array.isArray(data.entries)) {
+                        return data.entries.map(e => ({
+                            name: e.comment || e.key || e.keys?.[0] || '条目',
+                            comment: e.comment || '',
+                            key: e.key || (Array.isArray(e.keys) ? e.keys[0] : ''),
+                            keys: e.keys || (e.key ? [e.key] : []),
+                            keywords: e.keys || [],
+                            secondary_keys: e.secondary_keys || e.secondaryKeys || [],
+                            secondaryKeys: e.secondary_keys || e.secondaryKeys || [],
+                            content: e.content || '',
+                            enabled: e.enabled !== false && !e.disable
+                        }));
+                    }
+                }
+            } catch (err) {
+                console.warn('[pkmn-forum] loadWorldInfo failed', err);
+            }
+            return [];
+        },
 
-        getWorldbook:
-            typeof getWorldbook === 'function'
-                ? getWorldbook
-                : (
-                    typeof THAPI.getWorldbook === 'function'
-                        ? THAPI.getWorldbook
-                        : null
-                ),
+        getCharacterName() {
+            const ctx = getSTContext();
+            if (!ctx) return '';
+            return ctx.name2 || (ctx.characters && ctx.characterId != null && ctx.characters[ctx.characterId]?.name) || '';
+        },
 
-        getCharacterName:
-            typeof getCurrentCharacterName === 'function'
-                ? getCurrentCharacterName
-                : null,
+        getVariables() {
+            const ctx = getSTContext();
+            return ctx?.variables || {};
+        },
 
-        getVariables:
-            typeof getVariables === 'function'
-                ? getVariables
-                : (
-                    typeof THAPI.getVariables === 'function'
-                        ? THAPI.getVariables
-                        : null
-                ),
+        eventOn(eventName, callback) {
+            const ctx = getSTContext();
+            if (!ctx || !ctx.eventSource) return;
+            const types = ctx.eventTypes || {};
+            // Map common names
+            const map = {
+                'CHAT_CHANGED': types.CHAT_CHANGED || 'chat_changed',
+                'CHAT_CREATED': types.CHAT_CREATED || 'chat_created',
+                'MESSAGE_RECEIVED': types.MESSAGE_RECEIVED || 'message_received',
+                'MESSAGE_SENT': types.MESSAGE_SENT || 'message_sent',
+            };
+            const ev = map[eventName] || types[eventName] || eventName;
+            ctx.eventSource.on(ev, callback);
+        },
 
-        eventOn:
-            typeof eventOn === 'function'
-                ? eventOn
-                : (
-                    typeof THAPI.eventOn === 'function'
-                        ? THAPI.eventOn
-                        : null
-                ),
+        injectPrompts(prompts, options) {
+            const ctx = getSTContext();
+            if (!ctx || typeof ctx.setExtensionPrompt !== 'function') {
+                throw new Error('当前 SillyTavern 不支持 setExtensionPrompt');
+            }
+            // prompts: [{ id, position, depth, role, content, should_scan }]
+            // ST setExtensionPrompt(key, value, position, depth, scan, role)
+            // position: 0 = none, 1 = after scenario, 2 = in chat, etc. Check docs.
+            // Common: position 1 or 'IN_PROMPT', depth for in-chat.
+            const uninjectFns = [];
+            for (const p of (prompts || [])) {
+                const key = p.id || 'pkmn_forum_inject';
+                // Map position: 'in_chat' -> typically extension_prompt_types.IN_CHAT = 1 or similar
+                // From ST source, positions are numbers:
+                // 0 = NONE, 1 = AFTER_SCENARIO, 2 = IN_CHAT, 3 = BEFORE_PROMPT? 
+                // extension_prompt_types: IN_PROMPT=0, IN_CHAT=1, BEFORE_PROMPT=2
+                let pos = 1; // default IN_CHAT
+                if (p.position === 'in_chat') pos = 1;
+                else if (p.position === 'in_prompt' || p.position === 'after') pos = 0;
+                else if (p.position === 'before') pos = 2;
+                else if (typeof p.position === 'number') pos = p.position;
+                const depth = typeof p.depth === 'number' ? p.depth : 0;
+                const scan = !!p.should_scan;
+                let role = p.role || 'system';
+                // Some ST versions expect numeric role: SYSTEM=0, USER=1, ASSISTANT=2
+                if (role === 'system') role = 0;
+                else if (role === 'user') role = 1;
+                else if (role === 'assistant') role = 2;
+                ctx.setExtensionPrompt(key, p.content || '', pos, depth, scan, role);
+                uninjectFns.push(() => {
+                    try { ctx.setExtensionPrompt(key, ''); } catch (_) {}
+                });
+            }
+            return {
+                uninject: () => uninjectFns.forEach(fn => { try { fn(); } catch (_) {} })
+            };
+        },
 
-        // 新版酒馆助手使用 injectPrompts / uninjectPrompts。
-        // 测试6错误地使用了旧的 setExtensionPrompt，因此会提示“不支持提示词注入”。
-        injectPrompts:
-            typeof injectPrompts === 'function'
-                ? injectPrompts
-                : (
-                    typeof THAPI.injectPrompts === 'function'
-                        ? THAPI.injectPrompts
-                        : null
-                ),
+        uninjectPrompts(ids) {
+            const ctx = getSTContext();
+            if (!ctx || typeof ctx.setExtensionPrompt !== 'function') return;
+            (ids || []).forEach(id => {
+                try { ctx.setExtensionPrompt(id, ''); } catch (_) {}
+            });
+        },
 
-        uninjectPrompts:
-            typeof uninjectPrompts === 'function'
-                ? uninjectPrompts
-                : (
-                    typeof THAPI.uninjectPrompts === 'function'
-                        ? THAPI.uninjectPrompts
-                        : null
-                ),
+        updateChatMetadata(data, replace) {
+            const ctx = getSTContext();
+            if (!ctx) return;
+            if (typeof ctx.updateChatMetadata === 'function') {
+                ctx.updateChatMetadata(data, !!replace);
+            } else if (ctx.chatMetadata) {
+                Object.assign(ctx.chatMetadata, data || {});
+            }
+        },
 
-        updateChatMetadata:
-            typeof updateChatMetadata === 'function'
-                ? updateChatMetadata
-                : (
-                    typeof THAPI.updateChatMetadata === 'function'
-                        ? THAPI.updateChatMetadata
-                        : null
-                ),
-
-        saveChat:
-            typeof saveChat === 'function'
-                ? saveChat
-                : (
-                    typeof THAPI.saveChat === 'function'
-                        ? THAPI.saveChat
-                        : null
-                )
+        saveChat() {
+            const ctx = getSTContext();
+            if (!ctx) return Promise.resolve();
+            if (typeof ctx.saveChat === 'function') {
+                return Promise.resolve(ctx.saveChat());
+            }
+            if (typeof ctx.saveMetadata === 'function') {
+                return Promise.resolve(ctx.saveMetadata());
+            }
+            return Promise.resolve();
+        }
     };
+
+    // Expose for debug
+    window.__pkmn_forum_TH = TH;
 
     // ============================================================
     // 默认论坛
@@ -611,21 +694,6 @@ window.addEventListener('load',()=>log('loaded',window.PKMN_FORUM_SELFTEST));
     let chatState =
         makeChatState();
 
-    function captureChatJob() {
-        return {
-            chatKey: chatState.chatKey,
-            forum: currentForum,
-            board: currentBoard
-        };
-    }
-
-    function chatJobStillCurrent(job) {
-        return !!job &&
-            chatState.chatKey === job.chatKey &&
-            currentForum === job.forum &&
-            currentBoard === job.board;
-    }
-
     function storageKey(key) {
 
         return (
@@ -739,9 +807,7 @@ window.addEventListener('load',()=>log('loaded',window.PKMN_FORUM_SELFTEST));
                 storageKey(chatState.chatKey),
                 JSON.stringify(chatState)
             );
-        } catch (e) {
-            showToast('论坛本地缓存保存失败：存储空间可能已满');
-        }
+        } catch (_) {}
 
         try {
 
@@ -770,10 +836,11 @@ window.addEventListener('load',()=>log('loaded',window.PKMN_FORUM_SELFTEST));
 
             const st =
                 window.SillyTavern ||
-                window.parent?.SillyTavern;
+                window.parent?.SillyTavern ||
+                {};
 
             const metadata =
-                st?.chatMetadata ||
+                st.chatMetadata ||
                 (typeof chatMetadata !== 'undefined' ? chatMetadata : null);
 
             if (
@@ -1660,1073 +1727,8 @@ window.addEventListener('load',()=>log('loaded',window.PKMN_FORUM_SELFTEST));
     // DOM / UI
     // ============================================================
 
-    const style =
-        topDoc.createElement(
-            'style'
-        );
-
-    style.id =
-        'pkmn-phone-style';
-
-    style.textContent = `
-*{box-sizing:border-box}
-
-#pkmn-float-btn{
-position:fixed!important;
-right:18px!important;
-bottom:80px!important;
-width:50px!important;
-height:50px!important;
-padding:0!important;
-border-radius:50%!important;
-background:transparent!important;
-color:#fff!important;
-display:flex!important;
-align-items:center!important;
-justify-content:center!important;
-z-index:999999999!important;
-box-shadow:0 3px 10px rgba(0,0,0,.28)!important;
-cursor:grab!important;
-touch-action:none!important;
-user-select:none!important
-}
-#pkmn-float-btn.dragging{cursor:grabbing!important;transform:scale(1.06)!important}
-#pkmn-float-btn svg{width:46px!important;height:46px!important;display:block!important;pointer-events:none!important;filter:drop-shadow(0 3px 4px rgba(0,0,0,.35))}
-
-#pkmn-phone-panel{
-position:fixed!important;
-left:50%!important;
-top:50%!important;
-right:auto!important;
-bottom:auto!important;
-width:350px!important;
-height:650px!important;
-background:#f7f7f7!important;
-border:7px solid #202124!important;
-border-radius:38px!important;
-overflow:hidden!important;
-z-index:999999998!important;
-display:none!important;
-box-shadow:0 20px 55px rgba(0,0,0,.4)!important;
-font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif!important;
-color:#222!important
-}
-#pkmn-phone-panel.show{display:flex!important;flex-direction:column!important}
-
-#pkmn-close-phone{
-position:absolute!important;
-right:8px!important;
-top:5px!important;
-width:34px!important;
-height:34px!important;
-z-index:30!important;
-border:0!important;
-border-radius:50%!important;
-background:rgba(0,0,0,.14)!important;
-color:#fff!important;
-font-size:24px!important;
-line-height:34px!important;
-padding:0!important;
-cursor:pointer!important
-}
-
-/* 手机窗口拖动手柄：顶部黑色刘海区与底部白色Home区域 */
-.pkmn-drag-top{
-position:absolute!important;
-left:50%!important;
-top:0!important;
-transform:translateX(-50%)!important;
-width:150px!important;
-height:28px!important;
-z-index:25!important;
-background:transparent!important;
-touch-action:none!important;
-user-select:none!important;
--webkit-user-select:none!important;
--webkit-touch-callout:none!important;
-cursor:grab!important
-}
-.pkmn-drag-top:active{cursor:grabbing!important}
-.pkmn-drag-bottom{
-position:absolute!important;
-left:0!important;
-bottom:0!important;
-width:100%!important;
-height:32px!important;
-z-index:60!important;
-background:transparent!important;
-touch-action:none!important;
-user-select:none!important;
--webkit-user-select:none!important;
--webkit-touch-callout:none!important;
-cursor:grab!important
-}
-.pkmn-drag-bottom:active{cursor:grabbing!important}
-#pkmn-phone-scale{
-position:absolute!important;
-right:45px!important;
-top:5px!important;
-width:30px!important;
-height:30px!important;
-z-index:70!important;
-border:0!important;
-border-radius:50%!important;
-background:rgba(0,0,0,.18)!important;
-color:#fff!important;
-font-size:16px!important;
-line-height:30px!important;
-padding:0!important;
-cursor:pointer!important
-}
-.pkmn-status{
-height:28px;
-display:flex;
-justify-content:space-between;
-align-items:center;
-padding:0 18px;
-font-size:11px;
-color:#222;
-background:#fff
-}
-.pkmn-notch{
-position:absolute;
-top:0;
-left:50%;
-transform:translateX(-50%);
-width:110px;
-height:18px;
-background:#111;
-border-radius:0 0 12px 12px;
-z-index:10
-}
-.pkmn-app{
-position:relative;
-flex:1;
-overflow:hidden;
-background:#f7f7f7
-}
-.pkmn-view{
-position:absolute;
-inset:0;
-display:flex;
-flex-direction:column;
-background:#f7f7f7;
-transition:transform .24s ease
-}
-#pkmn-home{background:linear-gradient(135deg,#ff7043,#7e57c2);transform:translateX(0)}
-#pkmn-forum,#pkmn-settings,#pkmn-thread{transform:translateX(100%)}
-
-.pkmn-head{
-height:48px;
-min-height:48px;
-background:#fff;
-color:#222;
-padding:0 13px;
-border-bottom:1px solid #ededed;
-display:flex;
-align-items:center;
-justify-content:center;
-position:relative;
-font-size:16px;
-font-weight:600
-}
-.pkmn-head button{
-position:absolute;
-left:9px;
-top:0;
-width:34px;
-height:48px;
-border:0;
-background:transparent;
-color:#222;
-font-size:30px;
-font-weight:300;
-line-height:44px;
-padding:0;
-cursor:pointer
-}
-.pkmn-head button:not(:first-child){position:static;width:auto;height:auto;margin-left:auto;font-size:18px;line-height:1}
-
-.pkmn-head #pkmn-board-settings{
-position:absolute;
-left:auto;
-top:0;
-font-size:18px;
-line-height:48px
-}
-.pkmn-head #pkmn-board-settings{right:9px}
-
-.pkmn-tabs{
-height:39px;
-min-height:39px;
-display:flex;
-background:#fff;
-border-bottom:1px solid #eee;
-overflow-x:auto;
-scrollbar-width:none
-}
-.pkmn-tabs::-webkit-scrollbar{display:none}
-.pkmn-tab{
-min-width:84px;
-height:39px;
-padding:0 10px;
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:11px;
-color:#999;
-cursor:pointer;
-white-space:nowrap;
-position:relative
-}
-.pkmn-tab.active{
-color:#222;
-font-weight:700
-}
-.pkmn-tab.active:after{
-content:'';
-position:absolute;
-bottom:0;
-left:22px;
-right:22px;
-height:2px;
-border-radius:2px;
-background:#ff8a00
-}
-
-.pkmn-list{
-flex:1;
-overflow:auto;
-padding:0;
-background:#f7f7f7
-}
-.pkmn-thread-card{
-background:#fff;
-border:0;
-border-bottom:1px solid #ededed;
-padding:14px 14px 11px;
-margin:0;
-cursor:pointer;
-position:relative;
-min-height:104px
-}
-.pkmn-thread-card:active{background:#fafafa}
-.pkmn-thread-avatar{
-position:absolute;
-left:14px;
-top:15px;
-width:38px;
-height:38px;
-border-radius:50%;
-background:#f0f0f0;
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:16px;
-font-weight:700;
-color:#888
-}
-.pkmn-thread-body{margin-left:50px;padding-right:3px}
-.pkmn-thread-user{
-font-size:11px;
-color:#777;
-line-height:18px;
-white-space:nowrap;
-overflow:hidden;
-text-overflow:ellipsis;
-padding-right:76px
-}
-.pkmn-thread-title{
-font-weight:700;
-font-size:14px;
-color:#222;
-line-height:1.45;
-margin-top:1px;
-padding-right:4px
-}
-.pkmn-thread-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;overflow:hidden;max-height:20px}
-.pkmn-tag{display:inline-flex;align-items:center;max-width:120px;padding:2px 6px;border-radius:999px;background:#f3f6fa;color:#6b7685;font-size:9px;line-height:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pkmn-post-tags{display:flex;flex-wrap:wrap;gap:5px;margin:2px 0 11px}
-.pkmn-post-tags .pkmn-tag{font-size:10px;padding:3px 8px;background:#f5f7fb;color:#687384}
-
-.pkmn-thread-snippet{
-font-size:11px;
-line-height:1.55;
-color:#666;
-margin-top:4px;
-display:-webkit-box;
--webkit-line-clamp:2;
--webkit-box-orient:vertical;
-overflow:hidden
-}
-.pkmn-thread-footer{
-display:flex;
-align-items:center;
-gap:10px;
-margin-top:7px;
-font-size:9px;
-color:#aaa
-}
-.pkmn-thread-stat{white-space:nowrap}
-.pkmn-thread-time{margin-left:auto}
-.pkmn-inject{
-position:absolute;
-right:37px;
-top:14px;
-border:0;
-background:#fff6ec;
-color:#f28a20;
-border-radius:10px;
-padding:3px 6px;
-font-size:9px;
-font-weight:600;
-cursor:pointer;
-z-index:2
-}
-.pkmn-inject.active{background:#ff8a00;color:#fff}
-.pkmn-del{
-position:absolute;
-right:10px;
-top:15px;
-width:20px;
-height:20px;
-border:0;
-background:transparent;
-color:#bbb;
-font-size:12px;
-padding:0;
-z-index:2
-}
-
-.pkmn-bottom{
-height:49px;
-min-height:49px;
-padding:7px 8px;
-background:#fff;
-border-top:1px solid #e9e9e9;
-display:grid;
-grid-template-columns:1.25fr 1fr 1fr .7fr;
-gap:5px
-}
-.pkmn-btn{
-border:0;
-border-radius:8px;
-padding:0 7px;
-height:34px;
-font-weight:600;
-cursor:pointer;
-font-size:10px;
-white-space:nowrap
-}
-.pkmn-btn:disabled{opacity:.55;cursor:not-allowed}
-.pkmn-primary{background:#ff8a00;color:#fff}
-.pkmn-secondary{background:#f1f1f1;color:#444}
-.pkmn-danger{background:#fff0ef;color:#d65b54}
-
-.pkmn-posts{
-flex:1;
-overflow:auto;
-padding:0 0 12px;
-background:#f7f7f7;
--webkit-overflow-scrolling:touch
-}
-
-/* Main post */
-.pkmn-post{
-background:#fff;
-padding:16px 14px 15px;
-margin:0;
-position:relative;
-border-bottom:8px solid #f7f7f7
-}
-.pkmn-post-head{
-display:flex;
-align-items:center;
-gap:9px;
-padding-right:52px
-}
-.pkmn-post-avatar{
-width:40px;
-height:40px;
-min-width:40px;
-border-radius:50%;
-background:#f0f0f0;
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:16px;
-font-weight:700;
-color:#888
-}
-.pkmn-post-user{min-width:0}
-.pkmn-post-author{
-font-size:13px;
-font-weight:600;
-color:#333;
-line-height:18px;
-white-space:nowrap;
-overflow:hidden;
-text-overflow:ellipsis
-}
-.pkmn-post-time{
-font-size:9px;
-color:#aaa;
-margin-top:2px
-}
-.pkmn-post-floor{
-position:absolute;
-right:13px;
-top:17px;
-font-size:9px;
-color:#aaa
-}
-.pkmn-post-title{
-font-size:17px;
-font-weight:700;
-line-height:1.45;
-color:#222;
-margin:13px 0 7px
-}
-.pkmn-post .pkmn-content{
-font-size:14px;
-line-height:1.75;
-white-space:pre-wrap;
-word-break:break-word;
-color:#222
-}
-.pkmn-post-tools{
-display:flex;
-align-items:center;
-gap:16px;
-margin-top:13px;
-font-size:10px;
-color:#999
-}
-.pkmn-post-tool{display:flex;align-items:center;gap:3px}
-.pkmn-post-tool.accent{color:#ff8a00}
-
-.pkmn-replies-title{
-height:42px;
-padding:0 14px;
-display:flex;
-align-items:center;
-background:#fff;
-font-size:13px;
-font-weight:700;
-color:#222;
-border-bottom:1px solid #eee
-}
-.pkmn-replies-title .pkmn-thread-refresh-btn{margin-left:auto;border:0;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:700;background:rgba(255,255,255,.9);color:#555;box-shadow:0 2px 8px rgba(0,0,0,.08);white-space:nowrap;}
-.pkmn-replies-title .pkmn-thread-refresh-btn:active{transform:scale(.97);}
-.pkmn-replies-title .pkmn-thread-refresh-btn:disabled{opacity:.6;}
-.pkmn-thread-divider{display:none}
-
-/* Top-level comments */
-.pkmn-reply-msg{
-display:flex;
-align-items:flex-start;
-gap:8px;
-padding:11px 14px 8px;
-background:#fff;
-border-bottom:1px solid #f0f0f0;
-position:relative
-}
-.pkmn-reply-avatar{
-width:34px;
-height:34px;
-min-width:34px;
-border-radius:50%;
-background:#f0f0f0;
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:14px;
-color:#888;
-font-weight:700
-}
-.pkmn-reply-main{
-min-width:0;
-flex:1;
-max-width:none
-}
-.pkmn-reply-name{
-font-size:11px;
-font-weight:600;
-color:#777;
-line-height:16px;
-margin:0 0 3px
-}
-.pkmn-reply-bubble{
-display:block;
-width:fit-content;
-max-width:100%;
-background:#fff;
-border:0;
-padding:0;
-font-size:13px;
-line-height:1.65;
-color:#333;
-white-space:pre-wrap;
-word-break:break-word;
-box-shadow:none
-}
-.pkmn-reply-meta{
-font-size:9px;
-color:#aaa;
-margin-top:4px;
-line-height:14px
-}
-.pkmn-reply-msg.is-user{
-flex-direction:row-reverse
-}
-.pkmn-reply-msg.is-user .pkmn-reply-avatar{
-background:#e5f6df;
-color:#55a348
-}
-.pkmn-reply-msg.is-user .pkmn-reply-name{color:#55a348;text-align:right}
-.pkmn-reply-msg.is-user .pkmn-reply-main{text-align:right}
-.pkmn-reply-msg.is-user .pkmn-reply-bubble{
-background:#d9fdd3;
-border-radius:5px;
-padding:6px 9px;
-text-align:left
-}
-.pkmn-reply-msg.is-user .pkmn-reply-meta{text-align:right}
-
-/* Tiny reply action */
-.pkmn-comment-actions{
-display:flex;
-justify-content:flex-end;
-align-items:center;
-min-height:15px;
-margin-top:2px
-}
-.pkmn-comment-reply-btn{
-border:0;
-background:transparent;
-padding:0 2px;
-font-size:9px;
-line-height:15px;
-color:#aaa;
-cursor:pointer
-}
-.pkmn-comment-reply-btn:active{color:#666}
-
-/* Nested replies */
-.pkmn-nested-replies{
-margin:5px 0 0;
-padding:0;
-border:0
-}
-.pkmn-nested-msg{
-display:block;
-padding:0;
-margin:3px 0
-}
-.pkmn-nested-main{display:block;min-width:0;max-width:100%}
-.pkmn-nested-bubble{
-display:block;
-width:100%;
-box-sizing:border-box;
-background:#f5f5f5;
-border:0;
-border-radius:4px;
-padding:6px 8px;
-font-size:10px;
-line-height:1.5;
-color:#444;
-white-space:pre-wrap;
-word-break:break-word
-}
-.pkmn-nested-name{
-display:inline;
-font-size:10px;
-font-weight:600;
-color:#58708e;
-line-height:1.45
-}
-.pkmn-nested-name::after{content:'：';color:#888;font-weight:400}
-.pkmn-nested-text{display:inline;font-size:10px;line-height:1.5;color:#444;white-space:pre-wrap;word-break:break-word}
-.pkmn-nested-meta{display:none}
-.pkmn-nested-msg.is-user .pkmn-nested-bubble{background:#eef8eb}
-.pkmn-nested-msg.is-user .pkmn-nested-name{color:#4f8b4a}
-
-/* Nested composer */
-.pkmn-nested-composer{
-display:none;
-margin:6px 0 2px;
-gap:5px;
-align-items:center
-}
-.pkmn-nested-composer.show{display:flex}
-.pkmn-nested-input{
-flex:1;
-min-width:0;
-height:28px;
-border:1px solid #e2e2e2;
-border-radius:14px;
-padding:0 10px;
-font-size:10px;
-background:#fff;
-outline:none
-}
-.pkmn-nested-send{
-border:0;
-border-radius:14px;
-height:28px;
-padding:0 10px;
-font-size:10px;
-background:#ff8a00;
-color:#fff;
-cursor:pointer
-}
-
-/* Bottom reply composer */
-.pkmn-reply{
-height:48px;
-min-height:48px;
-display:flex;
-align-items:center;
-gap:7px;
-padding:7px 9px;
-background:#fff;
-border-top:1px solid #e9e9e9
-}
-#pkmn-reply-input{
-flex:1;
-min-width:0;
-height:34px;
-border:1px solid #e1e1e1;
-border-radius:17px;
-background:#f7f7f7;
-padding:0 13px;
-font-size:12px;
-color:#333;
-outline:none
-}
-#pkmn-reply-input:focus{background:#fff;border-color:#ffb45f}
-#pkmn-send{
-width:38px;
-height:34px;
-min-width:38px;
-padding:0;
-border-radius:17px;
-background:#ff8a00;
-font-size:0;
-position:relative
-}
-#pkmn-send:after{
-content:'➤';
-font-size:17px;
-line-height:34px;
-display:block;
-transform:rotate(-12deg)
-}
-
-/* Settings */
-.pkmn-settings{flex:1;overflow:auto;padding:10px;background:#f7f7f7}
-.pkmn-group{background:#fff;border-radius:10px;padding:13px;margin-bottom:9px;border:1px solid #eee}
-.pkmn-label{font-size:12px;font-weight:700;color:#444;margin:7px 0}
-.pkmn-input,.pkmn-select,.pkmn-textarea{width:100%;box-sizing:border-box;padding:9px;border:1px solid #ddd;border-radius:8px;background:#fafafa;font-size:12px}
-.pkmn-textarea{min-height:100px;resize:vertical}
-.pkmn-row{display:flex;gap:7px;align-items:center}
-.pkmn-row>*{flex:1;min-width:0}
-.pkmn-status-line{font-size:11px;margin:5px 0;color:#555}
-.pkmn-board-item{border:1px solid #eee;border-radius:9px;padding:9px;margin-bottom:7px}
-.pkmn-small{font-size:10px;color:#888;line-height:1.4}
-
-/* Post composer */
-.pkmn-modal{
-position:absolute;
-inset:0;
-background:rgba(0,0,0,.35);
-display:none;
-align-items:flex-end;
-justify-content:center;
-z-index:50
-}
-.pkmn-modal.show{display:flex}
-.pkmn-modal-box{
-width:100%;
-max-height:88%;
-overflow:auto;
-background:#fff;
-border-radius:18px 18px 0 0;
-padding:16px 14px 14px;
-box-shadow:0 -8px 25px rgba(0,0,0,.15)
-}
-.pkmn-modal-box .pkmn-textarea{min-height:145px}
-
-/* World book */
-.pkmn-worldbook-group{padding:0;overflow:hidden}
-.pkmn-worldbook-summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:13px;font-size:12px;font-weight:800;color:#444}
-.pkmn-worldbook-summary::-webkit-details-marker{display:none}
-.pkmn-worldbook-summary:after{content:'⌄';font-size:16px;color:#999;transition:transform .2s}
-#pkmn-worldbook-details[open] .pkmn-worldbook-summary:after{transform:rotate(180deg)}
-.pkmn-worldbook-count{font-size:10px;color:#777;font-weight:600;margin-left:auto;margin-right:8px}
-.pkmn-worldbook-panel{padding:0 13px 13px;border-top:1px solid #f0f0f0;max-height:220px;overflow:auto}
-.pkmn-worldbook-panel .pkmn-check{background:#fafafa;border-radius:8px;padding:8px 9px;margin:4px 0}
-.pkmn-check{display:flex;align-items:center;gap:7px;padding:6px 0;font-size:12px}
-
-.pkmn-home-apps{display:flex;gap:22px;flex-wrap:wrap;padding:48px 22px}
-.pkmn-app-icon{width:68px;text-align:center;color:white;font-size:12px;cursor:pointer}
-.pkmn-app-icon div:first-child{width:58px;height:58px;background:rgba(255,255,255,.92);border-radius:17px;display:flex;align-items:center;justify-content:center;font-size:30px;margin:auto auto 7px}
-.pkmn-app-icon .pkmn-app-image{overflow:hidden;background:rgba(255,255,255,.92);border-radius:17px;display:flex;align-items:center;justify-content:center}
-.pkmn-app-icon .pkmn-app-image img{display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit;pointer-events:none;user-select:none}
-.pkmn-footer{height:24px;display:flex;align-items:center;justify-content:center;background:#fafafa}
-
-.pkmn-footer{height:24px;display:flex;align-items:center;justify-content:center;background:#fafafa}
-/* ===== Ultimate mobile forum redesign ===== */
-#pkmn-phone-panel{background:#f4f6f8!important;border:6px solid #15171a!important;border-radius:40px!important;box-shadow:0 26px 70px rgba(0,0,0,.42)!important}
-.pkmn-status{height:30px;background:linear-gradient(180deg,#fff,#f7f8fa);padding:0 17px;font-weight:700;color:#20242a}
-.pkmn-notch{width:116px;height:20px;background:#111318;border-radius:0 0 14px 14px}
-.pkmn-head{height:54px;min-height:54px;background:rgba(255,255,255,.96);border-bottom:1px solid #e7e9ed;box-shadow:0 1px 8px rgba(20,30,40,.05);font-size:15px;font-weight:800;backdrop-filter:blur(12px)}
-.pkmn-head button{height:54px;line-height:50px;font-size:27px;color:#30343a}
-.pkmn-tabs{height:43px;min-height:43px;background:#fff;border-bottom:1px solid #e8eaee;padding:0 7px;gap:2px;overflow-x:auto;scrollbar-width:none}.pkmn-tabs::-webkit-scrollbar{display:none}
-.pkmn-tab{height:43px;min-width:78px;font-size:10px;font-weight:600;color:#9aa0a8;border-radius:12px 12px 0 0}.pkmn-tab.active{color:#20242a;background:linear-gradient(180deg,#fff,#f7f8fa)}.pkmn-tab.active:after{height:3px;left:24px;right:24px;background:linear-gradient(90deg,#ff9f1a,#ff6f00)}
-.pkmn-list,.pkmn-posts{background:#f3f5f7;padding:8px 8px 12px;scrollbar-width:thin}
-.pkmn-thread-card{border:1px solid #e4e7eb!important;border-radius:14px!important;padding:11px 11px 9px 57px!important;margin:0 0 8px!important;min-height:0!important;background:linear-gradient(145deg,#fff,#fbfcfd)!important;box-shadow:0 3px 11px rgba(25,35,45,.045)!important;transition:transform .12s,box-shadow .12s}
-.pkmn-thread-card:active{transform:scale(.995);background:#fff!important;box-shadow:0 2px 7px rgba(25,35,45,.04)!important}
-.pkmn-thread-avatar{left:12px;top:13px;width:35px;height:35px;border:1px solid #e1e5e9;background:linear-gradient(145deg,#f7f8fa,#e9edf1);box-shadow:inset 0 1px 2px rgba(255,255,255,.9);color:#66707b;font-size:15px}
-.pkmn-thread-body{margin-left:0;padding-right:0}.pkmn-thread-user{font-size:10px;color:#7c848d;font-weight:600;line-height:16px;padding-right:82px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pkmn-user-badge,.pkmn-topic-badge{display:inline-block;margin-left:5px;padding:1px 5px;border-radius:999px;font-size:7px;font-weight:700;vertical-align:1px}.pkmn-user-badge{background:#eaf7e7;color:#4f9649}.pkmn-topic-badge{background:#f1f3f5;color:#8a929a}
-.pkmn-thread-title{font-size:13.5px;line-height:1.42;margin-top:3px;color:#171a1f;font-weight:700;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;padding-right:0}.pkmn-thread-snippet{font-size:10px;line-height:1.5;color:#7c838b;margin-top:4px;-webkit-line-clamp:2}.pkmn-thread-tags{gap:4px;margin-top:5px;max-height:18px}.pkmn-tag{max-width:112px;padding:1px 6px;font-size:8px;line-height:14px}.pkmn-thread-footer{gap:10px;margin-top:6px;font-size:8.5px;color:#a0a6ad}.pkmn-thread-stat:first-child:before{content:'💬 ';font-size:8px}
-.pkmn-inject{right:33px;top:9px;border:1px solid #ffe1bc;background:linear-gradient(180deg,#fffaf3,#fff5e9);color:#e78318;border-radius:999px;padding:3px 7px;font-size:8px;line-height:14px;font-weight:700;box-shadow:0 1px 4px rgba(232,131,24,.08);transition:transform .12s,background .12s,border-color .12s}.pkmn-inject:active{transform:scale(.96)}.pkmn-inject.active{background:linear-gradient(180deg,#ff9d24,#ff8212);border-color:#ff8a18;color:#fff;box-shadow:0 2px 6px rgba(255,138,24,.18)}.pkmn-del{right:6px;top:8px;color:#b8bec5;width:22px;height:22px;border-radius:50%;font-size:11px}
-.pkmn-bottom{height:58px;min-height:58px;padding:8px 9px;background:rgba(255,255,255,.97);border-top:1px solid #e3e6ea;box-shadow:0 -5px 18px rgba(30,40,50,.05);grid-template-columns:1.3fr 1fr 1fr .72fr;gap:6px}.pkmn-btn{height:40px;border-radius:11px;font-size:10px;box-shadow:0 1px 2px rgba(0,0,0,.04)}.pkmn-primary{background:linear-gradient(135deg,#ffab2e,#ff7412)!important}.pkmn-secondary{background:#f1f3f5!important;border:1px solid #e5e7ea}.pkmn-danger{background:#fff3f2!important}
-.pkmn-post{border:1px solid #e5e8ec;border-radius:17px!important;padding:16px 15px 14px;margin:0 0 10px;background:linear-gradient(150deg,#fff,#fbfcfd);box-shadow:0 6px 18px rgba(25,35,45,.07);border-bottom-width:1px}.pkmn-post-head{gap:10px;padding-right:58px}.pkmn-post-avatar{width:42px;height:42px;min-width:42px;border:1px solid #e1e5e9;background:linear-gradient(145deg,#f7f8fa,#e8edf1);color:#65707b}.pkmn-post-author{font-size:12px;font-weight:800;color:#22272d}.pkmn-post-time{font-size:9px;color:#9aa1a9;margin-top:3px}.pkmn-post-floor{right:14px;top:18px;font-size:8px;color:#a2a8af;background:#f2f4f6;border-radius:8px;padding:3px 5px}.pkmn-post-title{font-size:18px;line-height:1.38;margin:14px 0 9px;color:#15181d}.pkmn-post .pkmn-content{font-size:13px;line-height:1.78;color:#353b43}.pkmn-post-tools{border-top:1px solid #edf0f2;margin-top:14px;padding-top:10px;gap:18px;color:#989fa7;font-size:9px}.pkmn-replies-title{height:45px;padding:0 5px;background:transparent;border:0;font-size:12px;color:#353a40}.pkmn-replies-title:before{content:'';display:inline-block;width:4px;height:15px;border-radius:3px;background:#ff8a18;margin-right:7px;vertical-align:-3px}
-.pkmn-reply-msg{gap:8px;padding:12px 9px 8px;background:#fff;border:1px solid #e7eaed;border-radius:15px;margin:0 0 8px;box-shadow:0 3px 11px rgba(25,35,45,.045)}.pkmn-reply-avatar{width:34px;height:34px;min-width:34px;border:1px solid #e1e4e8;background:linear-gradient(145deg,#f5f6f8,#e9edf0);color:#69727c}.pkmn-reply-main{padding-top:1px}.pkmn-reply-name{font-size:10px;color:#5f6872;font-weight:800;margin-bottom:4px}.pkmn-reply-bubble{font-size:12px;line-height:1.68;color:#30363d}.pkmn-reply-meta{font-size:8px;color:#a3a9b0;margin-top:6px}.pkmn-reply-msg.is-user{background:linear-gradient(145deg,#f8fff6,#f2faef);border-color:#dcebd8}.pkmn-reply-msg.is-user .pkmn-reply-avatar{background:#e5f5df;color:#4f9948;border-color:#d5e9d0}.pkmn-reply-msg.is-user .pkmn-reply-name{color:#4e9349}.pkmn-reply-msg.is-user .pkmn-reply-bubble{background:#e5f6df;border-radius:12px;padding:8px 10px}
-.pkmn-comment-actions{margin-top:5px;min-height:20px;justify-content:flex-start}.pkmn-comment-reply-btn{padding:3px 8px;border-radius:9px;background:#f3f5f7;color:#7e8790;font-size:8px;line-height:15px;border:1px solid #e8eaed}.pkmn-comment-reply-btn:active{background:#eceff2;color:#555}.pkmn-nested-replies{margin:7px 0 0 3px;padding-left:9px;border-left:2px solid #edf0f2}.pkmn-nested-msg{padding:3px 0;margin:0}.pkmn-nested-main{display:block}.pkmn-nested-bubble{background:#f5f7f8;border:1px solid #e8ebed;border-radius:11px;padding:7px 9px;font-size:10px;line-height:1.58;color:#454c54}.pkmn-nested-name{font-size:9px;color:#596f88;font-weight:800}.pkmn-nested-target{font-size:8px;color:#9299a1;margin:0 3px}.pkmn-nested-text{font-size:10px;color:#454c54}.pkmn-nested-msg.is-user .pkmn-nested-bubble{background:#edf8e9;border-color:#dcebd8}.pkmn-nested-msg.is-user .pkmn-nested-name{color:#4f8d4b}.pkmn-nested-composer{margin:8px 0 2px;gap:5px;padding:5px;background:#f7f8f9;border:1px solid #e8eaed;border-radius:13px}.pkmn-nested-input{height:31px;border:1px solid #e0e4e8;border-radius:10px;padding:0 9px;font-size:10px;background:#fff}.pkmn-nested-send{height:31px;border-radius:10px;padding:0 10px;font-size:9px;background:linear-gradient(135deg,#ff9f1a,#ff7410)}
-.pkmn-reply{height:58px;min-height:58px;padding:8px 9px;background:rgba(255,255,255,.98);border-top:1px solid #e2e5e8;box-shadow:0 -6px 18px rgba(30,40,50,.06)}#pkmn-reply-input{height:40px;border:1px solid #e0e4e8;border-radius:13px;background:#f4f6f8;padding:0 12px;font-size:11px}#pkmn-reply-input:focus{background:#fff;border-color:#ffad58;box-shadow:0 0 0 3px rgba(255,157,44,.10)}#pkmn-send{width:40px;height:40px;min-width:40px;border-radius:13px;background:linear-gradient(135deg,#ff9f1a,#ff7410);box-shadow:0 3px 9px rgba(255,125,20,.22)}#pkmn-send:after{line-height:40px}
-.pkmn-settings{padding:12px;background:#f3f5f7}.pkmn-group{border:1px solid #e5e8ec;border-radius:15px;padding:13px;margin-bottom:10px;box-shadow:0 3px 12px rgba(25,35,45,.04)}.pkmn-label{font-size:11px;color:#4c535b;margin:8px 0;font-weight:800}.pkmn-input,.pkmn-select,.pkmn-textarea{border:1px solid #dfe3e7;border-radius:10px;background:#f8f9fa;font-size:11px}.pkmn-input:focus,.pkmn-select:focus,.pkmn-textarea:focus{background:#fff;border-color:#ffad58;outline:none}.pkmn-home-apps{padding:54px 24px;gap:24px}.pkmn-app-icon{width:64px;font-size:10px;text-shadow:0 1px 3px rgba(0,0,0,.2)}.pkmn-app-icon div:first-child{width:58px;height:58px;border-radius:17px;box-shadow:0 8px 18px rgba(0,0,0,.15);border:1px solid rgba(255,255,255,.55)}
-@media(max-width:390px){#pkmn-phone-panel{width:calc(100vw - 14px)!important;height:min(650px,calc(100vh - 20px))!important}.pkmn-thread-card{padding-left:55px!important}.pkmn-post-title{font-size:17px}}
-
-/* ===== Rotom Phone UI v4 — hardware-first visual rebuild ===== */
-:root{--r-red:#e83f3f;--r-red2:#b92939;--r-blue:#102d40;--r-blue2:#1b526b;--r-cyan:#39d8e6;--r-cyan2:#8df4f6;--r-yellow:#ffd42e;--r-white:#fbffff;--r-cream:#fff8e8;--r-ink:#173547;--r-line:rgba(16,45,64,.13)}
-*{box-sizing:border-box}
-html,body{overscroll-behavior:none}
-#pkmn-phone-panel{width:352px!important;height:660px!important;padding:9px!important;border:0!important;border-radius:43px!important;background:linear-gradient(155deg,#f25a48 0%,#df3c3d 48%,#b82d3b 100%)!important;box-shadow:0 28px 65px rgba(8,24,35,.42),0 0 0 2px #ffd42e,0 0 0 5px rgba(232,63,63,.42),0 0 32px rgba(57,216,230,.32)!important;overflow:hidden!important;color:var(--r-ink)!important}
-#pkmn-phone-panel:before{content:"";position:absolute;inset:4px;border:2px solid rgba(255,212,46,.9);border-radius:39px;box-shadow:inset 0 0 0 2px rgba(255,255,255,.22),inset 0 -20px 35px rgba(72,11,25,.16);pointer-events:none;z-index:80}
-#pkmn-phone-panel:after{content:"";position:absolute;right:-3px;top:168px;width:9px;height:72px;border-radius:6px;background:linear-gradient(#ffd42e 0 25%,#39d8e6 25% 70%,#ffd42e 70%);box-shadow:0 0 9px rgba(57,216,230,.65);z-index:81;pointer-events:none}
-#pkmn-float-btn{pointer-events:auto!important;visibility:visible!important;opacity:1!important;position:fixed!important;z-index:2147483647!important;isolation:isolate!important;filter:drop-shadow(0 8px 12px rgba(9,27,38,.3)) drop-shadow(0 0 9px rgba(57,216,230,.3))!important;transition:transform .16s ease,filter .16s ease!important}
-#pkmn-float-btn:hover{transform:scale(1.06);filter:drop-shadow(0 10px 15px rgba(9,27,38,.34)) drop-shadow(0 0 14px rgba(57,216,230,.58))!important}
-.pkmn-status{height:32px!important;min-height:32px!important;margin:4px 5px 0!important;padding:0 12px!important;border-radius:15px 15px 7px 7px!important;background:linear-gradient(90deg,#fffaf0,#f4ffff)!important;color:var(--r-ink)!important;border:1px solid rgba(16,45,64,.1)!important;box-shadow:0 3px 9px rgba(16,45,64,.14)!important;font-size:10px!important;font-weight:900!important;letter-spacing:.4px!important;position:relative!important;z-index:5!important;overflow:hidden!important}
-.pkmn-status:before{content:"ROTOM • POWER";color:var(--r-red2);font-size:7px;letter-spacing:1.2px;margin-right:7px;font-weight:1000}
-.pkmn-status:after{content:"⚡";position:absolute;right:10px;color:var(--r-yellow);font-size:13px;text-shadow:0 0 5px rgba(255,212,46,.85)}
-.pkmn-status>span:last-of-type{color:var(--r-blue2)!important;font-size:9px!important}
-.pkmn-notch{display:none!important}
-.pkmn-app{margin:0 5px 5px!important;border-radius:0 0 34px 34px!important;background:#eaf8fa!important;overflow:hidden!important;position:relative!important}
-.pkmn-view{background:#eaf8fa!important}
-#pkmn-home{background:radial-gradient(circle at 50% 43%,rgba(255,255,255,.27),transparent 13%),radial-gradient(circle at 84% 16%,rgba(57,216,230,.82),transparent 22%),radial-gradient(circle at 8% 78%,rgba(255,212,46,.28),transparent 20%),linear-gradient(145deg,#f05745 0%,#d83b43 45%,#16516b 100%)!important;overflow:hidden!important}
-#pkmn-home:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 49%,rgba(141,244,246,.22) 50%,transparent 51%),linear-gradient(0deg,transparent 49%,rgba(255,212,46,.16) 50%,transparent 51%),radial-gradient(circle,rgba(255,255,255,.45) 1px,transparent 2px);background-size:44px 44px,44px 44px,88px 88px;opacity:.35;mask-image:linear-gradient(#000 0 75%,transparent 98%);pointer-events:none}
-#pkmn-home:after{content:"ROTOM PHONE  •  R-01";position:absolute;left:16px;right:16px;top:17px;height:31px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.48);border-radius:11px;background:linear-gradient(90deg,rgba(16,45,64,.4),rgba(16,45,64,.2));box-shadow:inset 0 0 12px rgba(57,216,230,.14),0 3px 12px rgba(16,45,64,.13);color:#fff;font-size:8px;font-weight:1000;letter-spacing:2px;text-shadow:0 1px 5px rgba(0,0,0,.3);pointer-events:none;z-index:3}
-.pkmn-home-apps{position:relative!important;z-index:4!important;display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:18px 8px!important;padding:72px 17px 66px!important;align-content:start!important}
-.pkmn-home-apps:before{content:"";position:absolute;left:50%;top:51px;transform:translateX(-50%);width:116px;height:64px;border-radius:55% 55% 45% 45%;border:1px solid rgba(255,255,255,.35);box-shadow:0 0 0 5px rgba(255,212,46,.08),inset 0 0 28px rgba(57,216,230,.22);pointer-events:none}
-.pkmn-home-apps:after{content:"⚡";position:absolute;left:50%;top:68px;transform:translateX(-50%);font-size:23px;color:var(--r-yellow);filter:drop-shadow(0 0 8px rgba(255,212,46,.8));pointer-events:none}
-.pkmn-app-icon{width:auto!important;color:#fff!important;font-size:10px!important;font-weight:1000!important;text-shadow:0 2px 5px rgba(0,0,0,.4)!important;letter-spacing:.1px!important}
-.pkmn-app-icon>div:first-child,.pkmn-app-icon .pkmn-app-image{width:70px!important;height:70px!important;margin:0 auto 7px!important;border-radius:21px!important;background:linear-gradient(145deg,rgba(255,255,255,.97),rgba(232,250,251,.91))!important;border:3px solid var(--r-yellow)!important;box-shadow:0 7px 17px rgba(8,31,44,.28),0 0 0 2px rgba(57,216,230,.6),inset 0 0 0 2px rgba(255,255,255,.7)!important;overflow:hidden!important;display:flex!important;align-items:center!important;justify-content:center!important;position:relative!important}
-.pkmn-app-icon>div:first-child:after{content:"";position:absolute;inset:4px;border-radius:15px;border:1px solid rgba(57,216,230,.25);pointer-events:none}
-.pkmn-app-icon .pkmn-app-image img{width:100%!important;height:100%!important;object-fit:contain!important;border-radius:15px!important}
-#pkmn-open-settings>div:first-child{font-size:29px!important;background:linear-gradient(145deg,var(--r-blue),var(--r-blue2))!important;color:#fff!important;border-color:var(--r-cyan)!important;text-shadow:0 0 8px rgba(57,216,230,.7)!important}
-.pkmn-app-icon:active>div:first-child{transform:scale(.93)!important;filter:brightness(1.1)}
-#pkmn-open-safe{grid-column:1!important}#pkmn-open-mature{grid-column:2!important}#pkmn-open-settings{grid-column:3!important}
-.pkmn-footer{position:absolute!important;left:16px!important;right:16px!important;bottom:12px!important;height:32px!important;display:flex!important;align-items:center!important;justify-content:center!important;background:rgba(16,45,64,.48)!important;border:1px solid rgba(141,244,246,.45)!important;border-radius:12px!important;color:#fff!important;z-index:5!important;backdrop-filter:blur(7px)!important;box-shadow:0 4px 12px rgba(7,28,41,.2)!important}
-.pkmn-footer:before{content:"⚡  ROTOM CORE ONLINE  •  100%";font-size:8px;font-weight:1000;letter-spacing:1px}.pkmn-footer>*{display:none!important}
-.pkmn-head{height:54px!important;min-height:54px!important;padding:0 48px!important;background:linear-gradient(180deg,#fffdf7,#e8f8fa)!important;color:var(--r-blue)!important;border-bottom:3px solid var(--r-cyan)!important;box-shadow:0 4px 12px rgba(16,45,64,.11)!important;font-size:15px!important;font-weight:1000!important;letter-spacing:.2px!important;position:relative!important}
-.pkmn-head:before{content:"ROTOM // NETWORK";position:absolute;left:47px;top:7px;color:var(--r-red2);font-size:6px;letter-spacing:1.3px;font-weight:1000}.pkmn-head:after{content:"⚡";position:absolute;right:15px;top:16px;color:var(--r-yellow);font-size:14px;text-shadow:0 0 6px rgba(255,212,46,.8)}
-.pkmn-head button{left:8px!important;top:8px!important;width:33px!important;height:36px!important;border:0!important;border-radius:10px!important;background:var(--r-blue)!important;color:#fff!important;font-size:22px!important;line-height:34px!important;box-shadow:0 3px 8px rgba(16,45,64,.22)!important}
-.pkmn-head #pkmn-board-settings{right:8px!important;left:auto!important;top:9px!important;width:32px!important;height:34px!important;line-height:32px!important;color:var(--r-blue)!important;background:#fff!important;border:1px solid rgba(57,216,230,.5)!important;border-radius:10px!important}
-.pkmn-tabs{height:40px!important;min-height:40px!important;background:#f5fcfc!important;border-bottom:1px solid var(--r-line)!important;padding:3px 6px!important;gap:4px!important}.pkmn-tab{min-width:76px!important;height:34px!important;border-radius:10px!important;color:#78919c!important;font-weight:1000!important}.pkmn-tab.active{color:#fff!important;background:linear-gradient(135deg,var(--r-blue),var(--r-blue2))!important;box-shadow:0 3px 8px rgba(16,45,64,.16)!important}.pkmn-tab.active:after{display:none!important}
-.pkmn-list,.pkmn-posts{background:linear-gradient(180deg,#e8f7f9,#f8fcfc)!important;padding:10px 9px 14px!important}
-.pkmn-thread-card{margin:0 0 9px!important;padding:12px 12px 12px 58px!important;border:1px solid var(--r-line)!important;border-left:5px solid var(--r-cyan)!important;border-radius:15px!important;background:rgba(255,255,255,.97)!important;box-shadow:0 5px 13px rgba(16,45,64,.08)!important;transition:transform .14s ease,border-color .14s ease!important}.pkmn-thread-card:active{transform:scale(.992)!important}.pkmn-thread-card:hover{border-left-color:var(--r-red)!important;transform:translateY(-1px)}
-.pkmn-thread-avatar,.pkmn-post-avatar,.pkmn-reply-avatar{background:linear-gradient(145deg,#e9fafb,#d7eef0)!important;color:var(--r-blue2)!important;border:1px solid rgba(57,216,230,.25)!important}
-.pkmn-thread-card .pkmn-thread-title,.pkmn-thread-card .pkmn-post-title{color:var(--r-blue)!important;font-weight:1000!important}.pkmn-thread-card .pkmn-meta,.pkmn-thread-time{color:#708993!important}.pkmn-thread-tags .pkmn-tag,.pkmn-post-tags .pkmn-tag{background:#eef9fa!important;color:#397486!important;border:1px solid rgba(57,216,230,.15)!important}
-.pkmn-post{margin:0 0 10px!important;padding:13px!important;border:1px solid var(--r-line)!important;border-left:4px solid var(--r-cyan)!important;border-radius:15px!important;background:#fff!important;box-shadow:0 4px 11px rgba(16,45,64,.07)!important}.pkmn-post:last-child{border-left-color:var(--r-red)!important}.pkmn-post-title{color:var(--r-blue)!important;font-weight:1000!important}.pkmn-post-author{color:var(--r-blue2)!important}.pkmn-post-time,.pkmn-post-floor{color:#82969d!important}
-.pkmn-inject{background:#fff7d9!important;color:#9a7410!important;border:1px solid rgba(255,212,46,.5)!important;border-radius:9px!important}.pkmn-inject.active{background:var(--r-yellow)!important;color:#4b3b00!important}.pkmn-del{color:#9aabb0!important}
-.pkmn-reply-msg{gap:8px!important;padding:10px 12px 8px!important;background:transparent!important;border-bottom:0!important}.pkmn-reply-main{min-width:0!important}.pkmn-reply-name{color:var(--r-blue2)!important;font-weight:900!important}.pkmn-reply-bubble{max-width:92%!important;background:#fff!important;border:1px solid rgba(16,45,64,.09)!important;border-radius:5px 13px 13px 13px!important;padding:7px 10px!important;color:#294653!important;box-shadow:0 2px 7px rgba(16,45,64,.05)!important}.pkmn-reply-msg.is-user .pkmn-reply-bubble{background:#e7fbf1!important;border-color:rgba(57,216,230,.28)!important;border-radius:13px 5px 13px 13px!important}.pkmn-reply-msg.is-user .pkmn-reply-name{color:#168f72!important}.pkmn-reply-meta{color:#91a4aa!important}.pkmn-comment-reply-btn{color:var(--r-cyan-dark)!important;font-weight:900!important}
-.pkmn-nested-replies{margin:6px 0 0 4px!important;padding-left:10px!important;border-left:2px solid rgba(255,212,46,.55)!important}.pkmn-nested-msg{margin:4px 0!important}.pkmn-nested-bubble{background:#f1fafb!important;border:1px solid rgba(57,216,230,.16)!important;border-radius:8px!important;padding:6px 8px!important;color:#385663!important}.pkmn-nested-msg.is-user .pkmn-nested-bubble{background:#fff8d9!important;border-color:rgba(255,212,46,.3)!important}.pkmn-nested-name{color:var(--r-blue2)!important;font-weight:900!important}.pkmn-nested-msg.is-user .pkmn-nested-name{color:#9a7410!important}.pkmn-nested-reply-btn{color:var(--r-cyan-dark)!important}
-.pkmn-nested-composer{gap:5px!important}.pkmn-nested-input{border:1px solid rgba(57,216,230,.28)!important;background:#f6fcfc!important;border-radius:14px!important}.pkmn-nested-send{background:var(--r-blue)!important;border-radius:14px!important;font-weight:900!important}
-.pkmn-replies-title{color:var(--r-blue)!important;font-weight:1000!important}.pkmn-replies-title .pkmn-thread-refresh-btn{background:var(--r-blue)!important;color:#fff!important;border-radius:10px!important}
-.pkmn-bottom{height:53px!important;min-height:53px!important;padding:8px!important;background:rgba(255,255,255,.98)!important;border-top:2px solid rgba(57,216,230,.4)!important;box-shadow:0 -5px 13px rgba(16,45,64,.08)!important}.pkmn-bottom input,.pkmn-bottom textarea,#pkmn-reply-input{border:1px solid rgba(16,45,64,.15)!important;border-radius:12px!important;background:#f4fbfb!important;color:var(--r-blue)!important}.pkmn-bottom input:focus,.pkmn-bottom textarea:focus,#pkmn-reply-input:focus{border-color:var(--r-cyan)!important;box-shadow:0 0 0 2px rgba(57,216,230,.14)!important}
-.pkmn-btn{min-height:32px!important;border-radius:10px!important;border:1px solid rgba(16,45,64,.12)!important;background:#fff!important;color:var(--r-blue)!important;font-weight:1000!important;box-shadow:0 2px 7px rgba(16,45,64,.07)!important}.pkmn-btn.pkmn-primary,#pkmn-send{background:linear-gradient(135deg,var(--r-red),var(--r-red2))!important;color:#fff!important;border-color:transparent!important;box-shadow:0 4px 10px rgba(185,41,57,.24)!important}.pkmn-secondary{background:#edf8f9!important}.pkmn-danger{background:#fff0ee!important;color:#b83b43!important}
-#pkmn-settings{background:linear-gradient(180deg,#e8f7f9,#f8fcfc)!important}.pkmn-settings-section,.pkmn-setting-card,.pkmn-settings-card,.pkmn-group{border-radius:14px!important;border:1px solid var(--r-line)!important;background:#fff!important;box-shadow:0 4px 12px rgba(16,45,64,.06)!important}.pkmn-settings-section h3,.pkmn-setting-title{color:var(--r-blue)!important;font-weight:1000!important}.pkmn-settings input,.pkmn-settings textarea,.pkmn-settings select{border-color:rgba(16,45,64,.15)!important;border-radius:10px!important;background:#f4fbfb!important}.pkmn-settings button{border-radius:10px!important;font-weight:900!important}
-.pkmn-modal{backdrop-filter:blur(4px)!important}.pkmn-modal-box{border-radius:18px!important;border:2px solid rgba(57,216,230,.35)!important;box-shadow:0 18px 40px rgba(8,27,39,.3)!important}
-.pkmn-homebar{height:5px!important;width:86px!important;border-radius:99px!important;background:rgba(255,255,255,.65)!important;margin:7px auto 6px!important;box-shadow:0 0 7px rgba(57,216,230,.35)!important}
-#pkmn-close-phone{background:var(--r-blue)!important;color:#fff!important;border:2px solid var(--r-yellow)!important;box-shadow:0 0 8px rgba(57,216,230,.25)!important}
-#pkmn-phone-scale{background:var(--r-blue)!important;color:#fff!important;border:1px solid var(--r-cyan)!important}
-.pkmn-drag-top,.pkmn-drag-bottom{background:transparent!important}
-@media(max-width:390px){#pkmn-phone-panel{width:calc(100vw - 8px)!important;height:min(660px,calc(100vh - 8px))!important;border-radius:37px!important;padding:7px!important}.pkmn-status{margin:4px 4px 0!important}.pkmn-app{margin:0 4px 4px!important;border-radius:0 0 30px 30px!important}.pkmn-home-apps{padding:70px 11px 62px!important;gap:16px 4px!important}.pkmn-app-icon>div:first-child,.pkmn-app-icon .pkmn-app-image{width:61px!important;height:61px!important;border-radius:18px!important}.pkmn-head{padding-left:43px!important;padding-right:38px!important}.pkmn-thread-card{padding-left:51px!important}.pkmn-reply-msg{padding-left:9px!important;padding-right:9px!important}.pkmn-reply-bubble{max-width:88%!important}.pkmn-nested-replies{padding-left:8px!important}}
-
-
-
-/* 0.34 interaction/occlusion safety */
-/* ===== Rotom Phone UI v5 — interaction/occlusion fix ===== */
-#pkmn-phone-panel > button, #pkmn-phone-panel .pkmn-drag-top, #pkmn-phone-panel .pkmn-status, #pkmn-phone-panel .pkmn-app { position:relative!important; z-index:10!important; }
-#pkmn-phone-panel:before, #pkmn-phone-panel:after, #pkmn-home:before, #pkmn-home:after, .pkmn-home-apps:before, .pkmn-home-apps:after { pointer-events:none!important; }
-#pkmn-phone-panel:before, #pkmn-phone-panel:after { z-index:20!important; }
-#pkmn-home:before { z-index:0!important; }
-#pkmn-home:after { z-index:1!important; }
-.pkmn-home-apps { z-index:5!important; isolation:isolate!important; }
-.pkmn-home-apps:before { z-index:0!important; }
-.pkmn-home-apps:after { z-index:0!important; }
-.pkmn-home-apps > .pkmn-app-icon { position:relative!important; z-index:10!important; pointer-events:auto!important; }
-.pkmn-home-apps > .pkmn-app-icon > div, .pkmn-home-apps > .pkmn-app-icon img { pointer-events:none!important; }
-#pkmn-open-safe, #pkmn-open-mature, #pkmn-open-settings { position:relative!important; z-index:11!important; cursor:pointer!important; }
-#pkmn-close-phone, #pkmn-phone-scale { z-index:30!important; pointer-events:auto!important; }
-/* Keep the decorative Rotom energy core behind the app buttons. */
-.pkmn-home-apps:before { top:42px!important; height:54px!important; opacity:.45!important; }
-.pkmn-home-apps:after { top:58px!important; opacity:.75!important; }
-
-/* ===== Rotom Phone UI v6 — final control visibility / floating icon cleanup ===== */
-#pkmn-phone-panel > #pkmn-close-phone,#pkmn-phone-panel > #pkmn-phone-scale{position:absolute!important;z-index:200!important;pointer-events:auto!important;visibility:visible!important;opacity:1!important}
-#pkmn-phone-panel > #pkmn-phone-scale{right:45px!important;top:5px!important;width:30px!important;height:30px!important;display:flex!important;align-items:center!important;justify-content:center!important;border:1px solid var(--r-cyan,#39d8e6)!important;border-radius:50%!important;background:var(--r-blue,#17384d)!important;color:#fff!important;font-size:16px!important;line-height:1!important;padding:0!important}
-#pkmn-phone-panel > #pkmn-close-phone{right:8px!important;top:5px!important;width:34px!important;height:34px!important}
-#pkmn-phone-panel:before{z-index:1!important;pointer-events:none!important}
-#pkmn-phone-panel:after{z-index:2!important;pointer-events:none!important}
-.pkmn-notch{z-index:3!important;pointer-events:none!important}
-.pkmn-drag-top{z-index:25!important}
-#pkmn-float-btn{border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;-webkit-appearance:none!important;appearance:none!important;-webkit-tap-highlight-color:transparent!important;filter:none!important}
-#pkmn-float-btn:focus,#pkmn-float-btn:focus-visible,#pkmn-float-btn:active{border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important}
-#pkmn-float-btn:before,#pkmn-float-btn:after{content:none!important;display:none!important}
-#pkmn-float-btn svg,#pkmn-float-btn.dragging{filter:none!important;box-shadow:none!important}
-
-\n\n/* ===== Rotom Phone UI v6 — conservative detail polish based on v0.36 ===== */\n#pkmn-phone-panel{overflow:hidden!important;border-radius:43px!important}\n#pkmn-phone-panel > .pkmn-view{overflow:hidden!important;border-radius:34px!important}\n#pkmn-phone-panel .pkmn-view > .pkmn-head{position:relative!important;z-index:40!important;overflow:hidden!important}\n#pkmn-phone-panel #pkmn-thread .pkmn-head:before,#pkmn-phone-panel #pkmn-thread .pkmn-head:after{z-index:0!important;pointer-events:none!important}\n#pkmn-phone-panel #pkmn-thread .pkmn-head > *{position:relative!important;z-index:10!important}\n#pkmn-phone-panel #pkmn-thread-title{position:relative!important;z-index:60!important;display:block!important;max-width:calc(100% - 92px)!important;margin:0 auto!important;padding:0 6px!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;text-align:center!important;color:var(--r-blue,#102d40)!important;font-weight:800!important;line-height:54px!important;text-shadow:none!important}\n#pkmn-phone-panel #pkmn-thread .pkmn-head button{z-index:70!important;pointer-events:auto!important}\n#pkmn-phone-panel #pkmn-posts{position:relative!important;z-index:10!important;overflow-x:hidden!important;overflow-y:auto!important;padding:8px 8px 14px!important}\n#pkmn-phone-panel #pkmn-posts .pkmn-post{position:relative!important;z-index:20!important;overflow:visible!important;max-width:100%!important;min-width:0!important}\n#pkmn-phone-panel #pkmn-posts .pkmn-post-title{position:relative!important;z-index:30!important;display:block!important;min-width:0!important;max-width:100%!important;overflow-wrap:anywhere!important;word-break:break-word!important;white-space:normal!important;text-shadow:none!important}\n#pkmn-phone-panel #pkmn-posts .pkmn-content{position:relative!important;z-index:20!important;min-width:0!important;max-width:100%!important;overflow-wrap:anywhere!important;word-break:break-word!important;white-space:pre-wrap!important}\n#pkmn-phone-panel #pkmn-posts .pkmn-post-head{position:relative!important;z-index:25!important;min-width:0!important}\n#pkmn-phone-panel #pkmn-posts .pkmn-post-user{min-width:0!important;overflow:hidden!important}\n#pkmn-phone-panel #pkmn-posts .pkmn-post-author,#pkmn-phone-panel #pkmn-posts .pkmn-post-time{max-width:100%!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}\n#pkmn-phone-panel #pkmn-posts .pkmn-post-floor{z-index:35!important;pointer-events:none!important}\n#pkmn-phone-panel #pkmn-posts .pkmn-post-tags,#pkmn-phone-panel #pkmn-posts .pkmn-post-tools,#pkmn-phone-panel #pkmn-posts .pkmn-reply-msg,#pkmn-phone-panel #pkmn-posts .pkmn-replies-title{position:relative!important;z-index:25!important}\n#pkmn-phone-panel #pkmn-thread .pkmn-reply{position:relative!important;z-index:50!important;flex-shrink:0!important}\n#pkmn-phone-panel #pkmn-thread .pkmn-reply *{position:relative!important;z-index:55!important}\n#pkmn-phone-panel .pkmn-notch{z-index:80!important;pointer-events:none!important}\n#pkmn-phone-panel:before,#pkmn-phone-panel:after{pointer-events:none!important}\n#pkmn-phone-panel #pkmn-close-phone,#pkmn-phone-panel #pkmn-phone-scale{z-index:100!important;pointer-events:auto!important}\n
-\n\n/* ===== Rotom Phone UI v8 — layout balance pass ===== */
-/* 目标：控制键自然、列表卡片不浪费头像下方空间、详情页保持舒适阅读。 */
-
-/* ---------- 手机顶部控制键 ---------- */
-/* 不再贴在红色外壳最顶端；下移到上方红色硬件区域，视觉上像内嵌控制键 */
-#pkmn-phone-panel > #pkmn-phone-scale,
-#pkmn-phone-panel > #pkmn-close-phone{
-  position:absolute!important;
-  z-index:200!important;
-  top:34px!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  padding:0!important;
-  border-radius:50%!important;
-  opacity:.88!important;
-  box-shadow:0 2px 7px rgba(0,0,0,.16)!important;
-  backdrop-filter:blur(4px)!important;
-  -webkit-tap-highlight-color:transparent!important;
-}
-#pkmn-phone-panel > #pkmn-phone-scale{
-  right:45px!important;
-  width:28px!important;
-  height:28px!important;
-  font-size:15px!important;
-  border:1px solid rgba(141,244,246,.70)!important;
-}
-#pkmn-phone-panel > #pkmn-close-phone{
-  right:10px!important;
-  width:30px!important;
-  height:30px!important;
-  font-size:17px!important;
-  border:1px solid rgba(255,212,46,.52)!important;
-}
-#pkmn-phone-panel > #pkmn-phone-scale:active,
-#pkmn-phone-panel > #pkmn-close-phone:active{
-  transform:scale(.94)!important;
-}
-
-/* ---------- 论坛列表：取消“头像下方空白” ---------- */
-/*
-  原结构是：
-  avatar absolute + body margin-left
-  这样标题/摘要永远在头像右侧，头像下面形成一整块空白。
-  现在改为：
-  用户名行给头像留位；标题/摘要/标签/统计恢复全宽。
-*/
-#pkmn-phone-panel #pkmn-forum .pkmn-thread-card{
-  position:relative!important;
-  min-height:0!important;
-  margin:0 0 9px!important;
-  padding:11px 11px 10px!important;
-  border-radius:15px!important;
-}
-
-#pkmn-phone-panel #pkmn-forum .pkmn-thread-card .pkmn-thread-avatar{
-  position:absolute!important;
-  left:11px!important;
-  top:12px!important;
-  width:38px!important;
-  height:38px!important;
-  z-index:3!important;
-}
-
-/* body 不再整体向右缩进 */
-#pkmn-phone-panel #pkmn-forum .pkmn-thread-body{
-  margin-left:0!important;
-  padding-right:0!important;
-  min-width:0!important;
-}
-
-/* 只有作者这一行给头像留空间 */
-#pkmn-phone-panel #pkmn-forum .pkmn-thread-user{
-  min-height:39px!important;
-  padding:2px 78px 0 50px!important;
-  font-size:10px!important;
-  line-height:17px!important;
-  display:flex!important;
-  align-items:flex-start!important;
-  flex-wrap:nowrap!important;
-}
-
-/* badge 不要把作者一行撑高 */
-#pkmn-phone-panel #pkmn-forum .pkmn-thread-user .pkmn-user-badge,
-#pkmn-phone-panel #pkmn-forum .pkmn-thread-user .pkmn-topic-badge{
-  flex:none!important;
-  margin-top:0!important;
-}
-
-/* 标题恢复全卡片宽度 */
-#pkmn-phone-panel #pkmn-forum .pkmn-thread-title,
-#pkmn-phone-panel #pkmn-forum .pkmn-thread-card .pkmn-post-title{
-  width:100%!important;
-  max-width:100%!important;
-  margin-top:3px!important;
-  padding:0!important;
-  font-size:13.5px!important;
-  line-height:1.43!important;
-  font-weight:850!important;
-  display:-webkit-box!important;
-  -webkit-box-orient:vertical!important;
-  -webkit-line-clamp:2!important;
-  overflow:hidden!important;
-  word-break:break-word!important;
-}
-
-/* 摘要也恢复全宽 */
-#pkmn-phone-panel #pkmn-forum .pkmn-thread-snippet{
-  width:100%!important;
-  max-width:100%!important;
-  margin-top:4px!important;
-  padding:0!important;
-  font-size:10.5px!important;
-  line-height:1.52!important;
-  display:-webkit-box!important;
-  -webkit-box-orient:vertical!important;
-  -webkit-line-clamp:2!important;
-  overflow:hidden!important;
-}
-
-/* 标签充分利用宽度 */
-#pkmn-phone-panel #pkmn-forum .pkmn-thread-tags{
-  width:100%!important;
-  margin-top:5px!important;
-  padding:0!important;
-  gap:4px!important;
-  max-height:20px!important;
-}
-#pkmn-phone-panel #pkmn-forum .pkmn-thread-tags .pkmn-tag{
-  font-size:9px!important;
-  line-height:15px!important;
-  padding:2px 7px!important;
-}
-
-/* 底部统计也全宽，不再被头像列占位 */
-#pkmn-phone-panel #pkmn-forum .pkmn-thread-footer{
-  width:100%!important;
-  margin-top:6px!important;
-  padding:0!important;
-  font-size:8.5px!important;
-}
-
-/* ---------- 注入 / 删除按钮 ---------- */
-#pkmn-phone-panel #pkmn-forum .pkmn-inject{
-  right:34px!important;
-  top:9px!important;
-  padding:3px 7px!important;
-  font-size:8px!important;
-  line-height:14px!important;
-}
-#pkmn-phone-panel #pkmn-forum .pkmn-del{
-  right:6px!important;
-  top:8px!important;
-  width:22px!important;
-  height:22px!important;
-  font-size:11px!important;
-}
-
-/* ---------- 详情页：顶部和正文再统一一点 ---------- */
-#pkmn-phone-panel #pkmn-thread > .pkmn-head{
-  padding-left:48px!important;
-  padding-right:44px!important;
-}
-#pkmn-phone-panel #pkmn-thread-title{
-  font-size:13px!important;
-  font-weight:850!important;
-  max-width:calc(100% - 82px)!important;
-  overflow:hidden!important;
-  text-overflow:ellipsis!important;
-  white-space:nowrap!important;
-}
-
-#pkmn-phone-panel #pkmn-thread #pkmn-posts .pkmn-post{
-  padding:12px!important;
-}
-#pkmn-phone-panel #pkmn-thread #pkmn-posts .pkmn-post-title{
-  font-size:17px!important;
-  line-height:1.46!important;
-  margin:10px 0 7px!important;
-}
-#pkmn-phone-panel #pkmn-thread #pkmn-posts .pkmn-content{
-  font-size:13px!important;
-  line-height:1.72!important;
-}
-
-/* ---------- 评论区 ---------- */
-#pkmn-phone-panel #pkmn-thread .pkmn-replies-title{
-  height:40px!important;
-  min-height:40px!important;
-  padding:0 12px!important;
-}
-#pkmn-phone-panel #pkmn-thread .pkmn-reply{
-  height:54px!important;
-  min-height:54px!important;
-}
-
-/* ---------- 手机小屏 ---------- */
-@media(max-width:390px){
-  #pkmn-phone-panel > #pkmn-phone-scale{
-    right:42px!important;
-    top:33px!important;
-  }
-  #pkmn-phone-panel > #pkmn-close-phone{
-    right:8px!important;
-    top:33px!important;
-  }
-
-  #pkmn-phone-panel #pkmn-forum .pkmn-thread-user{
-    padding-left:48px!important;
-    padding-right:72px!important;
-  }
-
-  #pkmn-phone-panel #pkmn-forum .pkmn-thread-title,
-  #pkmn-phone-panel #pkmn-forum .pkmn-thread-card .pkmn-post-title{
-    font-size:13px!important;
-  }
-
-  #pkmn-phone-panel #pkmn-forum .pkmn-thread-snippet{
-    font-size:10px!important;
-  }
-
-  #pkmn-phone-panel #pkmn-thread-title{
-    font-size:12px!important;
-  }
-
-  #pkmn-phone-panel #pkmn-thread #pkmn-posts .pkmn-post-title{
-    font-size:16px!important;
-  }
-
-  #pkmn-phone-panel #pkmn-thread #pkmn-posts .pkmn-content{
-    font-size:12.5px!important;
-  }
-}
-`;
-
-    topDoc.head.appendChild(
-        style
-    );
+        // Styles loaded via extension style.css (manifest)
+    
 
     // ============================================================
     // 手机按钮
@@ -3530,7 +2532,7 @@ html,body{overscroll-behavior:none}
 
     async function setForumThreadInjection(t) {
         if (!TH.injectPrompts) {
-            showToast('当前酒馆助手不支持提示词注入，请更新酒馆助手');
+            showToast('当前 SillyTavern 不支持 setExtensionPrompt，无法注入帖子');
             return false;
         }
 
@@ -3885,8 +2887,6 @@ ${matureRule}
     let refreshingThread = false;
 
     async function refreshCurrentThread(t) {
-
-        const job = captureChatJob();
         if (!t || generating || refreshingThread) return 0;
         refreshingThread = true;
 
@@ -4185,11 +3185,6 @@ ${renderTagHtml(threadTags(t), 'pkmn-post-tags')}
                     )
                 );
 
-            if (!chatJobStillCurrent(job)) {
-                showToast('聊天或论坛已切换，本次生成结果已丢弃');
-                return 0;
-            }
-
             } catch (_) {}
         }
 
@@ -4244,8 +3239,6 @@ ${renderTagHtml(threadTags(t), 'pkmn-post-tags')}
         boardId = currentBoard,
         silent = false
     ) {
-
-        const job = captureChatJob();
 
         if (generating) {
             return 0;
@@ -4349,11 +3342,6 @@ ${ctx}
                     ],
                     0.95
                 );
-
-            if (!chatJobStillCurrent(job)) {
-                showToast('聊天或论坛已切换，本次生成结果已丢弃');
-                return 0;
-            }
 
             let arr =
                 parseJSON(
@@ -4472,8 +3460,6 @@ ${ctx}
         reason = '玩家回复'
     ) {
 
-        const job = captureChatJob();
-
         if (
             !targetThread ||
             count <= 0
@@ -4569,11 +3555,6 @@ ${targetContent}
                     0.9
                 );
 
-            if (!chatJobStillCurrent(job)) {
-                showToast('聊天或论坛已切换，本次生成结果已丢弃');
-                return 0;
-            }
-
             let arr =
                 parseJSON(
                     raw
@@ -4647,8 +3628,6 @@ ${targetContent}
     async function npcTalk(
         count
     ) {
-
-        const job = captureChatJob();
 
         const target =
             threads().filter(
@@ -4755,11 +3734,6 @@ ${ctx}
                     ],
                     0.9
                 );
-
-            if (!chatJobStillCurrent(job)) {
-                showToast('聊天或论坛已切换，本次生成结果已丢弃');
-                return 0;
-            }
 
             let arr =
                 parseJSON(
@@ -6549,32 +5523,17 @@ ${esc(name)}
     // ============================================================
     // 时间
     // ============================================================
+    function updatePhoneClock() {
+        const el = $('pkmn-time');
+        if (!el) return;
+        const d = new Date();
+        el.textContent =
+            String(d.getHours()).padStart(2, '0') + ':' +
+            String(d.getMinutes()).padStart(2, '0');
+    }
 
-    trackedSetInterval(
-        () => {
-
-            const d =
-                new Date();
-
-            $('pkmn-time')
-                .textContent =
-                    String(
-                        d.getHours()
-                    ).padStart(
-                        2,
-                        '0'
-                    ) +
-                    ':' +
-                    String(
-                        d.getMinutes()
-                    ).padStart(
-                        2,
-                        '0'
-                    );
-
-        },
-        1000
-    );
+    updatePhoneClock();
+    trackedSetInterval(updatePhoneClock, 1000);
 
 
     // ============================================================
@@ -6616,5 +5575,7 @@ ${esc(name)}
         '[宝可梦小手机论坛] 已启动。聊天独立存档：',
         chatState.chatKey
     );
+
+    }); // end whenReady startPkmnPhoneForum
 
 })();

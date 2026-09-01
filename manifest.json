@@ -1,13 +1,14 @@
 {
-  "display_name": "Pokemon Phone Forum Standalone",
-  "loading_order": 10,
-  "requires": [],
-  "js": [
-    "index.js"
-  ],
-  "css": [
-    "style.css"
-  ],
-  "author": "converted",
-  "version": "1.0.0"
+    "display_name": "宝可梦小手机论坛",
+    "loading_order": 100,
+    "requires": [],
+    "optional": [],
+    "dependencies": [],
+    "js": "index.js",
+    "css": "style.css",
+    "author": "Converted from Tavern Helper script (0.39)",
+    "version": "0.40.0",
+    "homePage": "",
+    "auto_update": false,
+    "minimum_client_version": "1.12.0"
 }
