@@ -1,10 +1,11 @@
 {
   "display_name": "宝可梦小手机论坛",
-  "loading_order": 100,
+  "loading_order": 10,
   "requires": [],
+  "optional": [],
   "js": "index.js",
-  "css": "style.css",
-  "author": "ChatGPT / based on user script 0.39",
-  "version": "0.40.0",
-  "auto_update": false
+  "css": "",
+  "author": "Converted from user-provided script",
+  "version": "0.38.1",
+  "auto_update": true
 }

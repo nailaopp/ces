@@ -1,131 +1,10 @@
-/*
- * Native SillyTavern integration.
- * This extension does not depend on Tavern Helper.
- */
-(function installNativeST() {
-    const st = window.SillyTavern || {};
-    const ST = {};
-
-    ST.ready = Promise.all([
-        import('/scripts/world-info.js'),
-        import('/scripts/script.js'),
-    ]).then(([wi, script]) => {
-        ST._wi = wi;
-        ST._script = script;
-        return ST;
-    }).catch(error => {
-        console.error('[宝可梦小手机论坛] SillyTavern 原生模块加载失败', error);
-        throw error;
-    });
-
-    ST.getCurrentChatId = typeof st.getCurrentChatId === 'function'
-        ? st.getCurrentChatId.bind(st)
-        : () => '';
-
-    ST.getChatMessages = function(range) {
-        const chat = Array.isArray(st.chat) ? st.chat : [];
-        let arr = chat;
-        if (typeof range === 'number' && range !== 0) {
-            if (range < 0) arr = chat.slice(Math.max(0, chat.length + range));
-            else arr = chat.slice(0, range);
-        } else if (typeof range === 'string') {
-            const n = Number(range);
-            if (Number.isFinite(n) && n !== 0) {
-                arr = n < 0 ? chat.slice(Math.max(0, chat.length + n)) : chat.slice(0, n);
-            }
-        }
-        return arr.map(m => ({
-            message: m?.mes ?? m?.message ?? m?.content ?? '',
-            content: m?.mes ?? m?.message ?? m?.content ?? '',
-            is_user: !!m?.is_user,
-            name: m?.name ?? '',
-            extra: m?.extra ?? {},
-        }));
-    };
-
-    ST.getLastMessageId = function() {
-        const chat = Array.isArray(st.chat) ? st.chat : [];
-        return chat.length ? chat.length - 1 : -1;
-    };
-
-    ST.getCharacterName = function() {
-        try {
-            if (typeof window.this_chid === 'number' && Array.isArray(window.characters) && window.characters[window.this_chid]) {
-                return window.characters[window.this_chid].name || '';
-            }
-        } catch (_) {}
-        return window.name2 || '';
-    };
-
-    ST.eventOn = function(event, callback) {
-        if (window.eventSource && typeof window.eventSource.on === 'function') {
-            window.eventSource.on(event, callback);
-            return callback;
-        }
-        return null;
-    };
-
-    ST.updateChatMetadata = function(metadata, reset = false) {
-        const target = st.chatMetadata || (window.chatMetadata && typeof window.chatMetadata === 'object' ? window.chatMetadata : {});
-        const next = reset ? { ...(metadata || {}) } : { ...target, ...(metadata || {}) };
-        try {
-            st.chatMetadata = next;
-        } catch (_) {}
-        try {
-            if (typeof window.chatMetadata === 'object') {
-                Object.keys(window.chatMetadata).forEach(k => delete window.chatMetadata[k]);
-                Object.assign(window.chatMetadata, next);
-            }
-        } catch (_) {}
-        return next;
-    };
-
-    ST.saveChat = async function() {
-        if (typeof st.saveChat === 'function') return st.saveChat();
-        if (typeof window.saveChat === 'function') return window.saveChat();
-        return undefined;
-    };
-
-    ST.getWorldbookNames = async function() {
-        await ST.ready;
-        return Array.isArray(ST._wi.world_names) ? [...ST._wi.world_names] : [];
-    };
-
-    ST.getWorldbook = async function(name) {
-        await ST.ready;
-        const data = await ST._wi.loadWorldInfo(name);
-        if (!data || !data.entries) return [];
-        return Object.keys(data.entries).map(uid => ({
-            uid,
-            world: name,
-            ...data.entries[uid],
-        }));
-    };
-
-    ST.setExtensionPrompt = async function(key, value, position, depth, scan = false, role = undefined) {
-        await ST.ready;
-        ST._script.setExtensionPrompt(key, value, position, depth, scan, role ?? ST._script.extension_prompt_roles?.SYSTEM ?? 0);
-        return true;
-    };
-
-    ST.clearExtensionPrompt = async function(key) {
-        await ST.ready;
-        // There is no public delete helper; setting an empty value is the supported
-        // extension pattern and removes it from the generated prompt.
-        ST._script.setExtensionPrompt(key, '', 1, 0, false);
-        return true;
-    };
-
-    window.__pkmnNativeST = ST;
-})();
-
 (function () {
     'use strict';
 
     const NS = 'pkmn_phone_forum_v9';
     const LEGACY_NS = 'pkmn_phone_forum_v7';
     const LEGACY_NS_2 = 'pkmn_phone_forum_v5';
-    const VERSION = 40;
+    const VERSION = 31;
 
     let topDoc = document;
 
@@ -136,42 +15,56 @@
     } catch (_) {}
 
     // ============================================================
-    // 0.40 生命周期管理
+    // 实例生命周期：重新执行脚本时清理旧监听器/定时器
     // ============================================================
-    const LIFECYCLE_KEY = '__pkmn_phone_forum_v040_lifecycle__';
+
+    const LIFECYCLE_KEY = '__pkmn_phone_forum_v9_lifecycle__';
+
     try {
-        const old = window[LIFECYCLE_KEY];
-        if (old && typeof old.destroy === 'function') old.destroy();
+        const oldLifecycle = window[LIFECYCLE_KEY];
+        if (oldLifecycle && typeof oldLifecycle.destroy === 'function') {
+            oldLifecycle.destroy();
+        }
     } catch (_) {}
 
-    const lifecycle = {
-        timers: new Set(),
-        cleanups: new Set(),
-        destroyed: false,
-        trackTimer(id) { this.timers.add(id); return id; },
-        trackCleanup(fn) { if (typeof fn === 'function') this.cleanups.add(fn); return fn; },
-        destroy() {
-            this.destroyed = true;
-            for (const id of Array.from(this.timers)) {
-                try { clearInterval(id); } catch (_) {}
-                try { clearTimeout(id); } catch (_) {}
-            }
-            this.timers.clear();
-            for (const fn of Array.from(this.cleanups)) {
-                try { fn(); } catch (_) {}
-            }
-            this.cleanups.clear();
-        }
-    };
-    window[LIFECYCLE_KEY] = lifecycle;
+    const lifecycleTimers = new Set();
+    const lifecycleStops = new Set();
 
     function trackedSetInterval(fn, ms) {
-        const id = setInterval(() => {
-            if (lifecycle.destroyed) return;
-            try { fn(); } catch (_) {}
-        }, ms);
-        return lifecycle.trackTimer(id);
+        const id = setInterval(fn, ms);
+        lifecycleTimers.add(id);
+        return id;
     }
+
+    function trackedSetTimeout(fn, ms) {
+        const id = setTimeout(() => {
+            lifecycleTimers.delete(id);
+            fn();
+        }, ms);
+        lifecycleTimers.add(id);
+        return id;
+    }
+
+    function trackEventStop(stop) {
+        if (typeof stop === 'function') lifecycleStops.add(stop);
+        return stop;
+    }
+
+    function destroyLifecycle() {
+        lifecycleTimers.forEach(id => {
+            try { clearInterval(id); clearTimeout(id); } catch (_) {}
+        });
+        lifecycleTimers.clear();
+
+        lifecycleStops.forEach(stop => {
+            try { stop(); } catch (_) {}
+        });
+        lifecycleStops.clear();
+    }
+
+    window[LIFECYCLE_KEY] = {
+        destroy: destroyLifecycle
+    };
 
     // ============================================================
     // 清理旧实例
@@ -187,13 +80,190 @@
     });
 
     // ============================================================
-    // SillyTavern 原生接口
+    // Tavern Helper 兼容层
     // ============================================================
 
-    const ST = window.__pkmnNativeST;
-    if (!ST) {
-        throw new Error('SillyTavern 原生接口初始化失败');
+    // SillyTavern 原生上下文：扩展版不再强制依赖酒馆助手。
+    // 如果酒馆助手存在，则继续优先使用其更丰富的世界书/提示词接口。
+    const ST = (() => {
+        try {
+            return window.SillyTavern || window.parent?.SillyTavern || {};
+        } catch (_) {
+            return {};
+        }
+    })();
+
+    function getSTContext() {
+        try {
+            return typeof ST.getContext === 'function' ? ST.getContext() : {};
+        } catch (_) {
+            return {};
+        }
     }
+
+    const THAPI = (() => {
+        try {
+            return window.TavernHelper ||
+                window.parent?.TavernHelper ||
+                {};
+        } catch (_) {
+            return {};
+        }
+    })();
+
+    const TH = {
+
+        getChatMessages:
+            typeof getChatMessages === 'function'
+                ? getChatMessages
+                : (
+                    typeof THAPI.getChatMessages === 'function'
+                        ? THAPI.getChatMessages
+                        : ((range) => {
+                            const ctx = getSTContext();
+                            const chat = Array.isArray(ctx.chat) ? ctx.chat : (Array.isArray(ST.chat) ? ST.chat : []);
+                            if (typeof range === 'number') {
+                                return range === 0 ? chat : chat.slice(range);
+                            }
+                            const n = Math.max(1, Math.abs(parseInt(range, 10) || 12));
+                            return String(range).startsWith('-') ? chat.slice(-n) : chat.slice(0, n);
+                        })
+                ),
+
+        getLastMessageId:
+            typeof getLastMessageId === 'function'
+                ? getLastMessageId
+                : (
+                    typeof THAPI.getLastMessageId === 'function'
+                        ? THAPI.getLastMessageId
+                        : null
+                ),
+
+        getWorldbookNames:
+            typeof getWorldbookNames === 'function'
+                ? getWorldbookNames
+                : (
+                    typeof THAPI.getWorldbookNames === 'function'
+                        ? THAPI.getWorldbookNames
+                        : null
+                ),
+
+        getWorldbook:
+            typeof getWorldbook === 'function'
+                ? getWorldbook
+                : (
+                    typeof THAPI.getWorldbook === 'function'
+                        ? THAPI.getWorldbook
+                        : null
+                ),
+
+        getCharacterName:
+            typeof getCurrentCharacterName === 'function'
+                ? getCurrentCharacterName
+                : (() => {
+                    try {
+                        const ctx = getSTContext();
+                        return ctx.name2 || ST.name2 || '';
+                    } catch (_) { return ''; }
+                }),
+
+        getVariables:
+            typeof getVariables === 'function'
+                ? getVariables
+                : (
+                    typeof THAPI.getVariables === 'function'
+                        ? THAPI.getVariables
+                        : null
+                ),
+
+        eventOn:
+            typeof eventOn === 'function'
+                ? eventOn
+                : (
+                    typeof THAPI.eventOn === 'function'
+                        ? THAPI.eventOn
+                        : ((eventName, handler) => {
+                            try {
+                                const ctx = getSTContext();
+                                if (ctx.eventSource && typeof ctx.eventSource.on === 'function') {
+                                    ctx.eventSource.on(eventName, handler);
+                                    return () => {
+                                        try { ctx.eventSource.removeListener?.(eventName, handler); } catch (_) {}
+                                    };
+                                }
+                            } catch (_) {}
+                            return null;
+                        })
+                ),
+
+        // 新版酒馆助手使用 injectPrompts / uninjectPrompts。
+        // 测试6错误地使用了旧的 setExtensionPrompt，因此会提示“不支持提示词注入”。
+        injectPrompts:
+            typeof injectPrompts === 'function'
+                ? injectPrompts
+                : (
+                    typeof THAPI.injectPrompts === 'function'
+                        ? THAPI.injectPrompts
+                        : ((prompts) => {
+                            try {
+                                const ctx = getSTContext();
+                                if (typeof ctx.setExtensionPrompt !== 'function') return null;
+                                const p = prompts?.[0];
+                                if (!p) return null;
+                                const role = p.role === 'system' ? 0 : (p.role === 'assistant' ? 2 : 1);
+                                ctx.setExtensionPrompt(p.id, p.content || '', 1, Number(p.depth) || 0, !!p.should_scan, role);
+                                return { uninject: () => { try { ctx.setExtensionPrompt(p.id, '', -1, 0, false, role); } catch (_) {} } };
+                            } catch (_) { return null; }
+                        })
+                ),
+
+        uninjectPrompts:
+            typeof uninjectPrompts === 'function'
+                ? uninjectPrompts
+                : (
+                    typeof THAPI.uninjectPrompts === 'function'
+                        ? THAPI.uninjectPrompts
+                        : ((ids) => {
+                            try {
+                                const ctx = getSTContext();
+                                if (typeof ctx.setExtensionPrompt !== 'function') return;
+                                for (const id of (ids || [])) ctx.setExtensionPrompt(id, '', -1, 0, false, 1);
+                            } catch (_) {}
+                        })
+                ),
+
+        updateChatMetadata:
+            typeof updateChatMetadata === 'function'
+                ? updateChatMetadata
+                : (
+                    typeof THAPI.updateChatMetadata === 'function'
+                        ? THAPI.updateChatMetadata
+                        : ((values, reset = false) => {
+                            try {
+                                const ctx = getSTContext();
+                                if (!ctx.chatMetadata) return;
+                                if (reset) {
+                                    Object.keys(ctx.chatMetadata).forEach(k => delete ctx.chatMetadata[k]);
+                                }
+                                Object.assign(ctx.chatMetadata, values || {});
+                            } catch (_) {}
+                        })
+                ),
+
+        saveChat:
+            typeof saveChat === 'function'
+                ? saveChat
+                : (
+                    typeof THAPI.saveChat === 'function'
+                        ? THAPI.saveChat
+                        : (async () => {
+                            try {
+                                const ctx = getSTContext();
+                                if (typeof ctx.saveMetadata === 'function') await ctx.saveMetadata();
+                            } catch (_) {}
+                        })
+                )
+    };
 
     // ============================================================
     // 默认论坛
@@ -459,6 +529,17 @@
 
         } catch (_) {}
 
+        // 扩展原生 API。
+        try {
+            if (typeof ST.getCurrentChatId === 'function') {
+                const id = ST.getCurrentChatId();
+                if (id !== undefined && id !== null) return 'chat:' + String(id);
+            }
+            const ctx = getSTContext();
+            if (ctx.chatId !== undefined && ctx.chatId !== null) return 'chat:' + String(ctx.chatId);
+            if (ST.chatId !== undefined && ST.chatId !== null) return 'chat:' + String(ST.chatId);
+        } catch (_) {}
+
         // 某些版本可能直接把 getCurrentChatId 暴露为全局函数
 
         try {
@@ -483,16 +564,16 @@
         try {
 
             const char =
-                ST.getCharacterName
-                    ? ST.getCharacterName()
+                TH.getCharacterName
+                    ? TH.getCharacterName()
                     : '';
 
             let first = '';
 
-            if (ST.getChatMessages) {
+            if (TH.getChatMessages) {
 
                 const a =
-                    ST.getChatMessages(0);
+                    TH.getChatMessages(0);
 
                 if (a && a[0]) {
 
@@ -580,6 +661,21 @@
 
     let chatState =
         makeChatState();
+
+    function captureChatJob() {
+        return {
+            chatKey: chatState.chatKey,
+            forum: currentForum,
+            board: currentBoard
+        };
+    }
+
+    function chatJobStillCurrent(job) {
+        return !!job &&
+            chatState.chatKey === job.chatKey &&
+            currentForum === job.forum &&
+            currentBoard === job.board;
+    }
 
     function storageKey(key) {
 
@@ -694,13 +790,15 @@
                 storageKey(chatState.chatKey),
                 JSON.stringify(chatState)
             );
-        } catch (_) {}
+        } catch (e) {
+            showToast('论坛本地缓存保存失败：存储空间可能已满');
+        }
 
         try {
 
-            if (ST.updateChatMetadata) {
+            if (TH.updateChatMetadata) {
 
-                ST.updateChatMetadata(
+                TH.updateChatMetadata(
                     {
                         [NS]:
                             clone(chatState)
@@ -708,8 +806,8 @@
                     false
                 );
 
-                if (ST.saveChat) {
-                    ST.saveChat()
+                if (TH.saveChat) {
+                    TH.saveChat()
                         .catch(() => {});
                 }
             }
@@ -723,11 +821,12 @@
 
             const st =
                 window.SillyTavern ||
-                window.parent?.SillyTavern ||
-                {};
+                window.parent?.SillyTavern;
 
+            const ctx = getSTContext();
             const metadata =
-                st.chatMetadata ||
+                ctx?.chatMetadata ||
+                st?.chatMetadata ||
                 (typeof chatMetadata !== 'undefined' ? chatMetadata : null);
 
             if (
@@ -889,10 +988,10 @@
 
         try {
 
-            if (ST.getChatMessages) {
+            if (TH.getChatMessages) {
 
                 const msgs =
-                    ST.getChatMessages(
+                    TH.getChatMessages(
                         '-' + depth,
                         {
                             include_swipes: false
@@ -1062,14 +1161,14 @@
     }
 
     async function getSelectedWorldbookEntries(chatText) {
-        if (!config.worldbooks.length || !ST.getWorldbook) return [];
+        if (!config.worldbooks.length || !TH.getWorldbook) return [];
 
         const keywords = extractContextKeywords(chatText);
         const all = [];
 
         for (const name of config.worldbooks) {
             try {
-                const entries = await ST.getWorldbook(name);
+                const entries = await TH.getWorldbook(name);
                 if (!Array.isArray(entries)) continue;
 
                 entries
@@ -1248,24 +1347,21 @@
             );
         }
 
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 60000);
-        try {
-            const res =
-                await fetch(
-                    base + path,
-                    {
-                        method,
-                        headers: headers(),
-                        signal: controller.signal,
-                        body:
-                            method === 'GET'
-                                ? undefined
-                                : JSON.stringify(body)
-                    }
-                );
+        const res =
+            await fetch(
+                base + path,
+                {
+                    method,
+                    headers: headers(),
 
-            if (!res.ok) {
+                    body:
+                        method === 'GET'
+                            ? undefined
+                            : JSON.stringify(body)
+                }
+            );
+
+        if (!res.ok) {
 
             throw new Error(
                 'HTTP ' +
@@ -1273,10 +1369,7 @@
             );
         }
 
-            return await res.json();
-        } finally {
-            clearTimeout(timer);
-        }
+        return await res.json();
     }
 
     // ------------------------------------------------------------
@@ -3484,31 +3577,58 @@ html,body{overscroll-behavior:none}
         return lines.join('\n');
     }
 
-    // ============================================================
-    // 原生 SillyTavern 帖子正文注入
-    // ============================================================
-    const FORUM_INJECT_POSITION = 1; // extension_prompt_types.IN_CHAT
-    const FORUM_INJECT_ROLE = 1;     // extension_prompt_roles.USER
+    // 当前正在使用的 injectPrompts 返回的取消函数。
+    // 这是新版酒馆助手的标准提示词注入方式。
+    let forumInjectionUninject = null;
 
     async function setForumThreadInjection(t) {
+        if (!TH.injectPrompts) {
+            showToast('当前酒馆助手不支持提示词注入，请更新酒馆助手');
+            return false;
+        }
+
         try {
-            await ST.ready;
+            // 先取消旧帖子注入，确保同一时间只有一个帖子生效。
+            if (typeof forumInjectionUninject === 'function') {
+                try {
+                    forumInjectionUninject();
+                } catch (_) {}
+                forumInjectionUninject = null;
+            }
 
             if (!t) {
-                await ST.clearExtensionPrompt(FORUM_INJECT_PROMPT_ID);
+                if (TH.uninjectPrompts) {
+                    try {
+                        TH.uninjectPrompts([FORUM_INJECT_PROMPT_ID]);
+                    } catch (_) {}
+                }
                 injectedThreadId = null;
                 return true;
             }
 
             const content = getThreadInjectionText(t);
-            await ST.setExtensionPrompt(
-                FORUM_INJECT_PROMPT_ID,
-                content,
-                FORUM_INJECT_POSITION,
-                0,
-                false,
-                FORUM_INJECT_ROLE,
+
+            // 酒馆助手标准正文注入：
+            // position:'in_chat' 会把内容加入当前聊天实际发送给 AI 的正文上下文，
+            // 不修改原聊天消息。depth:0 表示放在最新正文附近。
+            const result = TH.injectPrompts(
+                [{
+                    id: FORUM_INJECT_PROMPT_ID,
+                    position: 'in_chat',
+                    depth: 0,
+                    role: 'user',
+                    content,
+                    should_scan: false
+                }],
+                { once: false }
             );
+
+            // 新版返回 { uninject }；兼容少数旧版本直接返回函数的情况。
+            if (result && typeof result.uninject === 'function') {
+                forumInjectionUninject = result.uninject;
+            } else if (typeof result === 'function') {
+                forumInjectionUninject = result;
+            }
 
             injectedThreadId = t.id;
             return true;
@@ -3540,10 +3660,20 @@ html,body{overscroll-behavior:none}
     }
 
     function clearForumThreadInjection() {
+        if (typeof forumInjectionUninject === 'function') {
+            try {
+                forumInjectionUninject();
+            } catch (_) {}
+            forumInjectionUninject = null;
+        }
+
+        if (TH.uninjectPrompts) {
+            try {
+                TH.uninjectPrompts([FORUM_INJECT_PROMPT_ID]);
+            } catch (_) {}
+        }
+
         injectedThreadId = null;
-        // Best-effort synchronous clear. The async native wrapper also handles
-        // module readiness when the extension is first loaded.
-        ST.clearExtensionPrompt(FORUM_INJECT_PROMPT_ID).catch(() => {});
     }
 
     function normalizePostTags(tags, title = '', content = '') {
@@ -3808,11 +3938,13 @@ ${matureRule}
     let refreshingThread = false;
 
     async function refreshCurrentThread(t) {
+
+        const job = captureChatJob();
         if (!t || generating || refreshingThread) return 0;
         refreshingThread = true;
-        try {
-            const count = Math.max(1, Math.min(12, parseInt(config.npcTalks) || 3));
-            const ctx = await buildContext();
+
+        const count = Math.max(1, Math.min(12, parseInt(config.npcTalks) || 3));
+        const ctx = await buildContext();
         const history = (t.posts || []).slice(-12).map((p, i) => {
             const replies = ensureNestedReplies(p);
             const nested = replies.slice(-4).map(r =>
@@ -3892,14 +4024,9 @@ replyToFloor 使用 2~${Math.max(2, t.posts.length)} 表示回复对应的已有
         saveChatState();
         renderForumList();
         if (currentThreadId === t.id) openThread(t.id);
-            showToast(added ? `帖子互动完成：新增 ${added} 条` : '这次没有生成新的互动');
-            return added;
-        } catch (e) {
-            showToast('刷新帖子失败：' + (e?.message || e));
-            return 0;
-        } finally {
-            refreshingThread = false;
-        }
+        showToast(added ? `帖子互动完成：新增 ${added} 条` : '这次没有生成新的互动');
+        refreshingThread = false;
+        return added;
     }
 
     function openThread(id) {
@@ -4111,6 +4238,11 @@ ${renderTagHtml(threadTags(t), 'pkmn-post-tags')}
                     )
                 );
 
+            if (!chatJobStillCurrent(job)) {
+                showToast('聊天或论坛已切换，本次生成结果已丢弃');
+                return 0;
+            }
+
             } catch (_) {}
         }
 
@@ -4165,6 +4297,8 @@ ${renderTagHtml(threadTags(t), 'pkmn-post-tags')}
         boardId = currentBoard,
         silent = false
     ) {
+
+        const job = captureChatJob();
 
         if (generating) {
             return 0;
@@ -4268,6 +4402,11 @@ ${ctx}
                     ],
                     0.95
                 );
+
+            if (!chatJobStillCurrent(job)) {
+                showToast('聊天或论坛已切换，本次生成结果已丢弃');
+                return 0;
+            }
 
             let arr =
                 parseJSON(
@@ -4386,6 +4525,8 @@ ${ctx}
         reason = '玩家回复'
     ) {
 
+        const job = captureChatJob();
+
         if (
             !targetThread ||
             count <= 0
@@ -4481,6 +4622,11 @@ ${targetContent}
                     0.9
                 );
 
+            if (!chatJobStillCurrent(job)) {
+                showToast('聊天或论坛已切换，本次生成结果已丢弃');
+                return 0;
+            }
+
             let arr =
                 parseJSON(
                     raw
@@ -4554,6 +4700,8 @@ ${targetContent}
     async function npcTalk(
         count
     ) {
+
+        const job = captureChatJob();
 
         const target =
             threads().filter(
@@ -4660,6 +4808,11 @@ ${ctx}
                     ],
                     0.9
                 );
+
+            if (!chatJobStillCurrent(job)) {
+                showToast('聊天或论坛已切换，本次生成结果已丢弃');
+                return 0;
+            }
 
             let arr =
                 parseJSON(
@@ -5658,11 +5811,11 @@ ${esc(b.prompt)}
         try {
 
             if (
-                ST.getWorldbookNames
+                TH.getWorldbookNames
             ) {
 
                 names =
-                    await ST.getWorldbookNames() ||
+                    TH.getWorldbookNames() ||
                     [];
             }
 
@@ -6338,7 +6491,7 @@ ${esc(name)}
     // 自动聊天切换 / 新建聊天
     // ============================================================
 
-    if (ST.eventOn) {
+    if (TH.eventOn) {
 
         try {
 
@@ -6362,14 +6515,12 @@ ${esc(name)}
 
             // 切换到已有聊天：
             // 读取该 chatId 对应的论坛存档。
-            ST.eventOn(
+            TH.eventOn(
                 changedEv,
                 newChatId => {
-                    if (lifecycle.destroyed) return;
 
                     setTimeout(
                         () => {
-                            if (lifecycle.destroyed) return;
 
                             const key =
                                 newChatId !== undefined &&
@@ -6390,17 +6541,15 @@ ${esc(name)}
 
             // 创建新聊天：
             // 无论之前论坛是什么内容，新聊天都从空论坛开始。
-            ST.eventOn(
+            TH.eventOn(
                 createdEv,
-                () => {
-                    if (lifecycle.destroyed) return;
+                newChatId => {
 
                     setTimeout(
                         () => {
-                            if (lifecycle.destroyed) return;
 
                             resetForumForNewChat(
-                                ST.getCurrentChatId()
+                                newChatId
                             );
 
                         },
@@ -6453,17 +6602,32 @@ ${esc(name)}
     // ============================================================
     // 时间
     // ============================================================
-    function updatePhoneClock() {
-        const el = $('pkmn-time');
-        if (!el) return;
-        const d = new Date();
-        el.textContent =
-            String(d.getHours()).padStart(2, '0') + ':' +
-            String(d.getMinutes()).padStart(2, '0');
-    }
 
-    updatePhoneClock();
-    trackedSetInterval(updatePhoneClock, 1000);
+    trackedSetInterval(
+        () => {
+
+            const d =
+                new Date();
+
+            $('pkmn-time')
+                .textContent =
+                    String(
+                        d.getHours()
+                    ).padStart(
+                        2,
+                        '0'
+                    ) +
+                    ':' +
+                    String(
+                        d.getMinutes()
+                    ).padStart(
+                        2,
+                        '0'
+                    );
+
+        },
+        1000
+    );
 
 
     // ============================================================
@@ -6502,7 +6666,7 @@ ${esc(name)}
     }
 
     console.log(
-        '[宝可梦小手机论坛] 0.40 原生扩展已启动。聊天独立存档：',
+        '[宝可梦小手机论坛] 已启动。聊天独立存档：',
         chatState.chatKey
     );
 
