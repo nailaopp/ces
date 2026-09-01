@@ -165,48 +165,132 @@
         },
 
         getWorldbookNames() {
+            const names = new Set();
+
+            // 1) 新版 context API
             try {
-                // Prefer global world_names if available
-                if (typeof world_names !== 'undefined' && Array.isArray(world_names)) {
-                    return [...world_names];
+                const ctx = getSTContext();
+                if (ctx && typeof ctx.getWorldInfoNames === 'function') {
+                    const list = ctx.getWorldInfoNames();
+                    if (Array.isArray(list)) list.forEach(n => n && names.add(String(n)));
                 }
             } catch (_) {}
-            const ctx = getSTContext();
-            // Some versions expose via context
-            if (ctx && Array.isArray(ctx.worldInfo?.names)) return [...ctx.worldInfo.names];
-            // Fallback: try to read from DOM or settings
+
+            // 2) 全局 world_names（部分版本挂在 window）
             try {
-                const select = document.querySelector('#world_info, select[name="world_info"]');
-                if (select) {
-                    return Array.from(select.options).map(o => o.value || o.text).filter(Boolean);
-                }
+                const g = (typeof world_names !== 'undefined' && world_names)
+                    || (typeof window !== 'undefined' && window.world_names)
+                    || null;
+                if (Array.isArray(g)) g.forEach(n => n && names.add(String(n)));
             } catch (_) {}
-            return [];
+
+            // 3) DOM：世界书下拉（多选）
+            try {
+                const selects = [
+                    ...document.querySelectorAll('#world_info'),
+                    ...document.querySelectorAll('select[name="world_info"]'),
+                    ...document.querySelectorAll('#world_info_select'),
+                ];
+                selects.forEach(select => {
+                    Array.from(select.options || []).forEach(o => {
+                        const v = (o.value || o.text || '').trim();
+                        if (v && v !== '---' && !/^select/i.test(v)) names.add(v);
+                    });
+                });
+            } catch (_) {}
+
+            // 4) 世界书编辑器列表
+            try {
+                document.querySelectorAll('#world_editor_select option, #world_info_name option, .world_info_name').forEach(o => {
+                    const v = (o.value || o.textContent || '').trim();
+                    if (v) names.add(v);
+                });
+            } catch (_) {}
+
+            return [...names];
         },
 
         async getWorldbook(name) {
-            try {
-                // Dynamic import of world-info module (works in extension context)
-                const mod = await import('/scripts/world-info.js');
-                if (typeof mod.loadWorldInfo === 'function') {
-                    const data = await mod.loadWorldInfo(name);
-                    if (data && Array.isArray(data.entries)) {
-                        return data.entries.map(e => ({
-                            name: e.comment || e.key || e.keys?.[0] || '条目',
+            if (!name) return [];
+
+            const normalizeEntries = (data) => {
+                if (!data) return [];
+                let list = [];
+                if (Array.isArray(data.entries)) {
+                    list = data.entries;
+                } else if (data.entries && typeof data.entries === 'object') {
+                    // SillyTavern 标准：entries 是以 uid 为 key 的对象
+                    list = Object.values(data.entries);
+                } else if (Array.isArray(data)) {
+                    list = data;
+                }
+                return list
+                    .filter(e => e && (e.content || e.key || e.keys || e.comment))
+                    .map(e => {
+                        const keys = Array.isArray(e.key) ? e.key
+                            : (Array.isArray(e.keys) ? e.keys
+                            : (e.key ? [e.key] : []));
+                        const secondary = Array.isArray(e.keysecondary) ? e.keysecondary
+                            : (Array.isArray(e.secondary_keys) ? e.secondary_keys
+                            : (Array.isArray(e.secondaryKeys) ? e.secondaryKeys : []));
+                        return {
+                            name: e.comment || keys[0] || '条目',
                             comment: e.comment || '',
-                            key: e.key || (Array.isArray(e.keys) ? e.keys[0] : ''),
-                            keys: e.keys || (e.key ? [e.key] : []),
-                            keywords: e.keys || [],
-                            secondary_keys: e.secondary_keys || e.secondaryKeys || [],
-                            secondaryKeys: e.secondary_keys || e.secondaryKeys || [],
+                            key: keys[0] || '',
+                            keys,
+                            keywords: keys,
+                            secondary_keys: secondary,
+                            secondaryKeys: secondary,
                             content: e.content || '',
-                            enabled: e.enabled !== false && !e.disable
-                        }));
-                    }
+                            enabled: e.disable ? false : (e.enabled !== false),
+                            uid: e.uid
+                        };
+                    });
+            };
+
+            // 1) context.loadWorldInfo（官方扩展 API）
+            try {
+                const ctx = getSTContext();
+                if (ctx && typeof ctx.loadWorldInfo === 'function') {
+                    const data = await ctx.loadWorldInfo(name);
+                    const entries = normalizeEntries(data);
+                    if (entries.length) return entries;
                 }
             } catch (err) {
-                console.warn('[pkmn-forum] loadWorldInfo failed', err);
+                console.warn('[pkmn-forum] ctx.loadWorldInfo failed', err);
             }
+
+            // 2) 动态 import world-info.js
+            try {
+                const mod = await import(/* webpackIgnore: true */ '/scripts/world-info.js');
+                if (mod && typeof mod.loadWorldInfo === 'function') {
+                    const data = await mod.loadWorldInfo(name);
+                    const entries = normalizeEntries(data);
+                    if (entries.length) return entries;
+                }
+            } catch (err) {
+                console.warn('[pkmn-forum] import loadWorldInfo failed', err);
+            }
+
+            // 3) HTTP API 兜底
+            try {
+                const ctx = getSTContext();
+                const headers = (ctx && typeof ctx.getRequestHeaders === 'function')
+                    ? ctx.getRequestHeaders()
+                    : { 'Content-Type': 'application/json' };
+                const res = await fetch('/api/worldinfo/get', {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({ name })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    return normalizeEntries(data);
+                }
+            } catch (err) {
+                console.warn('[pkmn-forum] /api/worldinfo/get failed', err);
+            }
+
             return [];
         },
 
@@ -4730,27 +4814,46 @@ ${esc(b.prompt)}
         let names = [];
 
         try {
-
-            if (
-                TH.getWorldbookNames
-            ) {
-
-                names =
-                    TH.getWorldbookNames() ||
-                    [];
+            if (TH.getWorldbookNames) {
+                names = TH.getWorldbookNames() || [];
             }
+        } catch (e) {
+            console.warn('[pkmn-forum] getWorldbookNames error', e);
+        }
 
-        } catch (_) {}
+        // 若列表为空，尝试从服务器 settings 刷新一次世界书名
+        if (!names.length) {
+            try {
+                const ctx = getSTContext();
+                const headers = (ctx && typeof ctx.getRequestHeaders === 'function')
+                    ? ctx.getRequestHeaders()
+                    : { 'Content-Type': 'application/json' };
+                const res = await fetch('/api/settings/get', { method: 'POST', headers, body: JSON.stringify({}) });
+                if (res.ok) {
+                    const data = await res.json();
+                    const fromSettings = data?.world_names || data?.worldNames || data?.world_info?.world_names;
+                    if (Array.isArray(fromSettings) && fromSettings.length) {
+                        names = fromSettings.map(String);
+                    }
+                }
+            } catch (e) {
+                console.warn('[pkmn-forum] settings world_names fetch failed', e);
+            }
+        }
+
+        // 再试一次 DOM（设置页打开时世界书下拉可能已渲染）
+        if (!names.length) {
+            try {
+                names = TH.getWorldbookNames() || [];
+            } catch (_) {}
+        }
 
         if (!names.length) {
-
-            box.innerHTML =
-                `
+            box.innerHTML = `
 <div class="pkmn-small">
-当前环境没有可读取的世界书接口。
+未读取到世界书列表。请确认酒馆已加载世界书，或稍后点「刷新世界书列表」。
 </div>
 `;
-
             updateWorldbookCount();
             return;
         }
