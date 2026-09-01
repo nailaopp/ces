@@ -1,53 +1,32 @@
-# 宝可梦小手机论坛 — SillyTavern Extension 0.40.1
+# 宝可梦小手机论坛 — SillyTavern Extension 0.40.0
 
-这是宝可梦小手机论坛的原生 SillyTavern 扩展版本。
+这是原 0.39 论坛脚本的**完全脱离 Tavern Helper 原生扩展版**。
 
-## 0.40.1 兼容性加固
+## 依赖
 
-本版本继续**完全脱离 Tavern Helper**，并针对 Git URL 安装和新版 SillyTavern 原生 API 做了兼容性加固：
+- 只依赖 SillyTavern 本体。
+- 不安装、不调用、不要求 Tavern Helper。
+- 世界书读取使用 SillyTavern 原生 `world-info.js` 模块与 `/api/worldinfo/get`。
+- 帖子正文注入使用 SillyTavern 原生 `setExtensionPrompt`。
+- 聊天正文、聊天 ID、metadata、保存和事件使用 SillyTavern 原生接口。
 
-- 不依赖 `window.SillyTavern.chat`、`window.eventSource`、`window.chatMetadata` 等不稳定的全局属性。
-- 直接动态加载 SillyTavern 原生 `script.js` / `world-info.js` 模块。
-- 聊天正文、当前聊天 ID、角色信息、chat metadata、保存聊天、事件系统均优先使用原生模块导出。
-- 聊天切换使用原生 `CHAT_CHANGED` 事件。
-- 新聊天使用原生 `CHAT_CREATED` 事件。
-- 世界书使用原生 World Info 模块。
-- 帖子上下文使用原生 `setExtensionPrompt` 注入。
-- 保留 0.40 原有论坛数据命名空间，升级不会主动清空已有论坛存档。
-- API 请求保留 60 秒超时、刷新异常恢复等稳定性修复。
+SillyTavern 的 World Info 本身就是原生的动态提示词系统；本扩展直接读取已选择的世界书数据，并按论坛原有的智能筛选逻辑选择相关条目。citeturn0search0
 
-## Git URL 安装
+## 安装
 
-这个项目可以直接作为 Git 仓库安装。
+把整个 `宝可梦小手机论坛_酒馆扩展0.40.0` 文件夹复制到：
 
-**重要：Git 仓库根目录必须直接包含：**
+`public/scripts/extensions/third-party/`
 
-```text
-manifest.json
-index.js
-style.css
-README.md
-```
+然后重启 SillyTavern，在“扩展”面板启用“宝可梦小手机论坛”。
 
-不要再套一层 `宝可梦小手机论坛_酒馆扩展0.40.1/` 目录。
+## 保留功能
 
-在 SillyTavern 的扩展安装窗口中：
-
-1. 打开第三方扩展 / Git URL 安装。
-2. 填入你的 Git 仓库 URL，例如：
-   `https://github.com/你的用户名/宝可梦小手机论坛`
-3. 如果需要让服务器上的所有用户都能使用，选择 **「为所有用户安装」**。
-4. 安装完成后重启 SillyTavern 或重新加载扩展。
-
-「为所有用户安装」是 SillyTavern 安装器决定的安装范围；扩展本身不需要 Tavern Helper，也没有额外的用户级依赖。
-
-## 功能
-
-- 宝可梦手机论坛 UI
+- 宝可梦手机论坛完整 UI
 - 论坛板块、帖子、楼中回复
 - AI 自动生成帖子
 - AI 自动生成回复
-- NPC / 网友互动
+- NPC/网友互动
 - 当前聊天正文读取
 - 最近 N 层正文设置
 - 不同聊天独立论坛存档
@@ -57,16 +36,24 @@ README.md
 - 当前帖子注入聊天正文
 - 手机时间
 - 悬浮洛托姆按钮
-- 独立 OpenAI-compatible API 设置
+- OpenAI-compatible 独立 API 设置
 
-## 依赖
+## 原生注入
 
-只依赖 SillyTavern 本体。
+帖子注入不修改聊天历史，而是通过 SillyTavern 原生扩展提示注入机制加入当前生成上下文。SillyTavern 的扩展生态本身也使用 `setExtensionPrompt` 进行这类上下文注入。citeturn7search1
 
-不安装、不调用、不要求 Tavern Helper。
+## 世界书
 
-## 注意
+世界书列表和内容直接从 SillyTavern 原生 World Info 模块读取。当前版本的 SillyTavern 提供 `loadWorldInfo(name)`，并通过 `/api/worldinfo/get` 获取世界书数据；世界书名称也由原生 World Info 状态维护。citeturn4view0
 
-本包已经完成静态 JavaScript 语法检查、Manifest JSON 检查和 ZIP 完整性检查。
+## API
 
-由于无法在这里直接启动你的 SillyTavern 浏览器实例，最终的实际运行兼容性仍建议在你的 SillyTavern 版本上安装后测试一次。
+论坛自己的 AI 请求仍使用论坛设置中的 OpenAI-compatible Endpoint / API Key / Model。它不会强制切换到 SillyTavern 当前主 API。
+
+## 数据
+
+论坛状态继续使用自己的 localStorage 命名空间，并在可用时写入当前聊天 metadata，因此不同聊天可以保持独立论坛。
+
+## 版本说明
+
+0.40.0 的核心目标不是重新设计论坛，而是把 0.39 的 Tavern Helper 依赖全部移除，改为 SillyTavern 原生实现。

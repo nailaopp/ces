@@ -3,13 +3,12 @@
  * This extension does not depend on Tavern Helper.
  */
 (function installNativeST() {
+    const st = window.SillyTavern || {};
     const ST = {};
-    const scriptModulePromise = import('/scripts/script.js');
-    const worldInfoModulePromise = import('/scripts/world-info.js');
 
     ST.ready = Promise.all([
-        worldInfoModulePromise,
-        scriptModulePromise,
+        import('/scripts/world-info.js'),
+        import('/scripts/script.js'),
     ]).then(([wi, script]) => {
         ST._wi = wi;
         ST._script = script;
@@ -19,16 +18,13 @@
         throw error;
     });
 
-    // 所有核心状态都从 SillyTavern 的原生 ES module 获取。
-    // 不依赖 window.SillyTavern / window.chat / window.eventSource 等不稳定的全局暴露。
-    ST.getCurrentChatId = function() {
-        return ST._script?.getCurrentChatId?.() ?? '';
-    };
+    ST.getCurrentChatId = typeof st.getCurrentChatId === 'function'
+        ? st.getCurrentChatId.bind(st)
+        : () => '';
 
     ST.getChatMessages = function(range) {
-        const chat = Array.isArray(ST._script?.chat) ? ST._script.chat : [];
+        const chat = Array.isArray(st.chat) ? st.chat : [];
         let arr = chat;
-
         if (typeof range === 'number' && range !== 0) {
             if (range < 0) arr = chat.slice(Math.max(0, chat.length + range));
             else arr = chat.slice(0, range);
@@ -38,7 +34,6 @@
                 arr = n < 0 ? chat.slice(Math.max(0, chat.length + n)) : chat.slice(0, n);
             }
         }
-
         return arr.map(m => ({
             message: m?.mes ?? m?.message ?? m?.content ?? '',
             content: m?.mes ?? m?.message ?? m?.content ?? '',
@@ -49,70 +44,45 @@
     };
 
     ST.getLastMessageId = function() {
-        const chat = Array.isArray(ST._script?.chat) ? ST._script.chat : [];
+        const chat = Array.isArray(st.chat) ? st.chat : [];
         return chat.length ? chat.length - 1 : -1;
     };
 
     ST.getCharacterName = function() {
-        const script = ST._script;
         try {
-            const chid = script?.this_chid;
-            const chars = script?.characters;
-            if (chid !== undefined && chars && chars[chid]) {
-                return chars[chid].name || '';
+            if (typeof window.this_chid === 'number' && Array.isArray(window.characters) && window.characters[window.this_chid]) {
+                return window.characters[window.this_chid].name || '';
             }
         } catch (_) {}
-        return script?.name2 || '';
+        return window.name2 || '';
     };
 
     ST.eventOn = function(event, callback) {
-        const source = ST._script?.eventSource;
-        if (source && typeof source.on === 'function') {
-            source.on(event, callback);
+        if (window.eventSource && typeof window.eventSource.on === 'function') {
+            window.eventSource.on(event, callback);
             return callback;
         }
         return null;
     };
 
-    ST.eventOff = function(event, callback) {
-        const source = ST._script?.eventSource;
-        if (source && typeof source.off === 'function') {
-            source.off(event, callback);
-            return true;
-        }
-        return false;
-    };
-
-    ST.getEventType = function(name) {
-        return ST._script?.event_types?.[name] ?? name;
-    };
-
-    ST.updateChatMetadata = async function(metadata, reset = false) {
-        await ST.ready;
-        const script = ST._script;
-
-        if (typeof script?.updateChatMetadata === 'function') {
-            script.updateChatMetadata(metadata || {}, reset);
-            return script.chat_metadata || {};
-        }
-
-        // 兼容极老版本：如果原生更新函数不存在，则原地修改当前 metadata。
-        const target = script?.chat_metadata;
-        if (target && typeof target === 'object') {
-            const next = reset ? { ...(metadata || {}) } : { ...target, ...(metadata || {}) };
-            for (const key of Object.keys(target)) delete target[key];
-            Object.assign(target, next);
-            return target;
-        }
-
-        return {};
+    ST.updateChatMetadata = function(metadata, reset = false) {
+        const target = st.chatMetadata || (window.chatMetadata && typeof window.chatMetadata === 'object' ? window.chatMetadata : {});
+        const next = reset ? { ...(metadata || {}) } : { ...target, ...(metadata || {}) };
+        try {
+            st.chatMetadata = next;
+        } catch (_) {}
+        try {
+            if (typeof window.chatMetadata === 'object') {
+                Object.keys(window.chatMetadata).forEach(k => delete window.chatMetadata[k]);
+                Object.assign(window.chatMetadata, next);
+            }
+        } catch (_) {}
+        return next;
     };
 
     ST.saveChat = async function() {
-        await ST.ready;
-        if (typeof ST._script?.saveChat === 'function') {
-            return ST._script.saveChat();
-        }
+        if (typeof st.saveChat === 'function') return st.saveChat();
+        if (typeof window.saveChat === 'function') return window.saveChat();
         return undefined;
     };
 
@@ -125,7 +95,6 @@
         await ST.ready;
         const data = await ST._wi.loadWorldInfo(name);
         if (!data || !data.entries) return [];
-
         return Object.keys(data.entries).map(uid => ({
             uid,
             world: name,
@@ -135,46 +104,28 @@
 
     ST.setExtensionPrompt = async function(key, value, position, depth, scan = false, role = undefined) {
         await ST.ready;
-        if (typeof ST._script?.setExtensionPrompt !== 'function') {
-            throw new Error('当前 SillyTavern 版本没有可用的 setExtensionPrompt');
-        }
-
-        ST._script.setExtensionPrompt(
-            key,
-            value,
-            position,
-            depth,
-            scan,
-            role ?? ST._script.extension_prompt_roles?.SYSTEM ?? 0,
-        );
+        ST._script.setExtensionPrompt(key, value, position, depth, scan, role ?? ST._script.extension_prompt_roles?.SYSTEM ?? 0);
         return true;
     };
 
     ST.clearExtensionPrompt = async function(key) {
         await ST.ready;
-        if (typeof ST._script?.setExtensionPrompt !== 'function') return false;
-
-        // SillyTavern 没有公开的单键删除接口；空值会使该注入不再产生内容。
-        ST._script.setExtensionPrompt(
-            key,
-            '',
-            ST._script.extension_prompt_types?.IN_CHAT ?? 1,
-            0,
-            false,
-            ST._script.extension_prompt_roles?.USER ?? 1,
-        );
+        // There is no public delete helper; setting an empty value is the supported
+        // extension pattern and removes it from the generated prompt.
+        ST._script.setExtensionPrompt(key, '', 1, 0, false);
         return true;
     };
 
     window.__pkmnNativeST = ST;
 })();
-(async function () {
+
+(function () {
     'use strict';
 
     const NS = 'pkmn_phone_forum_v9';
     const LEGACY_NS = 'pkmn_phone_forum_v7';
     const LEGACY_NS_2 = 'pkmn_phone_forum_v5';
-    const VERSION = 41;
+    const VERSION = 40;
 
     let topDoc = document;
 
@@ -185,9 +136,9 @@
     } catch (_) {}
 
     // ============================================================
-    // 0.41 生命周期管理
+    // 0.40 生命周期管理
     // ============================================================
-    const LIFECYCLE_KEY = '__pkmn_phone_forum_v041_lifecycle__';
+    const LIFECYCLE_KEY = '__pkmn_phone_forum_v040_lifecycle__';
     try {
         const old = window[LIFECYCLE_KEY];
         if (old && typeof old.destroy === 'function') old.destroy();
@@ -243,7 +194,6 @@
     if (!ST) {
         throw new Error('SillyTavern 原生接口初始化失败');
     }
-    await ST.ready;
 
     // ============================================================
     // 默认论坛
@@ -487,11 +437,46 @@
     function getChatKey() {
 
         try {
-            const id = ST.getCurrentChatId?.();
 
-            if (id !== undefined && id !== null && String(id) !== '') {
-                return 'chat:' + String(id);
+            const st =
+                window.SillyTavern ||
+                window.parent?.SillyTavern;
+
+            if (
+                st &&
+                typeof st.getCurrentChatId === 'function'
+            ) {
+
+                const id =
+                    st.getCurrentChatId();
+
+                if (id !== undefined && id !== null) {
+
+                    return 'chat:' + String(id);
+
+                }
             }
+
+        } catch (_) {}
+
+        // 某些版本可能直接把 getCurrentChatId 暴露为全局函数
+
+        try {
+
+            if (
+                typeof getCurrentChatId === 'function'
+            ) {
+
+                const id =
+                    getCurrentChatId();
+
+                if (id !== undefined && id !== null) {
+
+                    return 'chat:' + String(id);
+
+                }
+            }
+
         } catch (_) {}
 
         // 最后的兼容性降级：只有拿不到正式 chatId 时才使用内容指纹。
@@ -736,9 +721,14 @@
 
         try {
 
+            const st =
+                window.SillyTavern ||
+                window.parent?.SillyTavern ||
+                {};
+
             const metadata =
-                ST._script?.chat_metadata ||
-                null;
+                st.chatMetadata ||
+                (typeof chatMetadata !== 'undefined' ? chatMetadata : null);
 
             if (
                 metadata &&
@@ -6353,10 +6343,22 @@ ${esc(name)}
         try {
 
             const changedEv =
-                ST.getEventType('CHAT_CHANGED');
+                (
+                    typeof tavern_events !==
+                    'undefined' &&
+                    tavern_events.CHAT_CHANGED
+                )
+                    ? tavern_events.CHAT_CHANGED
+                    : 'CHAT_CHANGED';
 
             const createdEv =
-                ST.getEventType('CHAT_CREATED');
+                (
+                    typeof tavern_events !==
+                    'undefined' &&
+                    tavern_events.CHAT_CREATED
+                )
+                    ? tavern_events.CHAT_CREATED
+                    : 'CHAT_CREATED';
 
             // 切换到已有聊天：
             // 读取该 chatId 对应的论坛存档。
@@ -6500,7 +6502,7 @@ ${esc(name)}
     }
 
     console.log(
-        '[宝可梦小手机论坛] 0.40.1 原生扩展已启动。聊天独立存档：',
+        '[宝可梦小手机论坛] 0.40 原生扩展已启动。聊天独立存档：',
         chatState.chatKey
     );
 
