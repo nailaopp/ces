@@ -813,10 +813,35 @@
         }
     }
 
+    function threadCount(state) {
+        if (!state) return 0;
+        return (Array.isArray(state.safeThreads) ? state.safeThreads.length : 0)
+            + (Array.isArray(state.matureThreads) ? state.matureThreads.length : 0);
+    }
+
+    // 只写 localStorage（切聊天时保存旧档必须用这个，避免写进新聊天的 metadata）
+    function persistLocalOnly(key, state) {
+        if (!key || key === 'fallback:unknown' || !state) return;
+        try {
+            const s = clone(state);
+            s.chatKey = key;
+            s.updatedAt = Date.now();
+            localStorage.setItem(storageKey(key), JSON.stringify(s));
+        } catch (e) {
+            console.warn('[pkmn-forum] persistLocalOnly failed', e);
+        }
+    }
+
     function saveChatState() {
         try {
             const live = getChatKey();
-            if (live && live !== 'fallback:unknown') chatState.chatKey = live;
+            if (live && live !== 'fallback:unknown') {
+                // 若内存状态还挂在旧 key，而 live 已变，先把旧档落到旧 key
+                if (chatState.chatKey && chatState.chatKey !== live && chatState.chatKey !== 'fallback:unknown') {
+                    persistLocalOnly(chatState.chatKey, chatState);
+                }
+                chatState.chatKey = live;
+            }
         } catch (_) {}
         chatState.updatedAt = Date.now();
         try {
@@ -825,21 +850,25 @@
             console.warn('[pkmn-forum] localStorage save failed', e);
         }
         try {
-            if (TH.updateChatMetadata) {
-                TH.updateChatMetadata({ [NS]: clone(chatState) }, false);
-            }
-            try {
-                const meta = getChatMetadataObject();
-                if (meta) meta[NS] = clone(chatState);
-            } catch (_) {}
-            if (TH.saveChat) Promise.resolve(TH.saveChat()).catch(() => {});
-            try {
-                const ctx = getSTContext();
-                if (ctx) {
-                    if (typeof ctx.saveMetadataDebounced === 'function') ctx.saveMetadataDebounced();
-                    else if (typeof ctx.saveMetadata === 'function') ctx.saveMetadata();
+            // 仅当 chatKey 与当前 live 一致时才写 metadata，防止串档
+            const live = getChatKey();
+            if (!live || live === chatState.chatKey) {
+                if (TH.updateChatMetadata) {
+                    TH.updateChatMetadata({ [NS]: clone(chatState) }, false);
                 }
-            } catch (_) {}
+                try {
+                    const meta = getChatMetadataObject();
+                    if (meta) meta[NS] = clone(chatState);
+                } catch (_) {}
+                if (TH.saveChat) Promise.resolve(TH.saveChat()).catch(() => {});
+                try {
+                    const ctx = getSTContext();
+                    if (ctx) {
+                        if (typeof ctx.saveMetadataDebounced === 'function') ctx.saveMetadataDebounced();
+                        else if (typeof ctx.saveMetadata === 'function') ctx.saveMetadata();
+                    }
+                } catch (_) {}
+            }
         } catch (e) {
             console.warn('[pkmn-forum] metadata save failed', e);
         }
@@ -866,10 +895,39 @@
             const s = metadata[NS];
             if (!s || typeof s !== 'object') return false;
             const currentKey = expectedKey || getChatKey();
+            // metadata 必须属于当前聊天
             if (s.chatKey && currentKey && s.chatKey !== currentKey) return false;
-            chatState = Object.assign(makeChatState(), clone(s));
-            normalizeForumState(chatState);
-            chatState.chatKey = currentKey;
+
+            const fromMeta = Object.assign(makeChatState(), clone(s));
+            normalizeForumState(fromMeta);
+            fromMeta.chatKey = currentKey;
+
+            // 与当前内存/local 比较：谁帖子多、谁更新，用谁
+            const localRaw = localStorage.getItem(storageKey(currentKey));
+            let fromLocal = null;
+            if (localRaw) {
+                try {
+                    fromLocal = Object.assign(makeChatState(), JSON.parse(localRaw));
+                    normalizeForumState(fromLocal);
+                    fromLocal.chatKey = currentKey;
+                } catch (_) {}
+            }
+
+            let chosen = fromMeta;
+            if (fromLocal) {
+                const metaN = threadCount(fromMeta);
+                const localN = threadCount(fromLocal);
+                const metaT = Number(fromMeta.updatedAt) || 0;
+                const localT = Number(fromLocal.updatedAt) || 0;
+                // 本地帖子更多，或帖子一样但本地更新，用本地
+                if (localN > metaN || (localN === metaN && localT >= metaT && localN > 0)) {
+                    chosen = fromLocal;
+                } else if (metaN === 0 && localN > 0) {
+                    chosen = fromLocal;
+                }
+            }
+
+            chatState = chosen;
             try { localStorage.setItem(storageKey(currentKey), JSON.stringify(chatState)); } catch (_) {}
             return true;
         } catch (e) {
@@ -892,15 +950,39 @@
             return;
         }
         if (key === chatState.chatKey) {
-            try { loadFromChatMetadata(key); } catch (_) {}
+            // 同聊天：尝试用 local + metadata 里更完整的一份刷新
+            try {
+                const local = loadChatState(key);
+                if (threadCount(local) > threadCount(chatState)) {
+                    chatState = local;
+                }
+                loadFromChatMetadata(key);
+            } catch (_) {}
+            normalizeForumState(chatState);
             renderForumList();
             return;
         }
-        console.log('[pkmn-forum] switchChat', chatState.chatKey, '=>', key);
-        chatState = loadChatState(key);
-        loadFromChatMetadata(key);
+
+        const oldKey = chatState.chatKey;
+        console.log('[pkmn-forum] switchChat', oldKey, '=>', key, 'threads', threadCount(chatState));
+
+        // 关键：先把旧聊天论坛只存到旧 key 的 localStorage，绝不写入新聊天 metadata
+        if (oldKey && oldKey !== 'fallback:unknown') {
+            persistLocalOnly(oldKey, chatState);
+        }
+
+        // 加载新聊天：localStorage 优先
+        let next = loadChatState(key);
+        chatState = next;
+        chatState.chatKey = key;
+
+        // 再用 metadata 合并（若属于本 key 且更完整）
+        try { loadFromChatMetadata(key); } catch (_) {}
         chatState.chatKey = key;
         normalizeForumState(chatState);
+
+        console.log('[pkmn-forum] loaded', key, 'threads', threadCount(chatState));
+
         currentThreadId = null;
         try { clearForumThreadInjection(); } catch (_) {}
         renderForumList();
@@ -910,35 +992,44 @@
     // 新建聊天时强制创建一份全新的论坛状态。
     // 不继承上一聊天的帖子。
     function resetForumForNewChat(newChatId = null) {
-
         const key =
-            newChatId !== null &&
-            newChatId !== undefined
+            newChatId !== null && newChatId !== undefined
                 ? 'chat:' + String(newChatId)
                 : getChatKey();
 
-        chatState =
-            makeChatState();
+        // 若该 key 已有存档（切回旧聊天被误判为新建），不要清空
+        try {
+            const existing = loadChatState(key);
+            if (threadCount(existing) > 0) {
+                console.log('[pkmn-forum] resetForumForNewChat skipped, existing archive', key, threadCount(existing));
+                chatState = existing;
+                chatState.chatKey = key;
+                normalizeForumState(chatState);
+                currentThreadId = null;
+                try { clearForumThreadInjection(); } catch (_) {}
+                renderForumList();
+                return;
+            }
+        } catch (_) {}
 
-        chatState.chatKey =
-            key;
+        // 切走前先落盘当前内存（若 key 不同）
+        if (chatState.chatKey && chatState.chatKey !== key && chatState.chatKey !== 'fallback:unknown') {
+            persistLocalOnly(chatState.chatKey, chatState);
+        }
 
+        chatState = makeChatState();
+        chatState.chatKey = key;
         chatState.safeThreads = [];
         chatState.matureThreads = [];
         chatState.counters = {};
         chatState.lastRefresh = {};
 
-        saveChatState();
+        // 新聊天只写 local，避免污染；metadata 等用户真正发帖再 saveChatState
+        persistLocalOnly(key, chatState);
         clearForumThreadInjection();
-
-        currentThreadId =
-            null;
-
+        currentThreadId = null;
         renderForumList();
-
-        showToast(
-            '新聊天：论坛已清空'
-        );
+        showToast('新聊天：论坛已清空');
     }
 
     // ============================================================
@@ -5461,8 +5552,17 @@ ${esc(name)}
             TH.eventOn(createdEv, (newChatId) => {
                 setTimeout(() => {
                     const live = getChatKey();
-                    const id = (live && live.startsWith('chat:')) ? live.slice(5) : (newChatId != null ? newChatId : null);
-                    resetForumForNewChat(id);
+                    const key = (live && live !== 'fallback:unknown')
+                        ? live
+                        : (newChatId != null && newChatId !== '' ? 'chat:' + String(newChatId) : getChatKey());
+                    // 有存档则恢复，无存档才当新聊天清空
+                    const existing = loadChatState(key);
+                    if (threadCount(existing) > 0) {
+                        switchChat(key, true);
+                    } else {
+                        const id = key.startsWith('chat:') ? key.slice(5) : newChatId;
+                        resetForumForNewChat(id);
+                    }
                 }, 400);
             });
         } catch (e) {
