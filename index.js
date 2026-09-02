@@ -2079,7 +2079,9 @@
     const PHONE_FULL_HEIGHT = 1360;
     const PHONE_HALF_HEIGHT = 680;
     // v0.51：手机窗口始终以可视视口为基准，避免酒馆滚动容器/浏览器地址栏造成跑位。
+    // v0.58：电脑端优先保持手机竖屏比例（避免横屏桌面变成“矮胖”窗口），手机端仍尽量占满视口。
     const PHONE_VIEW_MARGIN = 8;
+    const PHONE_ASPECT = 9 / 19.5; // ≈0.4615，接近现代全面屏手机
     let phoneExpanded = false;
 
     function phoneViewport() {
@@ -2092,12 +2094,27 @@
 
     function phoneSize() {
         const vp = phoneViewport();
-        // PC端保持小巧APP窗口，不跟随桌面宽度放大；手机端保持原自适应逻辑
-        const width = vp.width >= 768
-            ? 390
-            : Math.min(620, Math.max(320, vp.width - 24));
-        const maxH = Math.max(260, vp.height - PHONE_VIEW_MARGIN * 2);
-        const full = Math.min(PHONE_FULL_HEIGHT, maxH);
+        const margin = PHONE_VIEW_MARGIN * 2;
+        const maxW = Math.max(280, vp.width - margin);
+        const maxH = Math.max(260, vp.height - margin);
+
+        // 电脑（宽屏）优先按高度算宽度，保持手机竖屏比例；手机端按宽度尽量铺满。
+        let width, full;
+        if (maxW / maxH > PHONE_ASPECT * 1.15) {
+            // 视口明显更宽 → 桌面横屏：以高度为基准，生成瘦高手机窗
+            full = Math.min(PHONE_FULL_HEIGHT, maxH);
+            width = Math.min(480, Math.max(320, Math.round(full * PHONE_ASPECT)));
+            // 若算出的宽度仍超过可用宽度则再收缩
+            if (width > maxW) {
+                width = maxW;
+                full = Math.min(PHONE_FULL_HEIGHT, Math.round(width / PHONE_ASPECT));
+            }
+        } else {
+            // 手机/竖屏或接近方屏：尽量占满宽度
+            width = Math.min(620, Math.max(320, maxW));
+            full = Math.min(PHONE_FULL_HEIGHT, maxH);
+        }
+
         const half = Math.min(PHONE_HALF_HEIGHT, Math.max(220, Math.floor(full / 2)));
         return { width, full, half };
     }
