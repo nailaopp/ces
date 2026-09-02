@@ -2092,7 +2092,10 @@
 
     function phoneSize() {
         const vp = phoneViewport();
-        const width = Math.min(620, Math.max(320, vp.width - 24));
+        // PC端保持小巧APP窗口，不跟随桌面宽度放大；手机端保持原自适应逻辑
+        const width = vp.width >= 768
+            ? 390
+            : Math.min(620, Math.max(320, vp.width - 24));
         const maxH = Math.max(260, vp.height - PHONE_VIEW_MARGIN * 2);
         const full = Math.min(PHONE_FULL_HEIGHT, maxH);
         const half = Math.min(PHONE_HALF_HEIGHT, Math.max(220, Math.floor(full / 2)));
