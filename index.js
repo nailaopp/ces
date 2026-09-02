@@ -687,24 +687,27 @@
     // 聊天级论坛数据
     // ============================================================
 
+    // 进程内备份：即使 localStorage/metadata 出问题，同会话内切回来还能恢复
+    const archiveMemory = new Map();
+    let lastChatKey = null;
+
     function makeChatState() {
-
         return {
-
             version: VERSION,
-
             chatKey: getChatKey(),
-
             safeThreads: [],
-
             matureThreads: [],
-
             counters: {},
-
             lastRefresh: {},
-
             updatedAt: Date.now()
         };
+    }
+
+    function rememberArchive(key, state) {
+        if (!key || key === 'fallback:unknown' || !state) return;
+        try {
+            archiveMemory.set(key, clone(state));
+        } catch (_) {}
     }
 
     let chatState =
@@ -759,57 +762,42 @@
     }
 
     function loadChatState(key) {
-
         try {
-
-            let raw =
-                localStorage.getItem(
-                    storageKey(key)
-                );
+            let raw = localStorage.getItem(storageKey(key));
             if (!raw) {
-                const legacyKey = LEGACY_NS + '_chat_' + simpleHash(key);
-                raw = localStorage.getItem(legacyKey);
+                raw = localStorage.getItem(LEGACY_NS + '_chat_' + simpleHash(key));
             }
             if (!raw) {
-                const legacyKey2 = LEGACY_NS_2 + '_chat_' + simpleHash(key);
-                raw = localStorage.getItem(legacyKey2);
+                raw = localStorage.getItem(LEGACY_NS_2 + '_chat_' + simpleHash(key));
             }
 
-            if (!raw) {
+            let s = null;
+            if (raw) {
+                s = Object.assign(makeChatState(), JSON.parse(raw));
+            } else if (archiveMemory.has(key)) {
+                s = Object.assign(makeChatState(), clone(archiveMemory.get(key)));
+            } else {
                 return makeChatState();
             }
 
-            const s =
-                Object.assign(
-                    makeChatState(),
-                    JSON.parse(raw)
-                );
-
             s.chatKey = key;
-
-            s.safeThreads =
-                Array.isArray(s.safeThreads)
-                    ? s.safeThreads
-                    : [];
-
-            s.matureThreads =
-                Array.isArray(s.matureThreads)
-                    ? s.matureThreads
-                    : [];
-
-            s.counters =
-                s.counters || {};
-
-            s.lastRefresh =
-                s.lastRefresh || {};
-
+            s.safeThreads = Array.isArray(s.safeThreads) ? s.safeThreads : [];
+            s.matureThreads = Array.isArray(s.matureThreads) ? s.matureThreads : [];
+            s.counters = s.counters || {};
+            s.lastRefresh = s.lastRefresh || {};
             normalizeForumState(s);
+            rememberArchive(key, s);
             return s;
-
         } catch (_) {
-
+            if (archiveMemory.has(key)) {
+                try {
+                    const s = Object.assign(makeChatState(), clone(archiveMemory.get(key)));
+                    s.chatKey = key;
+                    normalizeForumState(s);
+                    return s;
+                } catch (_) {}
+            }
             return makeChatState();
-
         }
     }
 
@@ -827,6 +815,7 @@
             s.chatKey = key;
             s.updatedAt = Date.now();
             localStorage.setItem(storageKey(key), JSON.stringify(s));
+            rememberArchive(key, s);
         } catch (e) {
             console.warn('[pkmn-forum] persistLocalOnly failed', e);
         }
@@ -982,6 +971,8 @@
         normalizeForumState(chatState);
 
         console.log('[pkmn-forum] loaded', key, 'threads', threadCount(chatState));
+        rememberArchive(key, chatState);
+        lastChatKey = key;
 
         currentThreadId = null;
         try { clearForumThreadInjection(); } catch (_) {}
@@ -5275,14 +5266,27 @@ ${esc(name)}
     }
 
     function openPhone() {
-        // Android/Termux: 先显示窗口，任何数据同步异常都不能阻止论坛出现。
         try { panel.classList.add('show'); } catch (_) {}
         try { openView('home'); } catch (_) {}
         try {
-            switchChat();
-        } catch (_) {
-            // 手机端切换聊天失败时，论坛仍保持打开。
-        }
+            const k = getChatKey();
+            if (k && k !== 'fallback:unknown') {
+                // 强制按当前聊天重载（即使用同 key 也合并存档）
+                if (k !== chatState.chatKey) {
+                    switchChat(k, true);
+                } else {
+                    const local = loadChatState(k);
+                    if (threadCount(local) > threadCount(chatState)) chatState = local;
+                    try { loadFromChatMetadata(k); } catch (_) {}
+                    chatState.chatKey = k;
+                    normalizeForumState(chatState);
+                    renderForumList();
+                }
+                lastChatKey = k;
+            } else {
+                switchChat();
+            }
+        } catch (_) {}
     }
 
     function closePhone() {
@@ -5535,27 +5539,41 @@ ${esc(name)}
                 return getChatKey();
             };
 
+            // 注意：CHAT_CHANGED 刚触发时 getChatKey() 可能仍是旧 id。
+            // 必须优先使用事件参数里的新 chatId，稍后用 live 再校正一次。
             TH.eventOn(changedEv, (newChatId) => {
+                console.log('[pkmn-forum] CHAT_CHANGED arg=', newChatId, 'live=', getChatKey());
                 const trySwitch = (attempt) => {
+                    const fromEvent = resolveIncomingChatKey(newChatId);
                     const live = getChatKey();
-                    const key = resolveIncomingChatKey(newChatId);
-                    const finalKey = (live && live !== 'fallback:unknown') ? live : key;
-                    switchChat(finalKey, attempt > 0);
-                    if (attempt < 3 && finalKey === 'fallback:unknown') {
-                        setTimeout(() => trySwitch(attempt + 1), 400);
+                    let finalKey;
+                    if (attempt === 0) {
+                        // 第一次：事件参数优先
+                        finalKey = (fromEvent && fromEvent !== 'fallback:unknown') ? fromEvent : live;
+                    } else {
+                        // 后续：ST 已稳定，以 live 为准
+                        finalKey = (live && live !== 'fallback:unknown') ? live : fromEvent;
                     }
+                    if (!finalKey || finalKey === 'fallback:unknown') return;
+                    switchChat(finalKey, true);
+                    lastChatKey = finalKey;
                 };
-                setTimeout(() => trySwitch(0), 200);
-                setTimeout(() => trySwitch(1), 700);
+                setTimeout(() => trySwitch(0), 50);
+                setTimeout(() => trySwitch(1), 400);
+                setTimeout(() => trySwitch(2), 1000);
             });
 
             TH.eventOn(createdEv, (newChatId) => {
+                console.log('[pkmn-forum] CHAT_CREATED arg=', newChatId);
                 setTimeout(() => {
+                    const fromEvent = (newChatId != null && newChatId !== '')
+                        ? 'chat:' + String(newChatId)
+                        : null;
                     const live = getChatKey();
-                    const key = (live && live !== 'fallback:unknown')
-                        ? live
-                        : (newChatId != null && newChatId !== '' ? 'chat:' + String(newChatId) : getChatKey());
-                    // 有存档则恢复，无存档才当新聊天清空
+                    const key = (fromEvent && fromEvent !== 'fallback:unknown')
+                        ? fromEvent
+                        : live;
+                    if (!key || key === 'fallback:unknown') return;
                     const existing = loadChatState(key);
                     if (threadCount(existing) > 0) {
                         switchChat(key, true);
@@ -5563,14 +5581,15 @@ ${esc(name)}
                         const id = key.startsWith('chat:') ? key.slice(5) : newChatId;
                         resetForumForNewChat(id);
                     }
-                }, 400);
+                    lastChatKey = key;
+                }, 300);
             });
         } catch (e) {
             console.warn('[pkmn-forum] event bind failed', e);
         }
     }
 
-    let lastChatKey = getChatKey();
+    lastChatKey = getChatKey();
     trackedSetInterval(() => {
         try {
             const k = getChatKey();
