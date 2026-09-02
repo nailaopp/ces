@@ -6,8 +6,8 @@
     "dependencies": [],
     "js": "index.js",
     "css": "style.css",
-    "author": "Converted from Tavern Helper script (0.39)",
-    "version": "0.40.0",
+    "author": "Converted from 测试论坛0.331",
+    "version": "0.41.0",
     "homePage": "",
     "auto_update": false,
     "minimum_client_version": "1.12.0"
