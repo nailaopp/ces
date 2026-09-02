@@ -1175,3 +1175,16 @@
   accent-color:#e7a83d!important;
 }
 
+
+
+/* settings checkbox visual state fix v0.20 */
+#pkmn-phone-panel .pkmn-check input[type="checkbox"]{
+  -webkit-appearance: checkbox !important;
+  appearance: checkbox !important;
+  accent-color: #e7a83d !important;
+  cursor:pointer !important;
+}
+
+#pkmn-phone-panel .pkmn-check input[type="checkbox"]:checked{
+  accent-color:#e7a83d !important;
+}
