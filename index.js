@@ -44,7 +44,7 @@
     const NS = 'pkmn_phone_forum_v9';
     const LEGACY_NS = 'pkmn_phone_forum_v7';
     const LEGACY_NS_2 = 'pkmn_phone_forum_v5';
-    const VERSION = 41; // Extension build from 0.331
+    const VERSION = 45; // desktop float full rewrite
 
     let topDoc = document;
 
@@ -687,7 +687,40 @@
     // 聊天级论坛数据
     // ============================================================
 
-    // 进程内备份：即使 localStorage/metadata 出问题，同会话内切回来还能恢复
+
+    function storageKey(key) {
+        return NS + '_chat_' + simpleHash(String(key || ''));
+    }
+
+    function storageKeyRaw(key) {
+        // 第二套 key：不哈希，避免哈希碰撞/不一致；超长则仍用哈希
+        const s = String(key || '');
+        if (s.length <= 180) return NS + '_raw_' + s;
+        return storageKey(s);
+    }
+
+    const ARCHIVE_INDEX_KEY = NS + '_archive_index_v1';
+
+    function updateArchiveIndex(key, state) {
+        try {
+            let index = {};
+            try { index = JSON.parse(localStorage.getItem(ARCHIVE_INDEX_KEY) || '{}') || {}; } catch (_) {}
+            index[String(key)] = {
+                n: threadCount(state),
+                t: Number(state && state.updatedAt) || Date.now(),
+                h: simpleHash(String(key))
+            };
+            localStorage.setItem(ARCHIVE_INDEX_KEY, JSON.stringify(index));
+        } catch (_) {}
+    }
+
+    function threadCount(state) {
+        if (!state) return 0;
+        return (Array.isArray(state.safeThreads) ? state.safeThreads.length : 0)
+            + (Array.isArray(state.matureThreads) ? state.matureThreads.length : 0);
+    }
+
+    // 进程内备份
     const archiveMemory = new Map();
     let lastChatKey = null;
 
@@ -705,127 +738,82 @@
 
     function rememberArchive(key, state) {
         if (!key || key === 'fallback:unknown' || !state) return;
+        try { archiveMemory.set(String(key), clone(state)); } catch (_) {}
+    }
+
+    function normalizeLoadedState(s, key) {
+        if (!s || typeof s !== 'object') s = makeChatState();
+        s.chatKey = key;
+        s.safeThreads = Array.isArray(s.safeThreads) ? s.safeThreads : [];
+        s.matureThreads = Array.isArray(s.matureThreads) ? s.matureThreads : [];
+        s.counters = s.counters || {};
+        s.lastRefresh = s.lastRefresh || {};
+        normalizeForumState(s);
+        return s;
+    }
+
+    // 只写本地（切聊天保存旧档专用；绝不碰当前 metadata）
+    function persistLocalOnly(key, state) {
+        if (!key || key === 'fallback:unknown' || !state) return false;
         try {
-            archiveMemory.set(key, clone(state));
-        } catch (_) {}
+            const s = normalizeLoadedState(clone(state), key);
+            s.updatedAt = Date.now();
+            // 保护：不要用空档覆盖已有非空档
+            const existing = readLocalRaw(key);
+            if (existing && threadCount(existing) > 0 && threadCount(s) === 0) {
+                console.warn('[pkmn-forum] refuse to overwrite non-empty archive with empty', key);
+                rememberArchive(key, existing);
+                return false;
+            }
+            const payload = JSON.stringify(s);
+            localStorage.setItem(storageKey(key), payload);
+            try { localStorage.setItem(storageKeyRaw(key), payload); } catch (_) {}
+            rememberArchive(key, s);
+            updateArchiveIndex(key, s);
+            console.log('[pkmn-forum] persisted', key, 'threads', threadCount(s));
+            return true;
+        } catch (e) {
+            console.warn('[pkmn-forum] persistLocalOnly failed', e);
+            try { rememberArchive(key, state); } catch (_) {}
+            return false;
+        }
     }
 
-    let chatState =
-        makeChatState();
-
-    function storageKey(key) {
-
-        return (
-            NS +
-            '_chat_' +
-            simpleHash(key)
-        );
-    }
-
-    function normalizeForumState(state) {
-        if (!state || typeof state !== 'object') return state;
-        const lists = ['safeThreads', 'matureThreads'];
-        lists.forEach(listKey => {
-            if (!Array.isArray(state[listKey])) state[listKey] = [];
-            state[listKey].forEach((t, ti) => {
-                if (!t || typeof t !== 'object') return;
-                if (!t.id) t.id = `t_legacy_${Date.now()}_${ti}_${Math.random().toString(36).slice(2, 8)}`;
-                if (!Array.isArray(t.posts)) t.posts = [];
-                t.posts.forEach((p, pi) => {
-                    if (!p || typeof p !== 'object') return;
-                    if (!p.id) p.id = `${t.id}_p_${pi}_${Math.random().toString(36).slice(2, 7)}`;
-                    if (typeof p.author !== 'string' || !p.author.trim()) p.author = '匿名网友';
-                    if (typeof p.content !== 'string') p.content = String(p.content ?? '');
-                    if (!p.time) p.time = t.time || '刚刚';
-                    p.isUser = !!p.isUser;
-                    if (!Array.isArray(p.replies)) p.replies = [];
-                    p.replies.forEach((r, ri) => {
-                        if (!r || typeof r !== 'object') return;
-                        if (!r.id) r.id = `${p.id}_r_${ri}_${Math.random().toString(36).slice(2, 7)}`;
-                        if (typeof r.author !== 'string' || !r.author.trim()) r.author = '匿名网友';
-                        if (typeof r.content !== 'string') r.content = String(r.content ?? '');
-                        if (!r.time) r.time = '刚刚';
-                        r.isUser = !!r.isUser;
-                        if (r.replyToAuthor == null || r.replyToAuthor === '') {
-                            r.replyToAuthor = p.author || '匿名网友';
-                        }
-                        if (!('replyToId' in r)) r.replyToId = null;
-                    });
-                });
-                t.author = t.author || (t.posts[0] && t.posts[0].author) || '匿名用户';
-                t.authorBio = t.authorBio || (t.posts[0] && t.posts[0].authorBio) || '';
-                t.isUserThread = !!t.isUserThread;
-                t.time = t.time || (t.posts[0] && t.posts[0].time) || '刚刚';
-            });
-        });
-        return state;
+    function readLocalRaw(key) {
+        if (!key) return null;
+        const tryParse = (raw) => {
+            if (!raw) return null;
+            try {
+                return normalizeLoadedState(JSON.parse(raw), key);
+            } catch (_) { return null; }
+        };
+        let s = tryParse(localStorage.getItem(storageKey(key)));
+        if (s) return s;
+        s = tryParse(localStorage.getItem(storageKeyRaw(key)));
+        if (s) return s;
+        s = tryParse(localStorage.getItem(LEGACY_NS + '_chat_' + simpleHash(key)));
+        if (s) return s;
+        s = tryParse(localStorage.getItem(LEGACY_NS_2 + '_chat_' + simpleHash(key)));
+        if (s) return s;
+        if (archiveMemory.has(String(key))) {
+            try { return normalizeLoadedState(clone(archiveMemory.get(String(key))), key); } catch (_) {}
+        }
+        return null;
     }
 
     function loadChatState(key) {
-        try {
-            let raw = localStorage.getItem(storageKey(key));
-            if (!raw) {
-                raw = localStorage.getItem(LEGACY_NS + '_chat_' + simpleHash(key));
-            }
-            if (!raw) {
-                raw = localStorage.getItem(LEGACY_NS_2 + '_chat_' + simpleHash(key));
-            }
-
-            let s = null;
-            if (raw) {
-                s = Object.assign(makeChatState(), JSON.parse(raw));
-            } else if (archiveMemory.has(key)) {
-                s = Object.assign(makeChatState(), clone(archiveMemory.get(key)));
-            } else {
-                return makeChatState();
-            }
-
-            s.chatKey = key;
-            s.safeThreads = Array.isArray(s.safeThreads) ? s.safeThreads : [];
-            s.matureThreads = Array.isArray(s.matureThreads) ? s.matureThreads : [];
-            s.counters = s.counters || {};
-            s.lastRefresh = s.lastRefresh || {};
-            normalizeForumState(s);
+        const s = readLocalRaw(key);
+        if (s) {
             rememberArchive(key, s);
             return s;
-        } catch (_) {
-            if (archiveMemory.has(key)) {
-                try {
-                    const s = Object.assign(makeChatState(), clone(archiveMemory.get(key)));
-                    s.chatKey = key;
-                    normalizeForumState(s);
-                    return s;
-                } catch (_) {}
-            }
-            return makeChatState();
         }
-    }
-
-    function threadCount(state) {
-        if (!state) return 0;
-        return (Array.isArray(state.safeThreads) ? state.safeThreads.length : 0)
-            + (Array.isArray(state.matureThreads) ? state.matureThreads.length : 0);
-    }
-
-    // 只写 localStorage（切聊天时保存旧档必须用这个，避免写进新聊天的 metadata）
-    function persistLocalOnly(key, state) {
-        if (!key || key === 'fallback:unknown' || !state) return;
-        try {
-            const s = clone(state);
-            s.chatKey = key;
-            s.updatedAt = Date.now();
-            localStorage.setItem(storageKey(key), JSON.stringify(s));
-            rememberArchive(key, s);
-        } catch (e) {
-            console.warn('[pkmn-forum] persistLocalOnly failed', e);
-        }
+        return normalizeLoadedState(makeChatState(), key);
     }
 
     function saveChatState() {
         try {
             const live = getChatKey();
             if (live && live !== 'fallback:unknown') {
-                // 若内存状态还挂在旧 key，而 live 已变，先把旧档落到旧 key
                 if (chatState.chatKey && chatState.chatKey !== live && chatState.chatKey !== 'fallback:unknown') {
                     persistLocalOnly(chatState.chatKey, chatState);
                 }
@@ -833,31 +821,27 @@
             }
         } catch (_) {}
         chatState.updatedAt = Date.now();
+        persistLocalOnly(chatState.chatKey, chatState);
+
+        // metadata 仅当 key 与当前 live 一致
         try {
-            localStorage.setItem(storageKey(chatState.chatKey), JSON.stringify(chatState));
-        } catch (e) {
-            console.warn('[pkmn-forum] localStorage save failed', e);
-        }
-        try {
-            // 仅当 chatKey 与当前 live 一致时才写 metadata，防止串档
             const live = getChatKey();
-            if (!live || live === chatState.chatKey) {
-                if (TH.updateChatMetadata) {
-                    TH.updateChatMetadata({ [NS]: clone(chatState) }, false);
-                }
-                try {
-                    const meta = getChatMetadataObject();
-                    if (meta) meta[NS] = clone(chatState);
-                } catch (_) {}
-                if (TH.saveChat) Promise.resolve(TH.saveChat()).catch(() => {});
-                try {
-                    const ctx = getSTContext();
-                    if (ctx) {
-                        if (typeof ctx.saveMetadataDebounced === 'function') ctx.saveMetadataDebounced();
-                        else if (typeof ctx.saveMetadata === 'function') ctx.saveMetadata();
-                    }
-                } catch (_) {}
+            if (live && live !== chatState.chatKey) return;
+            if (TH.updateChatMetadata) {
+                TH.updateChatMetadata({ [NS]: clone(chatState) }, false);
             }
+            try {
+                const meta = getChatMetadataObject();
+                if (meta) meta[NS] = clone(chatState);
+            } catch (_) {}
+            if (TH.saveChat) Promise.resolve(TH.saveChat()).catch(() => {});
+            try {
+                const ctx = getSTContext();
+                if (ctx) {
+                    if (typeof ctx.saveMetadataDebounced === 'function') ctx.saveMetadataDebounced();
+                    else if (typeof ctx.saveMetadata === 'function') ctx.saveMetadata();
+                }
+            } catch (_) {}
         } catch (e) {
             console.warn('[pkmn-forum] metadata save failed', e);
         }
@@ -884,23 +868,10 @@
             const s = metadata[NS];
             if (!s || typeof s !== 'object') return false;
             const currentKey = expectedKey || getChatKey();
-            // metadata 必须属于当前聊天
             if (s.chatKey && currentKey && s.chatKey !== currentKey) return false;
 
-            const fromMeta = Object.assign(makeChatState(), clone(s));
-            normalizeForumState(fromMeta);
-            fromMeta.chatKey = currentKey;
-
-            // 与当前内存/local 比较：谁帖子多、谁更新，用谁
-            const localRaw = localStorage.getItem(storageKey(currentKey));
-            let fromLocal = null;
-            if (localRaw) {
-                try {
-                    fromLocal = Object.assign(makeChatState(), JSON.parse(localRaw));
-                    normalizeForumState(fromLocal);
-                    fromLocal.chatKey = currentKey;
-                } catch (_) {}
-            }
+            const fromMeta = normalizeLoadedState(clone(s), currentKey);
+            const fromLocal = readLocalRaw(currentKey);
 
             let chosen = fromMeta;
             if (fromLocal) {
@@ -908,16 +879,17 @@
                 const localN = threadCount(fromLocal);
                 const metaT = Number(fromMeta.updatedAt) || 0;
                 const localT = Number(fromLocal.updatedAt) || 0;
-                // 本地帖子更多，或帖子一样但本地更新，用本地
-                if (localN > metaN || (localN === metaN && localT >= metaT && localN > 0)) {
-                    chosen = fromLocal;
-                } else if (metaN === 0 && localN > 0) {
+                if (localN > metaN || (localN >= metaN && localT >= metaT)) {
                     chosen = fromLocal;
                 }
+                if (metaN === 0 && localN > 0) chosen = fromLocal;
             }
-
+            // 禁止用空 metadata 覆盖非空内存
+            if (threadCount(chosen) === 0 && threadCount(chatState) > 0 && chatState.chatKey === currentKey) {
+                return false;
+            }
             chatState = chosen;
-            try { localStorage.setItem(storageKey(currentKey), JSON.stringify(chatState)); } catch (_) {}
+            persistLocalOnly(currentKey, chatState);
             return true;
         } catch (e) {
             console.warn('[pkmn-forum] loadFromChatMetadata failed', e);
@@ -926,11 +898,8 @@
     }
 
     // ============================================================
-    // 切换聊天：只读取新聊天，不在这里 saveChatState()
+    // 切换聊天：先保存旧档，再加载新档
     // ============================================================
-    // CHAT_CHANGED 触发时，酒馆当前 chatMetadata 已经可能指向“新聊天”。
-    // 如果这里先 saveChatState()，就会把“旧聊天论坛”错误写进新聊天。
-    // 所以旧聊天的数据只在论坛发生变化时保存；切换时只负责加载。
 
     function switchChat(forcedKey = null, silent = false) {
         const key = forcedKey || getChatKey();
@@ -938,11 +907,11 @@
             console.warn('[pkmn-forum] switchChat: invalid key', key);
             return;
         }
+
         if (key === chatState.chatKey) {
-            // 同聊天：尝试用 local + metadata 里更完整的一份刷新
             try {
-                const local = loadChatState(key);
-                if (threadCount(local) > threadCount(chatState)) {
+                const local = readLocalRaw(key);
+                if (local && threadCount(local) > threadCount(chatState)) {
                     chatState = local;
                 }
                 loadFromChatMetadata(key);
@@ -953,19 +922,25 @@
         }
 
         const oldKey = chatState.chatKey;
-        console.log('[pkmn-forum] switchChat', oldKey, '=>', key, 'threads', threadCount(chatState));
+        const oldThreads = threadCount(chatState);
+        console.log('[pkmn-forum] switchChat', oldKey, '=>', key, 'oldThreads', oldThreads);
 
-        // 关键：先把旧聊天论坛只存到旧 key 的 localStorage，绝不写入新聊天 metadata
+        // 1) 无条件保存旧档到内存 + localStorage
         if (oldKey && oldKey !== 'fallback:unknown') {
             persistLocalOnly(oldKey, chatState);
+        } else if (oldThreads > 0) {
+            // oldKey 无效但有帖子：用 lastChatKey 再试一次
+            if (lastChatKey && lastChatKey !== 'fallback:unknown') {
+                persistLocalOnly(lastChatKey, chatState);
+            }
         }
 
-        // 加载新聊天：localStorage 优先
-        let next = loadChatState(key);
+        // 2) 加载新档
+        let next = readLocalRaw(key);
+        if (!next) next = normalizeLoadedState(makeChatState(), key);
         chatState = next;
         chatState.chatKey = key;
 
-        // 再用 metadata 合并（若属于本 key 且更完整）
         try { loadFromChatMetadata(key); } catch (_) {}
         chatState.chatKey = key;
         normalizeForumState(chatState);
@@ -977,48 +952,48 @@
         currentThreadId = null;
         try { clearForumThreadInjection(); } catch (_) {}
         renderForumList();
-        if (!silent) showToast('已切换到当前聊天的论坛存档');
+        if (!silent) {
+            showToast(threadCount(chatState) > 0
+                ? `已加载本聊天论坛（${threadCount(chatState)} 帖）`
+                : '已切换到当前聊天的论坛存档');
+        }
     }
 
-    // 新建聊天时强制创建一份全新的论坛状态。
-    // 不继承上一聊天的帖子。
     function resetForumForNewChat(newChatId = null) {
         const key =
             newChatId !== null && newChatId !== undefined
                 ? 'chat:' + String(newChatId)
                 : getChatKey();
 
-        // 若该 key 已有存档（切回旧聊天被误判为新建），不要清空
-        try {
-            const existing = loadChatState(key);
-            if (threadCount(existing) > 0) {
-                console.log('[pkmn-forum] resetForumForNewChat skipped, existing archive', key, threadCount(existing));
-                chatState = existing;
-                chatState.chatKey = key;
-                normalizeForumState(chatState);
-                currentThreadId = null;
-                try { clearForumThreadInjection(); } catch (_) {}
-                renderForumList();
-                return;
-            }
-        } catch (_) {}
-
-        // 切走前先落盘当前内存（若 key 不同）
+        // 先保存当前内存到旧 key
         if (chatState.chatKey && chatState.chatKey !== key && chatState.chatKey !== 'fallback:unknown') {
             persistLocalOnly(chatState.chatKey, chatState);
         }
 
-        chatState = makeChatState();
-        chatState.chatKey = key;
+        // 若目标 key 已有内容，恢复而不是清空
+        const existing = readLocalRaw(key);
+        if (existing && threadCount(existing) > 0) {
+            console.log('[pkmn-forum] newChat skipped, restore existing', key, threadCount(existing));
+            chatState = existing;
+            chatState.chatKey = key;
+            normalizeForumState(chatState);
+            currentThreadId = null;
+            try { clearForumThreadInjection(); } catch (_) {}
+            lastChatKey = key;
+            renderForumList();
+            return;
+        }
+
+        chatState = normalizeLoadedState(makeChatState(), key);
         chatState.safeThreads = [];
         chatState.matureThreads = [];
         chatState.counters = {};
         chatState.lastRefresh = {};
-
-        // 新聊天只写 local，避免污染；metadata 等用户真正发帖再 saveChatState
+        // 空档也写入，但不覆盖非空（persistLocalOnly 已保护）
         persistLocalOnly(key, chatState);
         clearForumThreadInjection();
         currentThreadId = null;
+        lastChatKey = key;
         renderForumList();
         showToast('新聊天：论坛已清空');
     }
@@ -1782,6 +1757,12 @@
 
     floatBtn.id =
         'pkmn-float-btn';
+    floatBtn.type = 'button';
+    floatBtn.setAttribute('aria-label', '宝可梦论坛');
+    floatBtn.tabIndex = 0;
+    // 确保桌面端可点可拖，不被其它层样式误伤
+    floatBtn.style.setProperty('pointer-events', 'auto', 'important');
+    floatBtn.style.setProperty('z-index', '2147483646', 'important');
 
     // 宝可梦风格洛托姆手机图标：重新设计为更明显的“洛托姆手机”造型。
     // 采用红橙机身、黑色描边、黄色闪电眼、白色屏幕，不依赖外部图片。
@@ -2136,6 +2117,19 @@
         panel.style.setProperty('width', sz.width + 'px', 'important');
         panel.style.setProperty('height', h + 'px', 'important');
         setPhonePosition((vp.width - sz.width) / 2, (vp.height - h) / 2);
+    }
+
+    // 将手机窗口复位到屏幕正中央（电脑 / 手机通用，基于当前视口）
+    function resetPhoneToCenter() {
+        try {
+            centerPhoneInitial();
+            // 确保可见
+            panel.classList.add('show');
+            try { openView('home'); } catch (_) {}
+            showToast('手机窗口已复位到屏幕中央');
+        } catch (e) {
+            console.warn('[pkmn-forum] resetPhoneToCenter failed', e);
+        }
     }
 
     function resizePhonePreservePosition() {
@@ -5265,8 +5259,29 @@ ${esc(name)}
         } catch (_) {}
     }
 
+    // 短时间连点悬浮按钮 3 次 → 手机窗口复位到屏幕中央（电脑鼠标 + 手机触摸）
+    let floatTapTimes = [];
+    const FLOAT_TRIPLE_WINDOW_MS = 600;
+
+    function onFloatButtonActivate() {
+        const now = Date.now();
+        try { floatBtn._pkmnLastActivate = now; } catch (_) {}
+        floatTapTimes = floatTapTimes.filter(t => now - t < FLOAT_TRIPLE_WINDOW_MS);
+        floatTapTimes.push(now);
+        if (floatTapTimes.length >= 3) {
+            floatTapTimes = [];
+            resetPhoneToCenter();
+            return;
+        }
+        openPhone();
+    }
+
     function openPhone() {
-        try { panel.classList.add('show'); } catch (_) {}
+        try {
+            panel.classList.add('show');
+            panel.style.setProperty('pointer-events', 'auto', 'important');
+            panel.style.setProperty('display', 'flex', 'important');
+        } catch (_) {}
         try { openView('home'); } catch (_) {}
         try {
             const k = getChatKey();
@@ -5291,6 +5306,10 @@ ${esc(name)}
 
     function closePhone() {
         panel.classList.remove('show');
+        try {
+            panel.style.setProperty('display', 'none', 'important');
+            panel.style.setProperty('pointer-events', 'none', 'important');
+        } catch (_) {}
     }
 
     function togglePhone(e) {
@@ -5317,182 +5336,152 @@ ${esc(name)}
     // 如果两套逻辑同时处理，容易出现“打开后又被第二个事件关闭/覆盖”。
     // 因此：手指只走 touch*；鼠标只走 pointer*。
 
-    function beginFloatDrag(e) {
-        if (!e || e.pointerType !== 'mouse') return;
-        if (e.button !== 0) return;
 
-        const rect = floatBtn.getBoundingClientRect();
-        floatMoved = false;
-        suppressNextOpen = false;
-        dragState = {
-            pointerId: e.pointerId,
-            startX: e.clientX,
-            startY: e.clientY,
-            startLeft: rect.left,
-            startTop: rect.top
-        };
+    // ============================================================
+    // 悬浮按钮交互（电脑 + 手机统一重写）
+    // 电脑：mousedown/mousemove/mouseup + click
+    // 手机：touchstart/move/end（不依赖 Pointer Capture）
+    // ============================================================
 
-        floatBtn.classList.add('dragging');
-        try { floatBtn.setPointerCapture(e.pointerId); } catch (_) {}
-        e.preventDefault();
-        e.stopPropagation();
-    }
+    let floatDrag = null; // {x0,y0,left0,top0,moved,pointerId}
 
-    function moveFloatDrag(e) {
-        if (!dragState || !e || e.pointerType !== 'mouse' || e.pointerId !== dragState.pointerId) return;
-
-        const dx = e.clientX - dragState.startX;
-        const dy = e.clientY - dragState.startY;
-
-        if (Math.abs(dx) > 6 || Math.abs(dy) > 6) {
-            floatMoved = true;
-            suppressNextOpen = true;
-        }
-
-        if (floatMoved) {
-            applyFloatPosition(
-                dragState.startLeft + dx,
-                dragState.startTop + dy
-            );
-        }
-
-        e.preventDefault();
-        e.stopPropagation();
-    }
-
-    function finishFloatDrag(e) {
-        if (!dragState || !e || e.pointerType !== 'mouse') return;
-        if (e.pointerId !== dragState.pointerId) return;
-
-        const moved = floatMoved;
-        const pointerId = dragState.pointerId;
-
-        try { floatBtn.releasePointerCapture(pointerId); } catch (_) {}
-        floatBtn.classList.remove('dragging');
-        saveFloatPosition();
-
-        dragState = null;
-        floatMoved = false;
-
-        if (!moved && !suppressNextOpen) {
-            openPhone();
-        }
-
-        suppressNextOpen = false;
-        e.preventDefault();
-        e.stopPropagation();
-    }
-
-    // Android 手指专用路径：不使用 pointer capture。
-    let touchActive = false;
-    let touchMoved = false;
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let touchStartLeft = 0;
-    let touchStartTop = 0;
-
-    floatBtn.addEventListener('touchstart', e => {
-        const t = e.touches && e.touches[0];
-        if (!t) return;
-
+    function floatHitTest(clientX, clientY) {
         const r = floatBtn.getBoundingClientRect();
+        return clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom;
+    }
 
-        touchActive = true;
-        touchMoved = false;
-        touchStartX = t.clientX;
-        touchStartY = t.clientY;
-        touchStartLeft = r.left;
-        touchStartTop = r.top;
-
-        floatBtn.classList.add('dragging');
-        e.stopPropagation();
-    }, { passive: true });
-
-    floatBtn.addEventListener('touchmove', e => {
-        if (!touchActive) return;
-
-        const t = e.touches && e.touches[0];
-        if (!t) return;
-
-        const dx = t.clientX - touchStartX;
-        const dy = t.clientY - touchStartY;
-
-        if (Math.abs(dx) > 8 || Math.abs(dy) > 8) {
-            touchMoved = true;
-        }
-
-        if (touchMoved) {
-            e.preventDefault();
-            applyFloatPosition(
-                touchStartLeft + dx,
-                touchStartTop + dy
-            );
-        }
-
-        e.stopPropagation();
-    }, { passive: false });
-
-    floatBtn.addEventListener('touchend', e => {
-        if (!touchActive) return;
-
-        const moved = touchMoved;
-
-        touchActive = false;
-        touchMoved = false;
+    function endFloatDrag(openIfNotMoved) {
+        if (!floatDrag) return;
+        const moved = !!floatDrag.moved;
+        floatDrag = null;
         floatBtn.classList.remove('dragging');
+        try { saveFloatPosition(); } catch (_) {}
+        if (openIfNotMoved && !moved) {
+            onFloatButtonActivate();
+        }
+    }
 
+    // ---- 电脑鼠标 ----
+    floatBtn.addEventListener('mousedown', function (e) {
+        if (e.button !== 0) return;
         e.preventDefault();
         e.stopPropagation();
+        const r = floatBtn.getBoundingClientRect();
+        floatDrag = {
+            x0: e.clientX,
+            y0: e.clientY,
+            left0: r.left,
+            top0: r.top,
+            moved: false,
+            kind: 'mouse'
+        };
+        floatBtn.classList.add('dragging');
+    }, true);
 
-        if (!moved) {
-            // 直接打开，不经过 click，也不依赖 pointer 事件。
-            openPhone();
-        } else {
-            saveFloatPosition();
+    window.addEventListener('mousemove', function (e) {
+        if (!floatDrag || floatDrag.kind !== 'mouse') return;
+        const dx = e.clientX - floatDrag.x0;
+        const dy = e.clientY - floatDrag.y0;
+        if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+            floatDrag.moved = true;
+            applyFloatPosition(floatDrag.left0 + dx, floatDrag.top0 + dy);
         }
-    }, { passive: false });
+        e.preventDefault();
+    }, true);
 
-    floatBtn.addEventListener('touchcancel', e => {
-        touchActive = false;
-        touchMoved = false;
-        floatBtn.classList.remove('dragging');
+    window.addEventListener('mouseup', function (e) {
+        if (!floatDrag || floatDrag.kind !== 'mouse') return;
+        e.preventDefault();
         e.stopPropagation();
-    }, { passive: false });
+        endFloatDrag(true);
+    }, true);
 
-    // Android WebView 顶层 capture 兜底。
-    dragWindow.addEventListener('touchstart', e => {
-        if (touchActive) return;
-        const t=e.touches&&e.touches[0]; if(!t) return;
-        const r=floatBtn.getBoundingClientRect();
-        if(t.clientX<r.left||t.clientX>r.right||t.clientY<r.top||t.clientY>r.bottom)return;
-        touchActive=true; touchMoved=false; touchStartX=t.clientX; touchStartY=t.clientY; touchStartLeft=r.left; touchStartTop=r.top;
-        floatBtn.classList.add('dragging'); if(e.cancelable)e.preventDefault(); e.stopPropagation();
-    },{capture:true,passive:false});
-    dragWindow.addEventListener('touchmove', e => {
-        if(!touchActive)return; const t=e.touches&&e.touches[0]; if(!t)return;
-        const dx=t.clientX-touchStartX,dy=t.clientY-touchStartY; if(Math.abs(dx)>8||Math.abs(dy)>8)touchMoved=true;
-        if(touchMoved)applyFloatPosition(touchStartLeft+dx,touchStartTop+dy); if(e.cancelable)e.preventDefault(); e.stopPropagation();
-    },{capture:true,passive:false});
-    dragWindow.addEventListener('touchend', e => {
-        if(!touchActive)return; const moved=touchMoved; touchActive=false; touchMoved=false; floatBtn.classList.remove('dragging');
-        if(e.cancelable)e.preventDefault(); e.stopPropagation(); if(moved)saveFloatPosition(); else openPhone();
-    },{capture:true,passive:false});
+    // click 兜底（仅当没有拖动逻辑触发时）
+    floatBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        // mouseup 已处理则跳过
+        if (floatBtn._pkmnLastActivate && Date.now() - floatBtn._pkmnLastActivate < 350) return;
+        onFloatButtonActivate();
+    }, true);
 
-    // 桌面鼠标路径。
-    floatBtn.addEventListener('pointerdown', beginFloatDrag, { passive: false });
-    floatBtn.addEventListener('pointermove', moveFloatDrag, { passive: false });
-    floatBtn.addEventListener('pointerup', finishFloatDrag, { passive: false });
-    floatBtn.addEventListener('pointercancel', finishFloatDrag, { passive: false });
+    // ---- 手机触摸 ----
+    floatBtn.addEventListener('touchstart', function (e) {
+        const t = e.touches && e.touches[0];
+        if (!t) return;
+        const r = floatBtn.getBoundingClientRect();
+        floatDrag = {
+            x0: t.clientX,
+            y0: t.clientY,
+            left0: r.left,
+            top0: r.top,
+            moved: false,
+            kind: 'touch',
+            touchId: t.identifier
+        };
+        floatBtn.classList.add('dragging');
+        e.stopPropagation();
+    }, { passive: true, capture: true });
 
-    dragWindow.addEventListener('pointermove', moveFloatDrag, { passive: false });
-    dragWindow.addEventListener('pointerup', finishFloatDrag, { passive: false });
-    dragWindow.addEventListener('pointercancel', finishFloatDrag, { passive: false });
+    floatBtn.addEventListener('touchmove', function (e) {
+        if (!floatDrag || floatDrag.kind !== 'touch') return;
+        let t = null;
+        for (let i = 0; i < e.touches.length; i++) {
+            if (e.touches[i].identifier === floatDrag.touchId) { t = e.touches[i]; break; }
+        }
+        if (!t) t = e.touches[0];
+        if (!t) return;
+        const dx = t.clientX - floatDrag.x0;
+        const dy = t.clientY - floatDrag.y0;
+        if (Math.abs(dx) > 8 || Math.abs(dy) > 8) {
+            floatDrag.moved = true;
+            applyFloatPosition(floatDrag.left0 + dx, floatDrag.top0 + dy);
+        }
+        if (floatDrag.moved && e.cancelable) e.preventDefault();
+        e.stopPropagation();
+    }, { passive: false, capture: true });
 
-    dragWindow.addEventListener('resize', () => {
-        const rect = floatBtn.getBoundingClientRect();
-        applyFloatPosition(rect.left, rect.top);
-        saveFloatPosition();
+    floatBtn.addEventListener('touchend', function (e) {
+        if (!floatDrag || floatDrag.kind !== 'touch') return;
+        if (e.cancelable) e.preventDefault();
+        e.stopPropagation();
+        endFloatDrag(true);
+    }, { passive: false, capture: true });
+
+    floatBtn.addEventListener('touchcancel', function () {
+        if (!floatDrag || floatDrag.kind !== 'touch') return;
+        floatDrag.moved = true; // 取消时不打开
+        endFloatDrag(false);
+    }, { passive: true, capture: true });
+
+    // 窗口尺寸变化时把按钮拉回可见区
+    window.addEventListener('resize', function () {
+        try {
+            const rect = floatBtn.getBoundingClientRect();
+            applyFloatPosition(rect.left, rect.top);
+            saveFloatPosition();
+        } catch (_) {}
     });
+
+    // 定时保证按钮在最上层（防止被酒馆 UI 盖住）
+    trackedSetInterval(function () {
+        try {
+            if (!floatBtn.isConnected) {
+                topDoc.body.appendChild(floatBtn);
+            }
+            // 移到 body 最后，提高叠放顺序
+            if (floatBtn.parentNode === topDoc.body && topDoc.body.lastElementChild !== floatBtn && topDoc.body.lastElementChild !== panel) {
+                topDoc.body.appendChild(floatBtn);
+            }
+            floatBtn.style.setProperty('z-index', '2147483646', 'important');
+            floatBtn.style.setProperty('pointer-events', 'auto', 'important');
+            floatBtn.style.setProperty('display', 'flex', 'important');
+            floatBtn.style.setProperty('visibility', 'visible', 'important');
+            floatBtn.style.setProperty('opacity', '1', 'important');
+        } catch (_) {}
+    }, 2000);
+
+    restoreFloatPosition();
 
     const closePhoneBtn = $('pkmn-close-phone');
     if (closePhoneBtn) {
@@ -5595,10 +5584,13 @@ ${esc(name)}
             const k = getChatKey();
             if (k && k !== 'fallback:unknown' && k !== lastChatKey) {
                 console.log('[pkmn-forum] poll chat change', lastChatKey, '=>', k);
-                lastChatKey = k;
                 switchChat(k, true);
+                lastChatKey = k;
             } else if (k && k !== 'fallback:unknown') {
                 lastChatKey = k;
+                if (chatState && threadCount(chatState) > 0 && chatState.chatKey === k) {
+                    persistLocalOnly(k, chatState);
+                }
             }
         } catch (e) {
             console.warn('[pkmn-forum] chat poll error', e);
@@ -5658,7 +5650,7 @@ ${esc(name)}
     }
 
     console.log(
-        '[宝可梦小手机论坛] 已启动。聊天独立存档：',
+        '[宝可梦小手机论坛] 已启动 v' + VERSION + ' | 聊天：',
         chatState.chatKey
     );
 
