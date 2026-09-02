@@ -1131,3 +1131,35 @@
     white-space:nowrap!important;
   }
 }
+
+/* v0.18 PC/桌面端修复：防止地区和标签继承大字号 */
+@media (min-width:768px){
+  #pkmn-phone-panel .pkmn-thread-location,
+  #pkmn-phone-panel .pkmn-thread-location *{
+    font-size:13px!important;
+    line-height:20px!important;
+    display:inline-flex!important;
+    align-items:center!important;
+  }
+
+  #pkmn-phone-panel .pkmn-thread-tags{
+    display:flex!important;
+    flex-direction:row!important;
+    flex-wrap:wrap!important;
+    align-items:center!important;
+    gap:6px!important;
+    width:100%!important;
+  }
+
+  #pkmn-phone-panel .pkmn-thread-tags .pkmn-tag,
+  #pkmn-phone-panel .pkmn-post-tags .pkmn-tag{
+    display:inline-flex!important;
+    width:auto!important;
+    min-width:0!important;
+    white-space:nowrap!important;
+    font-size:12px!important;
+    line-height:20px!important;
+    padding:3px 8px!important;
+    margin:0!important;
+  }
+}
