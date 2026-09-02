@@ -18,7 +18,7 @@
             if (started) return;
             started = true;
             try { fn(); } catch (e) {
-                console.error('[宝可梦小手机论坛] 启动失败:', e);
+                console.error('[宝可梦小手机论坛] 启动失败:', e && e.stack ? e.stack : e);
                 try { if (window.toastr) toastr.error('宝可梦论坛扩展启动失败，请看控制台'); } catch (_) {}
             }
         };
@@ -44,15 +44,18 @@
     const NS = 'pkmn_phone_forum_v9';
     const LEGACY_NS = 'pkmn_phone_forum_v7';
     const LEGACY_NS_2 = 'pkmn_phone_forum_v5';
-    const VERSION = 45; // desktop float full rewrite
+    const VERSION = 46; // fix missing normalizeForumState (startup crash)
 
+    // 扩展运行在酒馆主页面，统一使用当前 document，避免跨 iframe 导致桌面端异常
     let topDoc = document;
-
     try {
-        if (window.top && window.top.document) {
-            topDoc = window.top.document;
+        if (window.top && window.top !== window && window.top.document) {
+            // 仅当确实在同源 iframe 内时才用 top
+            if (window.top.document.body) topDoc = window.top.document;
         }
-    } catch (_) {}
+    } catch (_) {
+        topDoc = document;
+    }
 
     // ============================================================
     // 0.39 生命周期管理
@@ -2769,13 +2772,16 @@
     // ============================================================
 
     function renderForumList() {
-
-        renderTabs();
+        if (!threadList) {
+            console.warn('[pkmn-forum] threadList missing');
+            return;
+        }
+        try { renderTabs(); } catch (e) { console.warn('[pkmn-forum] renderTabs', e); }
 
         const arr =
-            threads().filter(
+            (threads() || []).filter(
                 t =>
-                    t.board ===
+                    t && t.board ===
                     currentBoard
             );
 
@@ -3969,6 +3975,38 @@ ${ctx}
         }
     }
 
+
+    function normalizeForumState(state) {
+        if (!state || typeof state !== 'object') return state;
+        if (!Array.isArray(state.safeThreads)) state.safeThreads = [];
+        if (!Array.isArray(state.matureThreads)) state.matureThreads = [];
+        if (!state.counters || typeof state.counters !== 'object') state.counters = {};
+        if (!state.lastRefresh || typeof state.lastRefresh !== 'object') state.lastRefresh = {};
+
+        const fixThread = (t) => {
+            if (!t || typeof t !== 'object') return t;
+            if (!Array.isArray(t.posts)) t.posts = [];
+            t.posts.forEach(p => {
+                if (!p || typeof p !== 'object') return;
+                if (!Array.isArray(p.replies)) p.replies = [];
+            });
+            try {
+                const firstContent = (t.posts[0] && t.posts[0].content) || '';
+                if (typeof normalizePostTags === 'function') {
+                    t.tags = normalizePostTags(t.tags, t.title, firstContent);
+                } else if (!Array.isArray(t.tags)) {
+                    t.tags = [];
+                }
+            } catch (_) {
+                if (!Array.isArray(t.tags)) t.tags = [];
+            }
+            return t;
+        };
+
+        state.safeThreads = state.safeThreads.map(fixThread).filter(Boolean);
+        state.matureThreads = state.matureThreads.map(fixThread).filter(Boolean);
+        return state;
+    }
 
     function normalizeForumThreads() {
         const arr = threads();
@@ -5618,16 +5656,16 @@ ${esc(name)}
     // 初始载入
     // ============================================================
 
-    chatState =
-        loadChatState(
-            getChatKey()
-        );
-
-    loadFromChatMetadata();
-
-    normalizeForumThreads();
-
-    renderForumList();
+    try {
+        chatState = loadChatState(getChatKey());
+    } catch (e) {
+        console.warn('[pkmn-forum] loadChatState failed', e);
+        chatState = makeChatState();
+    }
+    try { loadFromChatMetadata(); } catch (e) { console.warn('[pkmn-forum] loadFromChatMetadata', e); }
+    try { normalizeForumState(chatState); } catch (_) {}
+    try { normalizeForumThreads(); } catch (e) { console.warn('[pkmn-forum] normalizeForumThreads', e); }
+    try { renderForumList(); } catch (e) { console.warn('[pkmn-forum] renderForumList', e); }
 
 
     // ============================================================
