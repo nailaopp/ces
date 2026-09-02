@@ -1102,22 +1102,3 @@
   font-size:13px!important;
   font-weight:700!important;
 }
-
-
-/* v0.16 PC小窗口适配：仅影响桌面端，手机端保持原样 */
-@media (min-width:768px){
-  #pkmn-phone-panel{
-    width:420px!important;
-    max-width:420px!important;
-    height:820px!important;
-    max-height:90vh!important;
-    transform:translate(-50%,-50%)!important;
-  }
-}
-
-/* 小屏设备保持原0.15布局 */
-@media (max-width:767px){
-  #pkmn-phone-panel{
-    transform:none!important;
-  }
-}
