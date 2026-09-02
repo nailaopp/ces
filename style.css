@@ -1188,3 +1188,32 @@
 #pkmn-phone-panel .pkmn-check input[type="checkbox"]:checked{
   accent-color:#e7a83d !important;
 }
+
+/* v0.22 字体隔离：地区/IP 与红色标签不受酒馆全局字体影响 */
+#pkmn-phone-panel .pkmn-region,
+#pkmn-phone-panel .pkmn-location,
+#pkmn-phone-panel .pkmn-area,
+#pkmn-phone-panel .pkmn-post-location,
+#pkmn-phone-panel .pkmn-thread-location,
+#pkmn-phone-panel .pkmn-thread-location * {
+  font-size:12px!important;
+  line-height:18px!important;
+  transform:none!important;
+}
+
+#pkmn-phone-panel .pkmn-post-tags,
+#pkmn-phone-panel .pkmn-thread-tags {
+  font-size:11px!important;
+  line-height:16px!important;
+}
+
+#pkmn-phone-panel .pkmn-post-tags span,
+#pkmn-phone-panel .pkmn-thread-tags span,
+#pkmn-phone-panel .pkmn-thread-tags .pkmn-tag,
+#pkmn-phone-panel .pkmn-post-tags .pkmn-tag {
+  font-size:11px!important;
+  line-height:16px!important;
+  white-space:nowrap!important;
+  word-break:keep-all!important;
+  overflow-wrap:normal!important;
+}
