@@ -41,10 +41,14 @@
 
     whenReady(function startPkmnPhoneForum() {
 
-    const NS = 'pkmn_phone_forum_v9';
+        const NS = 'pkmn_phone_forum_v9';
     const LEGACY_NS = 'pkmn_phone_forum_v7';
     const LEGACY_NS_2 = 'pkmn_phone_forum_v5';
-    const VERSION = 46; // fix missing normalizeForumState (startup crash)
+    const VERSION = 47; // fix undeclared chatState startup crash
+
+    // 必须尽早声明，否则严格模式下赋值会直接启动失败
+    let chatState = null;
+
 
     // 扩展运行在酒馆主页面，统一使用当前 document，避免跨 iframe 导致桌面端异常
     let topDoc = document;
@@ -2248,8 +2252,11 @@
     bindPhoneDragHandle(dragBottom);
 
     // 手指离开手柄后仍继续接收移动：直接监听顶层 window/document。
-    const phoneDragWin = topDoc.defaultView || window;
-    phoneDragWin.addEventListener('touchmove', e => {
+    const phoneDragWin = (topDoc && topDoc.defaultView) || window;
+    const phoneDragTarget = (phoneDragWin && typeof phoneDragWin.addEventListener === 'function')
+        ? phoneDragWin
+        : window;
+    phoneDragTarget.addEventListener('touchmove', e => {
         if (!phoneDragState.active || !e.touches) return;
         let t = null;
         for (const item of e.touches) {
@@ -2257,18 +2264,18 @@
         }
         if (t) movePhoneDrag(t.clientX, t.clientY, e);
     }, { passive: false, capture: true });
-    phoneDragWin.addEventListener('touchend', endPhoneDrag, { passive: false, capture: true });
-    phoneDragWin.addEventListener('touchcancel', endPhoneDrag, { passive: false, capture: true });
-    phoneDragWin.addEventListener('pointermove', e => {
+    phoneDragTarget.addEventListener('touchend', endPhoneDrag, { passive: false, capture: true });
+    phoneDragTarget.addEventListener('touchcancel', endPhoneDrag, { passive: false, capture: true });
+    phoneDragTarget.addEventListener('pointermove', e => {
         if (!phoneDragState.active || e.pointerType === 'touch') return;
         movePhoneDrag(e.clientX, e.clientY, e);
     }, { passive: false, capture: true });
-    phoneDragWin.addEventListener('pointerup', endPhoneDrag, { passive: false, capture: true });
-    phoneDragWin.addEventListener('pointercancel', endPhoneDrag, { passive: false, capture: true });
-    phoneDragWin.addEventListener('mousemove', e => {
+    phoneDragTarget.addEventListener('pointerup', endPhoneDrag, { passive: false, capture: true });
+    phoneDragTarget.addEventListener('pointercancel', endPhoneDrag, { passive: false, capture: true });
+    phoneDragTarget.addEventListener('mousemove', e => {
         if (phoneDragState.active) movePhoneDrag(e.clientX, e.clientY, e);
     }, { passive: false, capture: true });
-    phoneDragWin.addEventListener('mouseup', endPhoneDrag, { passive: false, capture: true });
+    phoneDragTarget.addEventListener('mouseup', endPhoneDrag, { passive: false, capture: true });
 
     if (scaleBtn) {
         // 只绑定 click。Android WebView 会把一次触摸同时转换成
@@ -2279,7 +2286,7 @@
 
     // 打开/初始化后强制保证手机在当前可视区内。
     centerPhoneInitial();
-    phoneDragWin.addEventListener('resize', resizePhonePreservePosition, { passive: true });
+    phoneDragTarget.addEventListener('resize', resizePhonePreservePosition, { passive: true });
 
     // ============================================================
     // Toast
@@ -5657,10 +5664,15 @@ ${esc(name)}
     // ============================================================
 
     try {
-        chatState = loadChatState(getChatKey());
+        chatState = loadChatState(getChatKey()) || makeChatState();
     } catch (e) {
         console.warn('[pkmn-forum] loadChatState failed', e);
-        chatState = makeChatState();
+        try { chatState = makeChatState(); } catch (e2) {
+            chatState = { version: VERSION, chatKey: 'fallback:unknown', safeThreads: [], matureThreads: [], counters: {}, lastRefresh: {}, updatedAt: Date.now() };
+        }
+    }
+    if (!chatState) {
+        chatState = { version: VERSION, chatKey: 'fallback:unknown', safeThreads: [], matureThreads: [], counters: {}, lastRefresh: {}, updatedAt: Date.now() };
     }
     try { loadFromChatMetadata(); } catch (e) { console.warn('[pkmn-forum] loadFromChatMetadata', e); }
     try { normalizeForumState(chatState); } catch (_) {}
