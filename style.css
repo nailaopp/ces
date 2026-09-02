@@ -1102,3 +1102,32 @@
   font-size:13px!important;
   font-weight:700!important;
 }
+
+/* v0.17 PC小窗口适配：保持手机效果，修复PC字体放大 */
+@media (min-width:768px){
+  #pkmn-phone-panel{
+    font-size:14px!important;
+  }
+
+  #pkmn-phone-panel .pkmn-region,
+  #pkmn-phone-panel .pkmn-location,
+  #pkmn-phone-panel .pkmn-area,
+  #pkmn-phone-panel .pkmn-post-location{
+    font-size:12px!important;
+    line-height:18px!important;
+  }
+
+  #pkmn-phone-panel .pkmn-post-tags{
+    display:flex!important;
+    flex-wrap:wrap!important;
+    gap:6px!important;
+    margin:12px 0 8px!important;
+  }
+
+  #pkmn-phone-panel .pkmn-post-tags span{
+    font-size:11px!important;
+    padding:4px 9px!important;
+    line-height:16px!important;
+    white-space:nowrap!important;
+  }
+}
