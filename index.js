@@ -2594,12 +2594,14 @@
             const isMainCharacter = Boolean(p.isUser || (i === 0 && t.isUserThread));
             const tag = isMainCharacter ? '【主角本人】' : '【论坛网友】';
             const bio = p.authorBio ? `（简介：${p.authorBio}）` : '';
-            lines.push(`${i + 1}楼 ${tag} ${p.author || '匿名用户'}${bio}：${p.content || ''}`);
+            const ip = p.ipLocation || p.location || '关都 · 真新镇';
+            lines.push(`${i + 1}楼 ${tag} ${p.author || '匿名用户'}（IP属地：${ip}）${bio}：${p.content || ''}`);
             const nested = Array.isArray(p.replies) ? p.replies : [];
             nested.forEach((r, ri) => {
                 const rTag = r.isUser ? '【主角本人】' : '【论坛网友】';
                 const rBio = r.authorBio ? `（简介：${r.authorBio}）` : '';
-                lines.push(`  └ 回复${ri + 1} ${rTag} ${r.author || '匿名用户'}${rBio}：${r.content || ''}`);
+                const rip = r.ipLocation || r.location || '关都 · 真新镇';
+                lines.push(`  └ 回复${ri + 1} ${rTag} ${r.author || '匿名用户'}（IP属地：${rip}）${rBio}：${r.content || ''}`);
             });
         });
         return lines.join('\n');
@@ -2792,9 +2794,7 @@
         if (!first) return '未知地区';
         let region = first.ipLocation || first.location || '';
         if (!region) {
-            const regions = ['关都地区', '城都地区', '丰缘地区', '神奥地区', '合众地区', '卡洛斯地区', '阿罗拉地区', '伽勒尔地区', '帕底亚地区'];
-            region = regions[Math.floor(Math.random() * regions.length)];
-            first.ipLocation = region;
+            return '关都 · 真新镇';
         }
         return region;
     }
@@ -3435,7 +3435,17 @@ content
 tags
 
 tags必须是 3～6 个与帖子内容高度相关的短标签，不要带 #，不要重复。
-ipLocation必须为表论坛网友生成地区，例如“日本东京”“中国广东”“美国加州”；里论坛不要生成，前端固定显示未知。
+ipLocation必须由AI根据当前剧情、NPC身份、当前所在位置、居住地、旅行路线和世界书内容自行判断。
+ipLocation必须符合《宝可梦》世界观，禁止随机生成。
+优先使用宝可梦世界中真实存在的地区、城市、城镇、岛屿或合理地点。
+优先使用“地区 · 城市/城镇”的格式，例如“关都 · 真新镇”“关都 · 金黄市”“城都 · 满金市”“丰缘 · 水静市”“神奥 · 百代市”“合众 · 飞云市”“卡洛斯 · 密阿雷市”“阿罗拉 · 好奥乐市”“伽勒尔 · 机擎市”“帕底亚 · 桌台市”。
+如果角色正在旅行，应使用剧情中当前所在地点，而不是机械使用出生地。
+如果剧情没有明确地点，应结合角色设定和上下文进行合理推断。
+同一个NPC在没有明确移动前，应尽量保持IP属地连续；明确移动后才改变。
+回复其他用户时，不要继承对方的IP属地。
+禁止使用现实世界城市或国家作为IP属地。
+不要只使用“关都地区”“城都地区”等过于宽泛的地区名，能具体到城市/城镇时必须具体。
+ipLocation只是论坛显示的发帖地区，不是真实互联网IP。
 author必须是与{{user}}无关的匿名网络昵称。
 
 只返回JSON数组，不要解释。
@@ -3446,6 +3456,7 @@ author必须是与{{user}}无关的匿名网络昵称。
     {
         "title":"...",
         "author":"...",
+        "ipLocation":"地区 · 城市/城镇",
         "content":"..."
     }
 ]
@@ -3523,6 +3534,9 @@ ${ctx}
                             author:
                                 x.author,
 
+                            ipLocation:
+                                x.ipLocation || x.location || '关都 · 真新镇',
+
                             time:
                                 '刚刚',
 
@@ -3531,6 +3545,9 @@ ${ctx}
                                     {
                                         author:
                                             x.author,
+
+                                        ipLocation:
+                                            x.ipLocation || x.location || '关都 · 真新镇',
 
                                         content:
                                             x.content
@@ -3718,6 +3735,9 @@ ${targetContent}
                         {
                             author:
                                 x.author,
+
+                            ipLocation:
+                                x.ipLocation || x.location || '关都 · 真新镇',
 
                             content:
                                 x.content
