@@ -1,5 +1,5 @@
 /**
- * 宝可梦小手机论坛 - SillyTavern 扩展版 (v0.41)
+ * 宝可梦小手机论坛 - SillyTavern 扩展版 (v0.13.19)
  * 基于酒馆助手脚本「测试论坛0.331」完整转换，脱离 Tavern Helper。
  * 使用 SillyTavern.getContext() / setExtensionPrompt / eventSource / loadWorldInfo。
  *
@@ -44,7 +44,7 @@
         const NS = 'pkmn_phone_forum_v9';
     const LEGACY_NS = 'pkmn_phone_forum_v7';
     const LEGACY_NS_2 = 'pkmn_phone_forum_v5';
-    const VERSION = 59; // persist contact API independently
+    const VERSION = "0.13.19"; // persist contact API independently
 
     // 必须尽早声明，否则严格模式下赋值会直接启动失败
     let chatState = null;
@@ -1815,7 +1815,7 @@
   <defs>
     <linearGradient id="rotomPhoneBody" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#ff7050"/>
-      <stop offset="0.55" stop-color="#f0443e"/>
+      <stop offset="0.13.19" stop-color="#f0443e"/>
       <stop offset="1" stop-color="#c92738"/>
     </linearGradient>
     <linearGradient id="rotomPhoneScreen" x1="0" y1="0" x2="0" y2="1">
@@ -2621,7 +2621,221 @@
     // 论坛帖子 -> 酒馆正文提示词注入（支持同时注入多个帖子）
     // ============================================================
 
-    const FORUM_INJECT_PROMPT_ID = 'pkmn-forum-thread-injection';
+    
+/* =========================================================
+ * Contact -> Main AI injection (v0.13.19)
+ * Keeps contact-chat memory separate per Tavern chat.
+ * ========================================================= */
+const CONTACT_INJECT_PROMPT_ID = 'pokemon_forum_contact_injection_v2';
+const CONTACT_INJECT_STORAGE_KEY = 'pokemon_forum_contact_injection_v2';
+
+function getCurrentChatInjectionKey() {
+    try {
+        const ctx = getSTContext();
+        return String(ctx?.chatId || ctx?.chat_id || (typeof getCurrentChatId === 'function' ? getCurrentChatId() : '') || 'default');
+    } catch (_) {
+        return 'default';
+    }
+}
+
+function loadContactInjectionState() {
+    try {
+        const raw = localStorage.getItem(CONTACT_INJECT_STORAGE_KEY);
+        const all = raw ? JSON.parse(raw) : {};
+        return all && typeof all === 'object' ? all : {};
+    } catch (_) {
+        return {};
+    }
+}
+
+function saveContactInjectionState(all) {
+    try {
+        localStorage.setItem(CONTACT_INJECT_STORAGE_KEY, JSON.stringify(all || {}));
+        return true;
+    } catch (e) {
+        console.warn('[论坛] 通讯录正文注入保存失败', e);
+        return false;
+    }
+}
+
+function getContactInjectionChatState() {
+    const all = loadContactInjectionState();
+    const key = getCurrentChatInjectionKey();
+    if (!all[key] || typeof all[key] !== 'object') all[key] = { contacts: {}, updatedAt: 0 };
+    if (!all[key].contacts || typeof all[key].contacts !== 'object') all[key].contacts = {};
+    return { all, key, state: all[key] };
+}
+
+
+function getContactPlayerInjectionName() {
+    const nickname = String(getContactPlayerDisplayName?.() || '').trim();
+    let realName = '';
+    try {
+        const ctx = getSTContext();
+        realName = String(
+            ctx?.name1 ||
+            ctx?.userName ||
+            ctx?.user_name ||
+            ctx?.persona?.name ||
+            ctx?.personaName ||
+            ''
+        ).trim();
+    } catch (_) {}
+    if (!realName) {
+        try {
+            realName = String(window.name1 || '').trim();
+        } catch (_) {}
+    }
+    if (!nickname) return realName || '主角';
+    if (!realName || nickname === realName) return nickname;
+    return `${nickname}（${realName}）`;
+}
+
+function getContactInjectionSettings(contactId) {
+    const { state } = getContactInjectionChatState();
+    const s = state.contacts?.[String(contactId)];
+    return {
+        enabled: !!s?.enabled,
+        auto: !!s?.auto,
+        limit: Math.max(1, Math.min(20, Number(s?.limit) || 10))
+    };
+}
+
+function setContactInjectionSettings(contactId, patch = {}) {
+    if (!contactId) return;
+    const { all, key, state } = getContactInjectionChatState();
+    const id = String(contactId);
+    const old = state.contacts[id] || {};
+    state.contacts[id] = {
+        enabled: patch.enabled !== undefined ? !!patch.enabled : !!old.enabled,
+        auto: patch.auto !== undefined ? !!patch.auto : !!old.auto,
+        limit: Math.max(1, Math.min(20, Number(patch.limit !== undefined ? patch.limit : old.limit) || 10))
+    };
+    state.updatedAt = Date.now();
+    all[key] = state;
+    saveContactInjectionState(all);
+}
+
+function getAllEnabledContactInjectionEntries() {
+    const { state } = getContactInjectionChatState();
+    const entries = [];
+    for (const id of Object.keys(state.contacts || {})) {
+        const s = state.contacts[id];
+        if (!s?.enabled) continue;
+        const c = contactById(id);
+        if (!c) continue;
+        const chat = Array.isArray(config.contactChats?.[id]) ? config.contactChats[id] : [];
+        const limit = Math.max(1, Math.min(20, Number(s.limit) || 10));
+        chat.slice(-limit).forEach(m => {
+            const content = String(m?.content || '').trim();
+            if (!content) return;
+            entries.push({
+                contactId: String(id),
+                contactName: contactDisplayName(c),
+                speaker: m.role === 'user' ? getContactPlayerInjectionName() : contactDisplayName(c),
+                content
+            });
+        });
+    }
+    return entries;
+}
+
+function buildContactInjectionText() {
+    const entries = getAllEnabledContactInjectionEntries();
+    if (!entries.length) return '';
+    const grouped = new Map();
+    for (const e of entries) {
+        if (!grouped.has(e.contactId)) grouped.set(e.contactId, { name: e.contactName, items: [] });
+        grouped.get(e.contactId).items.push(e);
+    }
+    const lines = [
+        '【通讯录私聊记忆｜当前酒馆聊天】',
+        '以下是被用户单独开启“注入正文”的通讯录私聊内容。它们属于私聊剧情记忆，不是公开论坛帖子。',
+        '请仅将其作为背景事实参考。通讯录昵称后括号内为当前酒馆主角的正式姓名；不要将通讯录昵称误认为主角姓名。不要擅自替主角发言，也不要把私聊内容伪装成论坛内容。'
+    ];
+    for (const g of grouped.values()) {
+        lines.push(`\n【联系人：${g.name}】`);
+        g.items.forEach((e, i) => lines.push(`${i + 1}. ${e.speaker}: ${e.content}`));
+    }
+    return lines.join('\n');
+}
+
+function applyContactInjectionToMainAI() {
+    try {
+        if (!TH.injectPrompts) return false;
+        const content = buildContactInjectionText();
+        if (typeof TH.uninjectPrompts === 'function') {
+            try { TH.uninjectPrompts([CONTACT_INJECT_PROMPT_ID]); } catch (_) {}
+        }
+        if (!content) return true;
+        TH.injectPrompts([{
+            id: CONTACT_INJECT_PROMPT_ID,
+            position: 'in_chat',
+            depth: 0,
+            role: 'user',
+            content,
+            should_scan: false
+        }], { once: false });
+        return true;
+    } catch (e) {
+        console.warn('[论坛] 应用通讯录正文注入失败', e);
+        return false;
+    }
+}
+
+async function injectContactChatToMainAI(contactId, options = {}) {
+    const c = contactById(contactId);
+    if (!c) return false;
+    const s = getContactInjectionSettings(contactId);
+    const limit = Math.max(1, Math.min(20, Number(options.limit) || s.limit || 10));
+    setContactInjectionSettings(contactId, { enabled: true, limit });
+    const ok = applyContactInjectionToMainAI();
+    if (ok) showToast(`✓ 已注入 ${contactDisplayName(c)} 的私聊正文`);
+    return ok;
+}
+
+async function clearContactInjectionFromMainAI(contactId, options = {}) {
+    if (contactId) {
+        setContactInjectionSettings(contactId, { enabled: false });
+    } else {
+        const { all, key, state } = getContactInjectionChatState();
+        Object.keys(state.contacts || {}).forEach(id => { state.contacts[id].enabled = false; });
+        state.updatedAt = Date.now();
+        all[key] = state;
+        saveContactInjectionState(all);
+    }
+    const ok = applyContactInjectionToMainAI();
+    if (ok && contactId && options.toast !== false) {
+        const c = contactById(contactId);
+        if (c) showToast(`✓ 已取消 ${contactDisplayName(c)} 的正文注入`);
+    }
+    return ok;
+}
+
+async function setContactAutoInjection(contactId, enabled, limit) {
+    if (!contactId) return false;
+    const current = getContactInjectionSettings(contactId);
+    setContactInjectionSettings(contactId, {
+        auto: !!enabled,
+        limit: limit || current.limit,
+        enabled: enabled ? true : current.enabled
+    });
+    if (enabled) await applyContactInjectionToMainAI();
+    return true;
+}
+
+async function autoRefreshContactInjection(contactId) {
+    const s = getContactInjectionSettings(contactId);
+    if (!s.auto) return false;
+    if (!s.enabled) setContactInjectionSettings(contactId, { enabled: true });
+    return applyContactInjectionToMainAI();
+}
+
+async function refreshContactInjectionOnChatChange() {
+    return applyContactInjectionToMainAI();
+}
+
+const FORUM_INJECT_PROMPT_ID = 'pkmn-forum-thread-injection';
 
     function isThreadInjected(id) {
         return !!(id && injectedThreadIds.has(id));
@@ -3966,7 +4180,7 @@ ${
 
 [
     {
-        "threadTitle":"已有帖子标题",
+        "threadId":"已有帖子的唯一ID","threadTitle":"已有帖子标题",
         "author":"NPC昵称",
         "content":"NPC回复"
     }
@@ -4025,17 +4239,20 @@ ${buildLinkedContactMemory()}
                     x => {
 
                         const t =
-                            target.find(
-                                t =>
-                                    t.title ===
-                                    x.threadTitle
-                            ) ||
-                            target[
-                                Math.floor(
-                                    Math.random() *
-                                    target.length
-                                )
-                            ];
+            target.find(
+                t =>
+                    (x.threadId && String(t.id) === String(x.threadId)) ||
+                    (!x.threadId && x.threadTitle && t.title === x.threadTitle)
+            );
+
+        // Never randomly assign an AI reply to another thread.
+        if (!t) {
+            console.warn('[论坛] 丢弃无法精确绑定帖子的 AI 回复', {
+                threadId: x.threadId,
+                threadTitle: x.threadTitle
+            });
+            return;
+        }
 
                         if (
                             t &&
@@ -5746,7 +5963,73 @@ ${blocks.join('\n\n')}
         list.querySelectorAll('[data-contact]').forEach(el => el.onclick = () => openContact(el.dataset.contact));
     }
 
-    function renderChat() {
+    
+    let contactMultiDeleteMode = false;
+    let contactSelectedMessages = new Set();
+    let contactLongPressTimer = null;
+
+    function exitContactDeleteMode() {
+        contactMultiDeleteMode = false;
+        contactSelectedMessages.clear();
+        renderChat();
+    }
+
+    function deleteSelectedContactMessages() {
+        if (!contactSelectedMessages.size) {
+            showToast('请选择要删除的消息');
+            return;
+        }
+        const chat = config.contactChats[currentContactId] || [];
+        config.contactChats[currentContactId] = chat.filter((_, i) => !contactSelectedMessages.has(i));
+        saveContactConfig();
+        showToast(`已删除 ${contactSelectedMessages.size} 条消息`);
+        contactSelectedMessages.clear();
+        contactMultiDeleteMode = false;
+        renderChat();
+        autoRefreshContactInjection(currentContactId);
+    }
+
+    function bindContactMessageLongPress() {
+        const box = $('pkmn-chat-messages');
+        if (!box) return;
+
+        box.querySelectorAll('.wechat-msg-row[data-msg-index]').forEach(row => {
+            const index = Number(row.dataset.msgIndex);
+
+            const toggleSelect = () => {
+                if (!contactMultiDeleteMode) return;
+                if (contactSelectedMessages.has(index)) contactSelectedMessages.delete(index);
+                else contactSelectedMessages.add(index);
+                renderChat();
+            };
+
+            row.addEventListener('click', toggleSelect);
+
+            row.addEventListener('touchstart', () => {
+                contactLongPressTimer = setTimeout(() => {
+                    contactMultiDeleteMode = true;
+                    contactSelectedMessages.add(index);
+                    renderChat();
+                }, 550);
+            }, {passive:true});
+
+            row.addEventListener('touchend', () => clearTimeout(contactLongPressTimer));
+            row.addEventListener('touchmove', () => clearTimeout(contactLongPressTimer));
+
+            row.addEventListener('mousedown', () => {
+                contactLongPressTimer = setTimeout(() => {
+                    contactMultiDeleteMode = true;
+                    contactSelectedMessages.add(index);
+                    renderChat();
+                }, 550);
+            });
+
+            row.addEventListener('mouseup', () => clearTimeout(contactLongPressTimer));
+            row.addEventListener('mouseleave', () => clearTimeout(contactLongPressTimer));
+        });
+    }
+
+function renderChat() {
         const c = contactById(currentContactId);
         if (!c) return;
         const contactName = contactDisplayName(c);
@@ -5754,11 +6037,11 @@ ${blocks.join('\n\n')}
         $('pkmn-chat-title').textContent = contactName;
         const box = $('pkmn-chat-messages');
         const msgs = config.contactChats[currentContactId] || [];
-        box.innerHTML = msgs.map(m => {
+        box.innerHTML = (contactMultiDeleteMode ? `<div class="wechat-delete-toolbar"><button data-contact-cancel-delete>取消</button><span>已选择 ${contactSelectedMessages.size} 条</span><button data-contact-delete-selected>删除</button></div>` : '') + msgs.map((m, msgIndex) => {
             const mine = m.role === 'user';
             const displayName = mine ? playerName : contactName;
             const avatarText = mine ? playerName.slice(0, 1) : String(c.avatar || contactName || '👤').slice(0, 1);
-            return `<div class="wechat-msg-row ${mine?'mine':'theirs'}">
+            return `<div data-msg-index="${msgIndex}" class="wechat-msg-row ${mine?'mine':'theirs'} ${contactSelectedMessages.has(msgIndex)?'contact-msg-selected':''}">
                 ${mine ? '' : `<span class="wechat-avatar mini">${esc(avatarText)}</span>`}
                 <div class="wechat-msg-main">
                     <div class="wechat-msg-name">${esc(displayName)}</div>
@@ -5768,6 +6051,9 @@ ${blocks.join('\n\n')}
                 ${mine ? `<span class="wechat-avatar mini me">${esc(avatarText)}</span>` : ''}
             </div>`;
         }).join('') || `<div class="wechat-daytip">与 ${esc(contactName)} 的聊天</div>`;
+        box.querySelector('[data-contact-cancel-delete]')?.addEventListener('click', exitContactDeleteMode);
+        box.querySelector('[data-contact-delete-selected]')?.addEventListener('click', deleteSelectedContactMessages);
+        bindContactMessageLongPress();
         box.scrollTop = box.scrollHeight;
     }
 
@@ -5789,6 +6075,7 @@ ${blocks.join('\n\n')}
         chat.push({role:'user', content:text, time:new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})});
         input.value = '';
         renderChat();
+        await autoRefreshContactInjection(currentContactId);
         const typing = document.createElement('div');
         typing.className='wechat-typing';
         typing.textContent=contactDisplayName(c)+' 正在输入…';
@@ -5808,6 +6095,7 @@ ${blocks.join('\n\n')}
             typing.remove();
             chat.push({role:'assistant', content:reply || '……', time:new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})});
             saveContactConfig();
+            await autoRefreshContactInjection(currentContactId);
             renderChat();
             renderContacts($('pkmn-contact-search')?.value || '');
         } catch (e) {
@@ -5856,6 +6144,26 @@ ${blocks.join('\n\n')}
                 <div class="contact-settings-persist">ⓘ 此设置为当前联系人的独立设置，修改后立即保存，下次打开仍保持当前状态。</div>
             </section>
 
+
+            <section class="contact-settings-card contact-settings-injection-card" id="contact-person-injection-panel">
+                <div class="contact-settings-section-title">
+                    <span class="contact-settings-icon">↗</span> 正文注入
+                </div>
+                <div class="contact-injection-buttons">
+                    <button type="button" class="contact-injection-btn" id="contact-injection-toggle" aria-pressed="false">手动注入</button>
+                    <button type="button" class="contact-injection-btn" id="contact-injection-auto" aria-pressed="false">自动注入</button>
+                </div>
+                <div class="contact-settings-injection-limit">
+                    <span>注入最近消息</span>
+                    <div class="contact-injection-stepper">
+                        <button type="button" id="contact-injection-minus">−</button>
+                        <b id="contact-injection-limit">10</b>
+                        <button type="button" id="contact-injection-plus">＋</button>
+                    </div>
+                    <small>条（1–20）</small>
+                </div>
+            </section>
+
             <button type="button" class="contact-moral-unlock-btn" id="contact-moral-unlock-btn" style="background:#fff;color:#222;border:1px solid #d0d0d0;border-radius:8px;padding:9px 12px;width:100%;margin-top:10px;">道德检定</button>
             <div id="contact-moral-unlock-box" style="display:none;margin-top:8px;">
                 <input id="contact-moral-unlock-input" type="text" autocomplete="off" style="width:100%;box-sizing:border-box;padding:9px;border:1px solid #ccc;border-radius:8px;" />
@@ -5879,6 +6187,60 @@ ${blocks.join('\n\n')}
             saveContactConfig();
             showToast(c.linkForum ? '✓ 已开启此聊天与论坛联动' : '✓ 已关闭此聊天与论坛联动');
         };
+
+        const injectionToggle = $('contact-injection-toggle');
+        const injectionAuto = $('contact-injection-auto');
+        const injectionLimit = $('contact-injection-limit');
+        const injectionMinus = $('contact-injection-minus');
+        const injectionPlus = $('contact-injection-plus');
+
+        function syncContactInjectionUI() {
+            const s = getContactInjectionSettings(c.id);
+            if (injectionToggle) {
+                injectionToggle.textContent = s.enabled ? '已注入' : '手动注入';
+                injectionToggle.classList.toggle('is-active', s.enabled);
+                injectionToggle.setAttribute('aria-pressed', s.enabled ? 'true' : 'false');
+            }
+            if (injectionAuto) {
+                injectionAuto.classList.toggle('is-active', s.auto);
+                injectionAuto.setAttribute('aria-pressed', s.auto ? 'true' : 'false');
+            }
+            if (injectionLimit) injectionLimit.textContent = String(s.limit);
+        }
+        syncContactInjectionUI();
+
+        injectionToggle?.addEventListener('click', async () => {
+            const s = getContactInjectionSettings(c.id);
+            if (s.enabled) await clearContactInjectionFromMainAI(c.id);
+            else await injectContactChatToMainAI(c.id, {limit: s.limit});
+            syncContactInjectionUI();
+        });
+
+        injectionAuto?.addEventListener('click', async () => {
+            const s = getContactInjectionSettings(c.id);
+            const on = !s.auto;
+            await setContactAutoInjection(c.id, on, s.limit);
+            if (on) {
+                setContactInjectionSettings(c.id, {enabled: true});
+                await applyContactInjectionToMainAI();
+            }
+            syncContactInjectionUI();
+            showToast(on ? `✓ ${contactDisplayName(c)} 已开启自动注入` : `✓ ${contactDisplayName(c)} 已关闭自动注入`);
+        });
+
+        injectionMinus?.addEventListener('click', async () => {
+            const s = getContactInjectionSettings(c.id);
+            setContactInjectionSettings(c.id, {limit: Math.max(1, s.limit - 1)});
+            if (getContactInjectionSettings(c.id).enabled) await applyContactInjectionToMainAI();
+            syncContactInjectionUI();
+        });
+
+        injectionPlus?.addEventListener('click', async () => {
+            const s = getContactInjectionSettings(c.id);
+            setContactInjectionSettings(c.id, {limit: Math.min(20, s.limit + 1)});
+            if (getContactInjectionSettings(c.id).enabled) await applyContactInjectionToMainAI();
+            syncContactInjectionUI();
+        });
         $('contact-moral-unlock-btn').onclick = () => {
             const box = $('contact-moral-unlock-box');
             const input = $('contact-moral-unlock-input');
@@ -6423,7 +6785,7 @@ ${blocks.join('\n\n')}
 
 
     // ============================================================
-    // v0.55：洛托姆悬浮按钮拖动引擎（彻底重写）
+    // v0.13.19：洛托姆悬浮按钮拖动引擎（彻底重写）
     // ============================================================
     // 旧版同时混用 mouse / pointer / touch，并在不同 window 上监听。
     // Android WebView 下很容易出现“能点但拖不动”。
@@ -6815,3 +7177,27 @@ ${blocks.join('\n\n')}
     }); // end whenReady
 
 })();
+
+/* v0.13.19: restore contact injection after Tavern chat switches */
+if (!window.__pokemonForumContactInjectionHooked) {
+    window.__pokemonForumContactInjectionHooked = true;
+    try {
+        window.addEventListener('CHAT_CHANGED', () => {
+            setTimeout(() => { refreshContactInjectionOnChatChange(); }, 50);
+        });
+        window.addEventListener('CHAT_CREATED', () => {
+            setTimeout(() => { refreshContactInjectionOnChatChange(); }, 50);
+        });
+    } catch (_) {}
+}
+
+
+try {
+    window.pokemonForumContactInjection = {
+        inject: injectContactChatToMainAI,
+        clear: clearContactInjectionFromMainAI,
+        refresh: refreshContactInjectionOnChatChange,
+        getState: getContactInjectionForCurrentChat
+    };
+} catch (_) {}
+
