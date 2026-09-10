@@ -135,6 +135,9 @@
 #pkmn-phone-panel #pkmn-chat,
 #pkmn-phone-panel #pkmn-contact-settings-view,
 #pkmn-phone-panel #pkmn-contact-person-settings-view{transform:translate3d(100%,0,0)}
+#pkmn-phone-panel #pkmn-devon-shop,
+#pkmn-phone-panel #pkmn-devon-detail,
+#pkmn-phone-panel #pkmn-devon-orders-view{transform:translate3d(100%,0,0)}
 #pkmn-phone-panel .pkmn-view{
   will-change:transform;
   backface-visibility:hidden;
@@ -1229,7 +1232,7 @@
 }
 
 /* ============================================================
-   微信式通讯录 / 聊天 UI
+   通讯录 / 聊天 UI
    ============================================================ */
 #pkmn-phone-panel .pkmn-chat-app{background:#f2f2f2;color:#111}
 #pkmn-phone-panel .wechat-nav{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 10px;background:rgba(247,247,247,.96);border-bottom:1px solid #ddd;flex:none}
@@ -1240,7 +1243,7 @@
 #pkmn-phone-panel .wechat-contact-list{flex:1;overflow:auto;background:#fff}
 #pkmn-phone-panel .wechat-contact{width:100%;display:flex;align-items:center;text-align:left;border:0;border-bottom:1px solid #eee;background:#fff;padding:11px 13px;min-height:72px;cursor:pointer}
 #pkmn-phone-panel .wechat-contact:active{background:#e9e9e9}
-#pkmn-phone-panel .wechat-avatar{width:48px;height:48px;border-radius:7px;background:#d9e9f0;display:flex;align-items:center;justify-content:center;flex:none;font-size:25px;overflow:hidden}
+#pkmn-phone-panel .wechat-avatar{width:48px;height:48px;border-radius:8px;background:#d9e9f0;display:flex;align-items:center;justify-content:center;flex:none;font-size:25px;overflow:hidden;position:relative;color:#fff;font-weight:600;box-shadow:inset 0 1px 0 rgba(255,255,255,.32),0 1px 2px rgba(18,28,40,.10)}
 #pkmn-phone-panel .wechat-contact-main{min-width:0;flex:1;margin-left:11px;display:flex;flex-direction:column;gap:5px}
 #pkmn-phone-panel .wechat-contact-main b{font-size:15px;font-weight:600;color:#222}
 #pkmn-phone-panel .wechat-contact-main small{font-size:12px;color:#999;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1254,7 +1257,7 @@
 #pkmn-phone-panel .wechat-msg-row{display:flex;align-items:flex-start;gap:8px;margin:9px 0}
 #pkmn-phone-panel .wechat-msg-row.mine{justify-content:flex-end}
 #pkmn-phone-panel .wechat-avatar.mini{width:38px;height:38px;border-radius:6px;font-size:18px}
-#pkmn-phone-panel .wechat-avatar.mini.me{background:#9fd48a;color:#fff;font-size:12px}
+#pkmn-phone-panel .wechat-avatar.mini.me{background:transparent;color:#fff;font-size:14px}
 #pkmn-phone-panel .wechat-bubble{position:relative;max-width:260px;padding:9px 11px;border-radius:4px;background:#fff;font-size:14px;line-height:1.55;color:#222;word-break:break-word;box-shadow:0 1px 1px rgba(0,0,0,.04)}
 #pkmn-phone-panel .wechat-msg-row.mine .wechat-bubble{background:#95d475}
 #pkmn-phone-panel .wechat-time{display:block;color:#aaa;font-size:9px;margin-top:3px;text-align:left}
@@ -1262,13 +1265,13 @@
 #pkmn-phone-panel .wechat-inputbar{min-height:54px;padding:8px;background:#f7f7f7;border-top:1px solid #ddd;display:flex;align-items:flex-end;gap:7px}
 #pkmn-phone-panel .wechat-inputbar>button{border:0;background:transparent;font-size:24px;width:34px;height:38px}
 #pkmn-phone-panel .wechat-inputbar textarea{flex:1;resize:none;max-height:100px;min-height:38px;border:1px solid #ddd;border-radius:5px;background:#fff;padding:9px 10px;font-size:14px;line-height:20px;outline:none}
-#pkmn-phone-panel .wechat-inputbar .wechat-send{width:48px;height:38px;background:#07c160;color:#fff;border-radius:5px;font-size:13px;font-weight:600}
+#pkmn-phone-panel .wechat-inputbar .wechat-send{width:48px;height:38px;background:#1a1a1a;color:#fff;border-radius:5px;font-size:13px;font-weight:600}
 #pkmn-phone-panel .wechat-typing{display:inline-block;margin:4px 0 8px 46px;padding:7px 10px;border-radius:4px;background:#fff;color:#999;font-size:11px}
 #pkmn-phone-panel .wechat-setting-card{background:#fff;border-radius:9px;padding:13px;margin-bottom:10px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
 #pkmn-phone-panel .wechat-setting-title{font-weight:700;font-size:14px;margin-bottom:10px}
 #pkmn-phone-panel .wechat-setting-card label{display:block;font-size:12px;color:#666;margin:8px 0}
 #pkmn-phone-panel .wechat-setting-card .pkmn-input,#pkmn-phone-panel .wechat-setting-card .pkmn-textarea{box-sizing:border-box;width:100%;margin-top:5px}
-#pkmn-phone-panel .pkmn-contacts-icon .wechat-app-logo{font-size:31px;background:#07c160;color:#fff;border-radius:13px;display:flex;align-items:center;justify-content:center}
+#pkmn-phone-panel .pkmn-contacts-icon .pkmn-contacts-logo{font-size:31px;background:#f2f3f5;color:#3a3a3a;border-radius:13px;display:flex;align-items:center;justify-content:center}
 
 /* ============================================================
    论坛用户 ↔ 通讯录：用户资料卡 / 单联系人设置
@@ -1290,7 +1293,7 @@
 #pkmn-phone-panel .pkmn-switch-row{display:flex!important;align-items:center;gap:10px;padding:9px 0;margin:0!important;color:#222!important;font-size:14px!important}
 #pkmn-phone-panel .pkmn-switch-row input{appearance:none;width:44px;height:25px;border-radius:13px;background:#ccc;position:relative;outline:0;flex:none;transition:.18s}
 #pkmn-phone-panel .pkmn-switch-row input:before{content:'';position:absolute;top:2px;left:2px;width:21px;height:21px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.22);transition:.18s}
-#pkmn-phone-panel .pkmn-switch-row input:checked{background:#07c160}
+#pkmn-phone-panel .pkmn-switch-row input:checked{background:#1a1a1a}
 #pkmn-phone-panel .pkmn-switch-row input:checked:before{transform:translateX(19px)}
 @keyframes pkmnUserCardIn{from{transform:scale(.96);opacity:0}to{transform:scale(1);opacity:1}}
 
@@ -1302,13 +1305,15 @@
 #pkmn-phone-panel #pkmn-contact-person-settings-view .wechat-nav-title{font-size:18px;letter-spacing:.1px}
 #pkmn-phone-panel #pkmn-contact-person-settings-view .pkmn-settings{padding:14px 12px 28px;overflow:auto}
 #pkmn-phone-panel .contact-settings-profile{display:flex;align-items:center;gap:14px;background:#fff;border-radius:16px;padding:18px 16px;margin-bottom:12px;box-shadow:0 2px 10px rgba(20,30,40,.045);border:1px solid rgba(0,0,0,.025)}
-#pkmn-phone-panel .contact-settings-avatar{width:64px;height:64px;border-radius:15px;background:linear-gradient(145deg,#dcecf2,#c7dfe8);display:flex;align-items:center;justify-content:center;flex:none;color:#fff;font-size:29px;font-weight:600;box-shadow:inset 0 1px 0 rgba(255,255,255,.55)}
+#pkmn-phone-panel .contact-settings-avatar{width:64px;height:64px;border-radius:17px;background:linear-gradient(145deg,#8FB6C9,#5F8CA6);display:flex;align-items:center;justify-content:center;flex:none;color:#fff;font-size:27px;font-weight:600;position:relative;overflow:hidden;letter-spacing:.02em;box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 2px 6px rgba(18,28,40,.12)}
 #pkmn-phone-panel .contact-settings-profile-main{min-width:0}
 #pkmn-phone-panel .contact-settings-name{font-size:19px;font-weight:750;color:#1f252b;line-height:1.35}
 #pkmn-phone-panel .contact-settings-original{margin-top:5px;font-size:12px;color:#9aa0a6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #pkmn-phone-panel .contact-settings-card{background:#fff;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 2px 10px rgba(20,30,40,.045);border:1px solid rgba(0,0,0,.025)}
 #pkmn-phone-panel .contact-settings-section-title{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:750;color:#20262c;margin-bottom:13px}
-#pkmn-phone-panel .contact-settings-icon{width:27px;height:27px;border-radius:8px;background:#f1f3f5;display:inline-flex;align-items:center;justify-content:center;font-size:15px;color:#4f5963}
+#pkmn-phone-panel .contact-settings-icon{width:27px;height:27px;border-radius:8px;background:#f1f3f5;display:inline-flex;align-items:center;justify-content:center;font-size:15px;color:#4f5963;flex:none}
+#pkmn-phone-panel .contact-settings-ico{width:15px;height:15px;stroke-width:2;opacity:.92}
+#pkmn-phone-panel .contact-settings-ico-sm{width:15px;height:15px;stroke-width:2.4;display:inline-block;vertical-align:-2px}
 #pkmn-phone-panel .contact-settings-field-label{display:block;font-size:12px;color:#777f87;margin:0!important}
 #pkmn-phone-panel .contact-settings-input{height:48px;border-radius:11px!important;border:1px solid #dfe3e7!important;background:#fff!important;font-size:15px!important;padding:0 13px!important;margin-top:6px!important;outline:none}
 #pkmn-phone-panel .contact-settings-input:focus{border-color:#b9c3cc!important;box-shadow:0 0 0 3px rgba(80,100,120,.07)}
@@ -1321,7 +1326,7 @@
 #pkmn-phone-panel .contact-settings-toggle-row input{position:absolute!important;opacity:0!important;width:1px!important;height:1px!important;pointer-events:none!important}
 #pkmn-phone-panel .contact-settings-toggle-row i{display:block;position:relative;flex:none;width:50px;height:30px;border-radius:16px;background:#cfd4d8;box-shadow:inset 0 1px 2px rgba(0,0,0,.12);transition:background .18s ease,box-shadow .18s ease}
 #pkmn-phone-panel .contact-settings-toggle-row i:after{content:'';position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,.18);transition:transform .18s ease}
-#pkmn-phone-panel .contact-settings-toggle-row input:checked+i{background:#07c160;box-shadow:inset 0 1px 2px rgba(0,80,35,.15)}
+#pkmn-phone-panel .contact-settings-toggle-row input:checked+i{background:#1a1a1a;box-shadow:inset 0 1px 2px rgba(0,0,0,.15)}
 #pkmn-phone-panel .contact-settings-toggle-row input:checked+i:after{transform:translateX(20px)}
 #pkmn-phone-panel .contact-settings-persist{background:#f0f7ff;border-radius:11px;padding:10px 11px;font-size:11px;line-height:1.55;color:#5f88b4;margin-top:3px}
 #pkmn-phone-panel .contact-settings-score{height:46px;border:1px solid #e0e4e7;border-radius:11px;display:flex;align-items:center;padding:0 12px;box-sizing:border-box;font-size:14px;color:#555e66;background:#fafbfc}
@@ -1502,7 +1507,7 @@
   #pkmn-phone-panel .pkmn-btn{padding:0 7px!important;font-size:11px!important}
 }
 
-/* v0.13.10 · 微信聊天双方昵称 */
+/* v0.13.10 · 聊天双方昵称 */
 #pkmn-phone-panel .wechat-msg-main{
   min-width:0;
   display:flex;
@@ -1531,7 +1536,7 @@
 #pkmn-phone-panel .pkmn-contact-add-progress{position:absolute;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box}
 #pkmn-phone-panel .pkmn-contact-add-progress-backdrop{position:absolute;inset:0;background:rgba(18,24,30,.32);backdrop-filter:blur(2px)}
 #pkmn-phone-panel .pkmn-contact-add-progress-box{position:relative;width:min(320px,88%);box-sizing:border-box;padding:25px 22px 22px;border-radius:18px;background:#fff;box-shadow:0 16px 42px rgba(0,0,0,.2);text-align:center}
-#pkmn-phone-panel .pkmn-contact-add-progress-spinner{width:28px;height:28px;margin:0 auto 13px;border:3px solid #e7ebee;border-top-color:#07c160;border-radius:50%;animation:pkmnContactAddSpin .8s linear infinite}
+#pkmn-phone-panel .pkmn-contact-add-progress-spinner{width:28px;height:28px;margin:0 auto 13px;border:3px solid #e7ebee;border-top-color:#4a4a4a;border-radius:50%;animation:pkmnContactAddSpin .8s linear infinite}
 #pkmn-phone-panel .pkmn-contact-add-progress-title{font-size:17px;font-weight:750;color:#20262c}
 #pkmn-phone-panel .pkmn-contact-add-progress-text{margin-top:9px;font-size:13px;line-height:1.55;color:#5d666e;white-space:pre-wrap;word-break:break-word}
 #pkmn-phone-panel .pkmn-contact-add-progress-hint{margin-top:6px;font-size:11px;color:#a1a7ac}
@@ -1618,7 +1623,7 @@
   #pkmn-phone-panel .contact-injection-btn{height:40px;font-size:13px}
 }
 
-/* v0.13.19 微信消息多选删除 */
+/* v0.13.19 消息多选删除 */
 #pkmn-phone-panel .wechat-delete-toolbar{
  display:flex;align-items:center;justify-content:space-between;
  padding:8px 10px;margin-bottom:8px;background:#fff;border-bottom:1px solid #eee;
@@ -2345,3 +2350,777 @@
 #pkmn-phone-panel.pkmn-theme-night .pkmn-theme-switch:checked + .pkmn-theme-switch-ui{
   background:#8b68d8!important;
 }
+
+/* ============================================================
+   v0.14.1 · 得文商店（Devon Shop）
+   ============================================================ */
+#pkmn-phone-panel #pkmn-devon-shop,
+#pkmn-phone-panel #pkmn-devon-detail,
+#pkmn-phone-panel #pkmn-devon-orders-view{transform:translate3d(100%,0,0);background:#f6f8fb!important;color:#18202a!important}
+#pkmn-phone-panel .pkmn-devon-app-icon .pkmn-devon-logo{background:linear-gradient(145deg,#233b62,#557db6)!important;color:#fff!important;font-weight:900!important;font-size:30px!important;border-radius:16px!important;box-shadow:0 6px 16px rgba(44,73,118,.22)!important}
+#pkmn-phone-panel .devon-shop-top{height:62px;min-height:62px;display:flex;align-items:center;gap:8px;padding:5px 10px 0;background:#fff;border-bottom:1px solid #dfe5ec;z-index:5}
+#pkmn-phone-panel .devon-back{width:40px;height:44px;border:0;background:transparent;font-size:34px;line-height:40px;color:#253243}
+#pkmn-phone-panel .devon-brand{display:flex;align-items:center;gap:9px;flex:1;min-width:0}
+#pkmn-phone-panel .devon-brand-mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(145deg,#263e66,#5f85bc);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:19px;box-shadow:0 3px 8px rgba(35,62,100,.2)}
+#pkmn-phone-panel .devon-brand b{display:block;font-size:16px;line-height:18px}
+#pkmn-phone-panel .devon-brand small{display:block;font-size:9px;letter-spacing:1.5px;color:#8290a0;font-weight:700}
+#pkmn-phone-panel .devon-cart{position:relative;width:42px;height:42px;border:0;border-radius:12px;background:#f1f4f8;font-size:19px}
+#pkmn-phone-panel .devon-cart i{position:absolute;right:-2px;top:-2px;min-width:17px;height:17px;padding:0 4px;border-radius:999px;background:#d84f5a;color:#fff;font-style:normal;font-size:10px;line-height:17px}
+/* v0.14.5：商店设置页 */
+#pkmn-phone-panel .devon-set-item{display:flex;align-items:center;gap:11px;background:#fff;border:1px solid #e0e6ed;border-radius:13px;padding:12px;margin-top:10px}
+#pkmn-phone-panel .devon-set-ico{width:42px;height:42px;border-radius:11px;background:#f1f4f8;display:flex;align-items:center;justify-content:center;font-size:20px;flex:none}
+#pkmn-phone-panel .devon-set-info{min-width:0;flex:1}
+#pkmn-phone-panel .devon-set-info b{display:block;font-size:13px;color:#22303f}
+#pkmn-phone-panel .devon-set-info p{margin:4px 0 0;font-size:11px;line-height:1.5;color:#8994a0}
+#pkmn-phone-panel .devon-set-btn{flex:none;border:0;border-radius:10px;background:#28568f;color:#fff;font-size:12px;font-weight:700;padding:8px 12px}
+#pkmn-phone-panel .devon-set-btn:disabled{opacity:.6}
+#pkmn-phone-panel .devon-set-btn.devon-set-danger{background:#b8444f}
+#pkmn-phone-panel .devon-set-note{margin-top:12px;font-size:10px;line-height:1.6;color:#97a1ad;padding:0 2px}
+#pkmn-phone-panel.pkmn-theme-night .devon-set-item{background:#172033;border-color:#2d3a50}
+#pkmn-phone-panel.pkmn-theme-night .devon-set-ico{background:#111820}
+#pkmn-phone-panel.pkmn-theme-night .devon-set-info b{color:#edf3ff}
+#pkmn-phone-panel.pkmn-theme-night .devon-set-info p{color:#8f9cb0}
+#pkmn-phone-panel.pkmn-theme-night .devon-set-btn{background:#3a6ea8}
+#pkmn-phone-panel.pkmn-theme-night .devon-set-btn.devon-set-danger{background:#a0434d}
+#pkmn-phone-panel.pkmn-theme-night .devon-set-note{color:#7f8b9c}
+#pkmn-phone-panel .devon-shop-scroll,#pkmn-phone-panel .devon-detail-scroll,#pkmn-phone-panel .devon-orders-scroll{flex:1;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch}
+#pkmn-phone-panel .devon-shop-scroll{padding:12px 12px 24px}
+#pkmn-phone-panel .devon-search{height:40px;display:flex;align-items:center;gap:7px;padding:0 12px;border:1px solid #dbe2ea;background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(38,55,76,.04)}
+#pkmn-phone-panel .devon-search span{font-size:20px;color:#8190a1}
+#pkmn-phone-panel .devon-search input{flex:1;border:0;outline:0;background:transparent;font-size:13px;color:#24303e;min-width:0}
+#pkmn-phone-panel .devon-hero{margin-top:12px;border-radius:16px;padding:15px 15px;min-height:108px;background:linear-gradient(120deg,#243b61,#5477a9);color:#fff;display:flex;align-items:center;justify-content:space-between;overflow:hidden;position:relative;box-shadow:0 8px 20px rgba(39,67,105,.18)}
+/* v0.15.0 会员横幅四配色 + 徽章 */
+#pkmn-phone-panel .devon-hero-right{display:flex;align-items:center;gap:9px;flex:none;position:relative}
+#pkmn-phone-panel .devon-member-badge{font-size:10px;font-weight:800;padding:4px 9px;border-radius:999px;white-space:nowrap}
+#pkmn-phone-panel .devon-hero-gold{background:linear-gradient(120deg,#9a6d12,#e0b13c)}
+#pkmn-phone-panel .devon-hero-gold .devon-member-badge{background:rgba(255,255,255,.92);color:#8a5f08}
+#pkmn-phone-panel .devon-hero-platinum{background:linear-gradient(120deg,#8fa0b0,#e8eef3)}
+#pkmn-phone-panel .devon-hero-platinum small{color:#4a5765}
+#pkmn-phone-panel .devon-hero-platinum strong{color:#22303f}
+#pkmn-phone-panel .devon-hero-platinum span{color:#4a5765}
+#pkmn-phone-panel .devon-hero-platinum .devon-member-badge{background:#fff;color:#5a6b7c;border:1px solid #b8c4cf}
+#pkmn-phone-panel .devon-hero-platinum .devon-hero-orb{border-color:#5a6b7c;color:#3d4c5c}
+#pkmn-phone-panel .devon-hero-blackgold{background:linear-gradient(120deg,#101010,#3a3a3a)}
+#pkmn-phone-panel .devon-hero-blackgold small{color:#9c8a55}
+#pkmn-phone-panel .devon-hero-blackgold strong{color:#f5d78a}
+#pkmn-phone-panel .devon-hero-blackgold span{color:#c9b06a}
+#pkmn-phone-panel .devon-hero-blackgold .devon-member-badge{background:#1c1c1c;color:#f0c75e;border:1px solid #6b5a2a}
+#pkmn-phone-panel .devon-hero-blackgold .devon-hero-orb{border-color:#f0c75e;color:#f0c75e}
+#pkmn-phone-panel .devon-hero-machamp{background:linear-gradient(120deg,#6e0f1c,#c3374a)}
+#pkmn-phone-panel .devon-hero-machamp .devon-member-badge{background:#fff;color:#8b1a29}
+/* v0.15.0 会员卡包 */
+#pkmn-phone-panel .devon-set-head{font-size:13px;font-weight:800;color:#22303f;margin:14px 2px 2px}
+#pkmn-phone-panel .devon-set-head small{display:block;font-size:10px;font-weight:400;color:#8994a0;margin-top:2px}
+#pkmn-phone-panel .devon-vip-cards{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:8px}
+#pkmn-phone-panel .devon-vip-card{border-radius:13px;padding:11px 11px 9px;position:relative;cursor:pointer;border:2px solid transparent;min-height:104px}
+#pkmn-phone-panel .devon-vip-card small{display:block;font-size:8px;letter-spacing:1.5px;opacity:.75;font-weight:800}
+#pkmn-phone-panel .devon-vip-card b{display:block;font-size:14px;margin-top:4px}
+#pkmn-phone-panel .devon-vip-card p{font-size:10px;line-height:1.5;opacity:.9;margin:5px 0 0}
+#pkmn-phone-panel .devon-vip-card span{display:inline-block;font-size:9px;margin-top:6px;padding:2px 7px;border-radius:999px;background:rgba(255,255,255,.25)}
+#pkmn-phone-panel .devon-vip-gold{background:linear-gradient(160deg,#b07f1e,#e8bc4a)}
+#pkmn-phone-panel .devon-vip-gold b,#pkmn-phone-panel .devon-vip-gold p,#pkmn-phone-panel .devon-vip-gold small{color:#fff}
+#pkmn-phone-panel .devon-vip-platinum{background:linear-gradient(160deg,#8fa0b0,#e4ebf1)}
+#pkmn-phone-panel .devon-vip-platinum b{color:#2a3540}#pkmn-phone-panel .devon-vip-platinum p{color:#4a5765}#pkmn-phone-panel .devon-vip-platinum small{color:#3d4c5c}
+#pkmn-phone-panel .devon-vip-platinum span{background:rgba(255,255,255,.6);color:#3d4c5c}
+#pkmn-phone-panel .devon-vip-blackgold{background:linear-gradient(160deg,#141414,#3d3d3d)}
+#pkmn-phone-panel .devon-vip-blackgold b{color:#f0c75e}#pkmn-phone-panel .devon-vip-blackgold p{color:#c9b06a}#pkmn-phone-panel .devon-vip-blackgold small{color:#b9a15c}
+#pkmn-phone-panel .devon-vip-blackgold span{background:rgba(240,199,94,.18);color:#f0c75e}
+#pkmn-phone-panel .devon-vip-machamp{background:linear-gradient(160deg,#6e0f1c,#c3374a)}
+#pkmn-phone-panel .devon-vip-machamp b,#pkmn-phone-panel .devon-vip-machamp p,#pkmn-phone-panel .devon-vip-machamp small{color:#fff}
+#pkmn-phone-panel .devon-vip-active{border-color:#22b573;box-shadow:0 4px 14px rgba(34,181,115,.35)}
+#pkmn-phone-panel .devon-vip-cur{position:absolute;top:-8px;right:8px;font-size:9px;font-weight:800;background:#22b573;color:#fff;padding:2px 8px;border-radius:999px;font-style:normal}
+#pkmn-phone-panel.pkmn-theme-night .devon-set-head{color:#edf3ff}
+#pkmn-phone-panel.pkmn-theme-night .devon-set-head small{color:#8f9cb0}
+#pkmn-phone-panel .devon-hero:after{content:'';position:absolute;width:130px;height:130px;border-radius:50%;right:34px;top:-52px;border:1px solid rgba(255,255,255,.13);box-shadow:0 0 0 20px rgba(255,255,255,.03),0 0 0 40px rgba(255,255,255,.025)}
+#pkmn-phone-panel .devon-hero small{display:block;font-size:8px;letter-spacing:1.5px;opacity:.72;margin-bottom:4px}
+#pkmn-phone-panel .devon-hero strong{display:block;font-size:20px;line-height:25px;letter-spacing:.2px}
+#pkmn-phone-panel .devon-hero span{display:block;margin-top:6px;font-size:10px;opacity:.76}
+#pkmn-phone-panel .devon-hero-orb{width:58px;height:58px;flex:none;border:2px solid rgba(255,255,255,.6);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;position:relative;z-index:2;margin-right:4px}
+#pkmn-phone-panel .devon-shop-section-head{display:flex;align-items:center;justify-content:space-between;margin:17px 2px 9px}
+#pkmn-phone-panel .devon-shop-section-head b{font-size:15px}
+#pkmn-phone-panel .devon-shop-section-head span{font-size:10px;color:#8b97a5}
+#pkmn-phone-panel .devon-shop-section-head button{border:0;background:transparent;color:#5076ad;font-size:11px;font-weight:700}
+#pkmn-phone-panel .devon-categories{display:flex;gap:8px;overflow:auto;padding:1px 1px 4px;scrollbar-width:none}
+#pkmn-phone-panel .devon-categories::-webkit-scrollbar{display:none}
+#pkmn-phone-panel .devon-cat{flex:none;min-width:62px;height:55px;border:1px solid #dfe5ec;border-radius:12px;background:#fff;color:#536170;font-size:10px;padding:6px 7px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+#pkmn-phone-panel .devon-cat span{font-size:16px;line-height:17px}
+#pkmn-phone-panel .devon-cat.active{background:#eaf1fb;border-color:#8ea9cb;color:#315b91;box-shadow:inset 0 0 0 1px rgba(67,103,150,.08)}
+#pkmn-phone-panel .devon-products{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#pkmn-phone-panel .devon-product{background:#fff;border:1px solid #e0e6ed;border-radius:14px;padding:9px;min-width:0;box-shadow:0 2px 9px rgba(42,57,75,.04);cursor:pointer;transition:transform .12s ease}
+#pkmn-phone-panel .devon-product:active{transform:scale(.985)}
+#pkmn-phone-panel .devon-product-pic{height:104px;border-radius:11px;background:#f4f6f9;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+#pkmn-phone-panel .devon-product-pic:after{content:'';position:absolute;width:70px;height:70px;border-radius:50%;border:1px solid rgba(77,100,130,.07)}
+#pkmn-phone-panel .devon-product-pic span{font-size:45px;position:relative;z-index:1}
+#pkmn-phone-panel .devon-product-pic em{position:absolute;left:6px;top:6px;background:#263f66;color:#fff;border-radius:5px;padding:3px 5px;font-size:8px;font-style:normal;z-index:2}
+#pkmn-phone-panel .devon-product-name{font-weight:800;font-size:13px;line-height:18px;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#pkmn-phone-panel .devon-product-en{font-size:9px;color:#8994a0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+#pkmn-phone-panel .devon-product-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+#pkmn-phone-panel .devon-product-bottom b{font-size:13px;color:#1e3f70}
+#pkmn-phone-panel .devon-product-bottom button{width:27px;height:27px;border:0;border-radius:9px;background:#315d95;color:#fff;font-size:20px;line-height:25px}
+#pkmn-phone-panel .devon-empty{text-align:center;padding:45px 15px;color:#8994a0;font-size:12px;grid-column:1/-1}
+#pkmn-phone-panel .devon-detail-top{height:58px;min-height:58px;display:flex;align-items:center;justify-content:space-between;padding:5px 9px 0;background:#fff;border-bottom:1px solid #dfe5ec;font-size:16px}
+#pkmn-phone-panel .devon-detail-top button{width:42px;height:42px;border:0;background:transparent;font-size:31px;color:#243344;border-radius:10px}
+#pkmn-phone-panel .devon-detail-top button:last-child{font-size:18px;background:#f1f4f8}
+#pkmn-phone-panel .devon-detail-card{padding:15px 14px 25px}
+#pkmn-phone-panel .devon-detail-pic{height:210px;border-radius:18px;background:#f0f3f7;display:flex;align-items:center;justify-content:center;font-size:100px;box-shadow:inset 0 0 0 1px #e0e6ed}
+#pkmn-phone-panel .devon-detail-tag{display:inline-block;margin-top:13px;background:#eaf1fb;color:#3c6395;padding:4px 7px;border-radius:6px;font-size:9px;font-weight:700}
+#pkmn-phone-panel .devon-detail-card h1{font-size:23px;margin:8px 0 2px;color:#1e2a38}
+#pkmn-phone-panel .devon-detail-en{font-size:11px;color:#8b96a3}
+#pkmn-phone-panel .devon-detail-price{font-size:22px;font-weight:900;color:#254e82;margin-top:12px}
+#pkmn-phone-panel .devon-detail-card p{font-size:12px;line-height:20px;color:#596575;margin:12px 0}
+#pkmn-phone-panel .devon-detail-meta{display:flex;gap:6px;flex-wrap:wrap}
+#pkmn-phone-panel .devon-detail-meta span{background:#f3f5f8;color:#778391;border-radius:7px;padding:5px 7px;font-size:9px}
+#pkmn-phone-panel .devon-buy-row{display:flex;align-items:center;justify-content:center;gap:20px;margin:17px 0 10px}
+#pkmn-phone-panel .devon-buy-row button{width:34px;height:34px;border:1px solid #d9e0e8;background:#fff;border-radius:10px;font-size:20px;color:#355477}
+#pkmn-phone-panel .devon-buy-row b{min-width:20px;text-align:center;font-size:15px}
+#pkmn-phone-panel .devon-buy{width:100%;height:43px;border:0;border-radius:12px;background:#e8edf3;color:#3e4e60;font-size:13px;font-weight:800;margin-top:8px}
+#pkmn-phone-panel .devon-buy-main{background:#315d95;color:#fff;box-shadow:0 5px 13px rgba(49,93,149,.2)}
+#pkmn-phone-panel .devon-buy:disabled{opacity:.45}
+#pkmn-phone-panel .devon-cart-page{padding:13px}
+#pkmn-phone-panel .devon-wallet{padding:13px 14px;background:#fff;border:1px solid #dfe5ec;border-radius:13px;color:#788493;font-size:11px;margin-bottom:10px}
+#pkmn-phone-panel .devon-wallet b{float:right;color:#284f80;font-size:14px}
+#pkmn-phone-panel .devon-cart-item{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #e0e6ed;border-radius:13px;padding:9px;margin-bottom:8px}
+#pkmn-phone-panel .devon-cart-pic{width:48px;height:48px;border-radius:10px;background:#f3f5f8;display:flex;align-items:center;justify-content:center;font-size:25px;flex:none}
+#pkmn-phone-panel .devon-cart-info{min-width:0;flex:1}.devon-cart-info b{display:block;font-size:12px}.devon-cart-info small{display:block;color:#8994a0;font-size:10px;margin-top:4px}
+#pkmn-phone-panel .devon-cart-controls{display:flex;align-items:center;gap:5px}.devon-cart-controls button{width:24px;height:24px;border:1px solid #d9e0e8;background:#fff;border-radius:7px}.devon-cart-controls b{font-size:11px;min-width:12px;text-align:center}
+#pkmn-phone-panel .devon-cart-total{display:flex;justify-content:space-between;align-items:center;margin:15px 2px 4px;font-size:12px}.devon-cart-total b{font-size:19px;color:#284f80}
+#pkmn-phone-panel .devon-orders-scroll{padding:13px}
+#pkmn-phone-panel .devon-order{background:#fff;border:1px solid #e0e6ed;border-radius:13px;padding:12px;margin-bottom:9px}.devon-order>div{display:flex;justify-content:space-between;font-size:12px}.devon-order>div span{color:#3e6ea4}.devon-order small{display:block;color:#939da8;margin-top:5px;font-size:9px}.devon-order p{font-size:11px;line-height:18px;color:#566271;margin:9px 0}.devon-order strong{font-size:14px;color:#284f80}
+
+#pkmn-phone-panel.pkmn-theme-night #pkmn-devon-shop,
+#pkmn-phone-panel.pkmn-theme-night #pkmn-devon-detail,
+#pkmn-phone-panel.pkmn-theme-night #pkmn-devon-orders-view{background:#10151d!important;color:#e8edf4!important}
+#pkmn-phone-panel.pkmn-theme-night .devon-shop-top,
+#pkmn-phone-panel.pkmn-theme-night .devon-detail-top,
+#pkmn-phone-panel.pkmn-theme-night .devon-product,
+#pkmn-phone-panel.pkmn-theme-night .devon-search,
+#pkmn-phone-panel.pkmn-theme-night .devon-wallet,
+#pkmn-phone-panel.pkmn-theme-night .devon-cart-item,
+#pkmn-phone-panel.pkmn-theme-night .devon-order{background:#171e28!important;border-color:#2c3745!important;color:#e8edf4!important}
+#pkmn-phone-panel.pkmn-theme-night .devon-search input,
+#pkmn-phone-panel.pkmn-theme-night .devon-product-name,
+#pkmn-phone-panel.pkmn-theme-night .devon-detail-card h1{color:#e8edf4!important}
+#pkmn-phone-panel.pkmn-theme-night .devon-product-en,
+#pkmn-phone-panel.pkmn-theme-night .devon-detail-en,
+#pkmn-phone-panel.pkmn-theme-night .devon-detail-card p,
+#pkmn-phone-panel.pkmn-theme-night .devon-shop-section-head span{color:#aab4c0!important}
+#pkmn-phone-panel.pkmn-theme-night .devon-cat{background:#171e28!important;border-color:#2c3745!important;color:#b8c2ce!important}
+#pkmn-phone-panel.pkmn-theme-night .devon-cat.active{background:#253852!important;border-color:#4f719c!important;color:#dbe7f7!important}
+#pkmn-phone-panel.pkmn-theme-night .devon-product-pic,
+#pkmn-phone-panel.pkmn-theme-night .devon-detail-pic,
+#pkmn-phone-panel.pkmn-theme-night .devon-cart-pic{background:#111820!important}
+
+/* 得文全道具同步版 */
+#pkmn-phone-panel .devon-head-actions{display:flex;align-items:center;gap:8px}
+#pkmn-phone-panel .devon-load-more{grid-column:1/-1;width:100%;height:40px;border:1px solid #d9e1ea;background:#fff;border-radius:11px;color:#315d95;font-size:11px;font-weight:800;margin-top:2px}
+#pkmn-phone-panel .devon-product-bottom button:disabled{background:#c9d0d9;color:#fff;cursor:not-allowed}
+#pkmn-phone-panel .devon-source{display:block;margin-top:12px;text-align:center;color:#4c72a5;font-size:10px;text-decoration:none}
+#pkmn-phone-panel.pkmn-theme-night .devon-load-more{background:#171e28;border-color:#2b3543;color:#9ebde5}
+
+
+/* ============================================================
+   v0.14.3 · 夜间主题补全
+   修复：聊天、联系人设置、评论区、世界书、得文商店
+   等后加模块未适配夜间模式导致的大片纯白界面。
+   色板与既有夜间变量保持一致：
+   bg #111827 / paper #172033 / paper2 #1d2739 / line #2d3a50
+   text #edf3ff / text2 #b6c2d6 / text3 #7f8da6 / blue #82aef5
+   ============================================================ */
+
+/* ---------- 通讯录 / 聊天 ---------- */
+#pkmn-phone-panel.pkmn-theme-night .wechat-search,
+#pkmn-phone-panel.pkmn-theme-night .wechat-contact-list,
+#pkmn-phone-panel.pkmn-theme-night .wechat-contact,
+#pkmn-phone-panel.pkmn-theme-night .wechat-messages,
+#pkmn-phone-panel.pkmn-theme-night .wechat-inputbar,
+#pkmn-phone-panel.pkmn-theme-night .wechat-inputbar textarea,
+#pkmn-phone-panel.pkmn-theme-night .wechat-typing,
+#pkmn-phone-panel.pkmn-theme-night .wechat-setting-card,
+#pkmn-phone-panel.pkmn-theme-night .wechat-delete-toolbar,
+#pkmn-phone-panel.pkmn-theme-night .wechat-nav,
+#pkmn-phone-panel.pkmn-theme-night .wechat-bottom-nav{
+  background:#172033!important;
+  color:#edf3ff!important;
+  border-color:#2d3a50!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .wechat-contact:active,
+#pkmn-phone-panel.pkmn-theme-night .wechat-contact:hover{
+  background:#1d2739!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .wechat-contact-main b,
+#pkmn-phone-panel.pkmn-theme-night .wechat-nav button,
+#pkmn-phone-panel.pkmn-theme-night .wechat-bottom-nav button.active,
+#pkmn-phone-panel.pkmn-theme-night .wechat-delete-toolbar button{
+  color:#edf3ff!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .wechat-contact-main p,
+#pkmn-phone-panel.pkmn-theme-night .wechat-time,
+#pkmn-phone-panel.pkmn-theme-night .wechat-typing,
+#pkmn-phone-panel.pkmn-theme-night .wechat-setting-card label{
+  color:#b6c2d6!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .wechat-msg-row .wechat-bubble{
+  background:#263349!important;
+  color:#edf3ff!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .wechat-msg-row.mine .wechat-bubble{
+  background:#3a6b3f!important;
+  color:#eef7ea!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .wechat-msg-row.contact-msg-selected .wechat-bubble{
+  background:#1d3350!important;
+  border-color:#35507c!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .wechat-inputbar textarea{
+  background:#0f1726!important;
+  color:#edf3ff!important;
+  border-color:#35445c!important;
+  caret-color:#edf3ff!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .wechat-delete-toolbar{
+  border-bottom-color:#2d3a50!important;
+}
+
+/* ---------- 联系人设置 / 单联系人注入 ---------- */
+#pkmn-phone-panel.pkmn-theme-night .contact-settings-profile,
+#pkmn-phone-panel.pkmn-theme-night .contact-settings-card,
+#pkmn-phone-panel.pkmn-theme-night .contact-settings-input,
+#pkmn-phone-panel.pkmn-theme-night .contact-settings-injection-card,
+#pkmn-phone-panel.pkmn-theme-night .contact-injection-stepper,
+#pkmn-phone-panel.pkmn-theme-night .pkmn-contact-add-progress-box{
+  background:#172033!important;
+  color:#edf3ff!important;
+  border-color:#2d3a50!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .contact-settings-name,
+#pkmn-phone-panel.pkmn-theme-night .contact-settings-section-title,
+#pkmn-phone-panel.pkmn-theme-night .contact-settings-injection-card .contact-settings-section-title,
+#pkmn-phone-panel.pkmn-theme-night .contact-settings-toggle-row,
+#pkmn-phone-panel.pkmn-theme-night .contact-settings-toggle-row b,
+#pkmn-phone-panel.pkmn-theme-night .contact-injection-btn,
+#pkmn-phone-panel.pkmn-theme-night .contact-injection-stepper button,
+#pkmn-phone-panel.pkmn-theme-night .contact-injection-stepper b,
+#pkmn-phone-panel.pkmn-theme-night .contact-settings-score b,
+#pkmn-phone-panel.pkmn-theme-night .contact-settings-score strong{
+  color:#edf3ff!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .contact-settings-icon,
+#pkmn-phone-panel.pkmn-theme-night .contact-settings-injection-card .contact-settings-icon,
+#pkmn-phone-panel.pkmn-theme-night .contact-settings-injection-limit,
+#pkmn-phone-panel.pkmn-theme-night .contact-settings-score,
+#pkmn-phone-panel.pkmn-theme-night .contact-injection-stepper button{
+  color:#b6c2d6!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .contact-settings-persist{
+  color:#82aef5!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .contact-injection-btn.is-active{
+  background:#1d3350!important;
+  color:#9ec5f7!important;
+  border-color:#35507c!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .contact-settings-input{
+  background:#0f1726!important;
+  color:#edf3ff!important;
+  border-color:#35445c!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .contact-settings-save{
+  background:#2f6b3c!important;
+  border-color:#3f8a4f!important;
+  color:#eaf7ec!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .contact-settings-save:active{
+  background:#275a33!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .contact-settings-input input,
+#pkmn-phone-panel.pkmn-theme-night .contact-settings-input textarea{
+  background:#0f1726!important;
+  color:#edf3ff!important;
+  border-color:#35445c!important;
+}
+
+/* ---------- 论坛评论区 / 操作按钮 ---------- */
+#pkmn-phone-panel.pkmn-theme-night .pkmn-inject,
+#pkmn-phone-panel.pkmn-theme-night .pkmn-del,
+#pkmn-phone-panel.pkmn-theme-night .pkmn-replies-title{
+  background:#1d2739!important;
+  color:#cbd6e8!important;
+  border-color:#35445c!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .pkmn-inject.on{
+  background:#1d3350!important;
+  color:#9ec5f7!important;
+  border-color:#35507c!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .pkmn-reply-msg,
+#pkmn-phone-panel.pkmn-theme-night .pkmn-nested-bubble{
+  background:#1d2739!important;
+  color:#edf3ff!important;
+  border-color:#2d3a50!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .pkmn-reply-msg.is-user{
+  background:#17324a!important;
+  color:#dbeeff!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .pkmn-nested-text,
+#pkmn-phone-panel.pkmn-theme-night .pkmn-nested-name{
+  color:#d7e1f2!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .pkmn-nested-target{
+  color:#82aef5!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .pkmn-nested-input,
+#pkmn-phone-panel.pkmn-theme-night #pkmn-reply-input{
+  background:#0f1726!important;
+  color:#edf3ff!important;
+  border-color:#35445c!important;
+  caret-color:#edf3ff!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .pkmn-user-badge{
+  background:#17324a!important;
+  color:#9ec5f7!important;
+  border-color:#35507c!important;
+}
+
+/* ---------- 世界书 ---------- */
+#pkmn-phone-panel.pkmn-theme-night .pkmn-worldbook-panel,
+#pkmn-phone-panel.pkmn-theme-night .pkmn-worldbook-book,
+#pkmn-phone-panel.pkmn-theme-night .pkmn-worldbook-group,
+#pkmn-phone-panel.pkmn-theme-night .pkmn-worldbook-search-wrap{
+  background:#172033!important;
+  color:#edf3ff!important;
+  border-color:#2d3a50!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .pkmn-worldbook-book-toggle,
+#pkmn-phone-panel.pkmn-theme-night .pkmn-worldbook-book-title b{
+  color:#d7e1f2!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .pkmn-worldbook-book-actions button:first-child,
+#pkmn-phone-panel.pkmn-theme-night .pkmn-worldbook-content-btn{
+  background:#1d293d!important;
+  color:#cbd6e8!important;
+  border-color:#35445c!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .pkmn-worldbook-content-box pre{
+  background:#0f1726!important;
+  color:#d7e1f2!important;
+  border-color:#2d3a50!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .pkmn-worldbook-content-book{
+  color:#b6c2d6!important;
+  border-bottom-color:#2d3a50!important;
+}
+
+/* ---------- 得文商店 ---------- */
+#pkmn-phone-panel.pkmn-theme-night .devon-shop-top,
+#pkmn-phone-panel.pkmn-theme-night .devon-search,
+#pkmn-phone-panel.pkmn-theme-night .devon-cat,
+#pkmn-phone-panel.pkmn-theme-night .devon-product,
+#pkmn-phone-panel.pkmn-theme-night .devon-product-pic,
+#pkmn-phone-panel.pkmn-theme-night .devon-detail-top,
+#pkmn-phone-panel.pkmn-theme-night .devon-detail-pic,
+#pkmn-phone-panel.pkmn-theme-night .devon-detail-meta span,
+#pkmn-phone-panel.pkmn-theme-night .devon-buy-row button,
+#pkmn-phone-panel.pkmn-theme-night .devon-buy,
+#pkmn-phone-panel.pkmn-theme-night .devon-wallet,
+#pkmn-phone-panel.pkmn-theme-night .devon-cart,
+#pkmn-phone-panel.pkmn-theme-night .devon-cart-item,
+#pkmn-phone-panel.pkmn-theme-night .devon-cart-pic,
+#pkmn-phone-panel.pkmn-theme-night .devon-order,
+#pkmn-phone-panel.pkmn-theme-night .devon-load-more,
+#pkmn-phone-panel.pkmn-theme-night .devon-detail-card{
+  background:#172033!important;
+  color:#edf3ff!important;
+  border-color:#2d3a50!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .devon-search input{
+  background:#0f1726!important;
+  color:#edf3ff!important;
+  border-color:#35445c!important;
+  caret-color:#edf3ff!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .devon-back,
+#pkmn-phone-panel.pkmn-theme-night .devon-detail-top button,
+#pkmn-phone-panel.pkmn-theme-night .devon-shop-section-head button{
+  background:#1d293d!important;
+  color:#cbd6e8!important;
+  border-color:#35445c!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .devon-cat{
+  color:#b6c2d6!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .devon-cat.active{
+  background:#1d3350!important;
+  color:#9ec5f7!important;
+  border-color:#35507c!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .devon-product-name{
+  color:#edf3ff!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .devon-product-en{
+  color:#7f8da6!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .devon-product-bottom b,
+#pkmn-phone-panel.pkmn-theme-night .devon-detail-price{
+  color:#8fb6ee!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .devon-detail-tag{
+  background:#1d3350!important;
+  color:#9ec5f7!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .devon-detail-card h1{
+  color:#edf3ff!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .devon-detail-card p{
+  color:#b6c2d6!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .devon-detail-pic{
+  background:#1d2739!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .devon-buy-row button{
+  border-color:#35445c!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .devon-buy{
+  background:#1d293d!important;
+  color:#cbd6e8!important;
+  border-color:#35445c!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .devon-buy-main{
+  background:#3b67a3!important;
+  color:#fff!important;
+  border-color:#5d86c9!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .devon-product-bottom button:disabled{
+  background:#243043!important;
+  color:#7f8da6!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .devon-source{
+  color:#82aef5!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .devon-cart i{
+  background:#a54d5d!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .devon-empty{
+  background:#151e2d!important;
+  color:#7f8da6!important;
+}
+
+
+/* ============================================================
+   v0.14.4 · 道具真实图标 + 价格徽标
+   ============================================================ */
+#pkmn-phone-panel .devon-item-img{
+  width:44px!important;height:44px!important;max-width:44px!important;max-height:44px!important;
+  object-fit:contain!important;display:block!important;margin:0 auto!important;
+  image-rendering:auto!important;
+}
+#pkmn-phone-panel .devon-item-img-lg{
+  width:84px!important;height:84px!important;max-width:84px!important;max-height:84px!important;
+  object-fit:contain!important;display:block!important;margin:0 auto!important;
+}
+#pkmn-phone-panel .devon-product-pic span,
+#pkmn-phone-panel .devon-detail-pic span{
+  display:block!important;text-align:center!important;line-height:1!important;
+}
+#pkmn-phone-panel .devon-detail-pic span{font-size:52px!important}
+#pkmn-phone-panel .devon-price-badge{
+  display:inline-block!important;margin-left:6px!important;padding:1px 7px!important;
+  border-radius:8px!important;font-size:9px!important;font-weight:800!important;
+  vertical-align:2px!important;
+  background:#eef3fb!important;color:#5c7690!important;border:1px solid #d4dde8!important;
+}
+#pkmn-phone-panel .devon-price-badge.devon-price-official{
+  background:#e8f4ec!important;color:#2f7a45!important;border-color:#c4e2cd!important;
+}
+/* v0.17.5：网站价（蓝）/ 怪力卡专供（琥珀金）徽章 */
+#pkmn-phone-panel .devon-price-badge.devon-price-wiki{
+  background:#e7f0ff!important;color:#1f5fbf!important;border-color:#bcd4f5!important;
+}
+#pkmn-phone-panel .devon-price-badge.devon-price-locked{
+  background:#fbf0d8!important;color:#9a6a12!important;border-color:#e9cf9a!important;
+}
+/* 夜间适配 */
+#pkmn-phone-panel.pkmn-theme-night .devon-item-img,
+#pkmn-phone-panel.pkmn-theme-night .devon-item-img-lg{
+  filter:brightness(.92) saturate(.95)!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .devon-price-badge{
+  background:#1d2739!important;color:#9ebde5!important;border-color:#35445c!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .devon-price-badge.devon-price-official{
+  background:#1c3324!important;color:#7fd694!important;border-color:#2f5a3b!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .devon-price-badge.devon-price-wiki{
+  background:#15294a!important;color:#79a9ef!important;border-color:#27406b!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .devon-price-badge.devon-price-locked{
+  background:#3a2c10!important;color:#e6b75a!important;border-color:#5e4716!important;
+}
+/* ===== v0.16.0 培育屋 / 锁定卡 / 闪光开关 ===== */
+/* 越级锁定卡：灰显、半透明、名称隐藏 */
+#pkmn-phone-panel .devon-product.devon-locked{background:#f2f3f5;border-style:dashed;border-color:#c8cfd8;cursor:not-allowed}
+#pkmn-phone-panel .devon-product.devon-locked .devon-product-pic{background:#e8eaee}
+#pkmn-phone-panel .devon-product.devon-locked .devon-item-img{
+  filter:grayscale(1) opacity(.42)!important;
+}
+#pkmn-phone-panel .devon-product.devon-locked .devon-product-pic span{
+  filter:grayscale(1);opacity:.45;
+}
+#pkmn-phone-panel .devon-product.devon-locked .devon-product-pic em{background:#9aa5b1}
+#pkmn-phone-panel .devon-locked-name{color:#a5aeb8!important;letter-spacing:2px}
+#pkmn-phone-panel .devon-product.devon-locked .devon-product-en{color:#b3bbc4}
+#pkmn-phone-panel .devon-lock-ico{
+  position:absolute;right:6px;top:6px;z-index:3;font-style:normal;
+  width:20px;height:20px;border-radius:7px;background:rgba(40,50,64,.55);
+  display:flex;align-items:center;justify-content:center;font-size:11px;
+}
+#pkmn-phone-panel .devon-locked-badge{
+  display:inline-flex;align-items:center;gap:3px;
+  background:#dfe3e9;color:#7c8794;border:1px solid #c6cdd6;
+  border-radius:8px;padding:4px 8px;font-size:9px;font-weight:800;
+}
+/* 培育屋定价徽章（金色） */
+#pkmn-phone-panel .devon-price-badge.devon-price-nursery{
+  background:#fdf3dc!important;color:#a06c12!important;border-color:#ecd9a8!important;
+}
+/* 详情页闪光开关 */
+#pkmn-phone-panel .devon-shiny-toggle{
+  width:100%;display:flex;align-items:center;gap:8px;text-align:left;
+  background:#fbfbfd;border:1.5px dashed #d9dee6;border-radius:12px;
+  padding:10px 12px;margin-top:10px;cursor:pointer;font-family:inherit;
+}
+#pkmn-phone-panel .devon-shiny-toggle i{font-style:normal;font-size:18px;line-height:1;opacity:.55}
+#pkmn-phone-panel .devon-shiny-toggle span{font-weight:800;font-size:12px;color:#4a5561}
+#pkmn-phone-panel .devon-shiny-toggle small{font-size:9px;color:#95a0ac;margin-left:auto;text-align:right}
+#pkmn-phone-panel .devon-shiny-toggle.devon-shiny-on{
+  background:linear-gradient(135deg,#fff8e3,#ffefc2);border-style:solid;border-color:#e8c56a;
+}
+#pkmn-phone-panel .devon-shiny-toggle.devon-shiny-on i{opacity:1}
+#pkmn-phone-panel .devon-shiny-toggle.devon-shiny-on span{color:#a06c12}
+#pkmn-phone-panel .devon-shiny-toggle.devon-shiny-on small{color:#b98f3e}
+/* 夜间适配 */
+#pkmn-phone-panel.pkmn-theme-night .devon-product.devon-locked{background:#171d27;border-color:#2c3542}
+#pkmn-phone-panel.pkmn-theme-night .devon-product.devon-locked .devon-product-pic{background:#131922}
+#pkmn-phone-panel.pkmn-theme-night .devon-locked-name{color:#5d6875!important}
+#pkmn-phone-panel.pkmn-theme-night .devon-product.devon-locked .devon-product-en{color:#4d5765}
+#pkmn-phone-panel.pkmn-theme-night .devon-locked-badge{background:#232b37;color:#8a96a5;border-color:#333e4d}
+#pkmn-phone-panel.pkmn-theme-night .devon-price-badge.devon-price-nursery{
+  background:#31280f!important;color:#e5bc6a!important;border-color:#4d3f1c!important;
+}
+#pkmn-phone-panel.pkmn-theme-night .devon-shiny-toggle{background:#1a2130;border-color:#2e3949}
+#pkmn-phone-panel.pkmn-theme-night .devon-shiny-toggle span{color:#aab6c4}
+#pkmn-phone-panel.pkmn-theme-night .devon-shiny-toggle small{color:#68758a}
+#pkmn-phone-panel.pkmn-theme-night .devon-shiny-toggle.devon-shiny-on{
+  background:linear-gradient(135deg,#2b2412,#33290f);border-color:#6b5522;
+}
+#pkmn-phone-panel.pkmn-theme-night .devon-shiny-toggle.devon-shiny-on span{color:#e5bc6a}
+#pkmn-phone-panel.pkmn-theme-night .devon-shiny-toggle.devon-shiny-on small{color:#b3924a}
+
+/* ===== v0.17.0 得文商店 · 钱包与我的道具 ===== */
+#pkmn-phone-panel .devon-wallet-src{display:inline-block;background:#284f80;color:#fff;border-radius:4px;padding:1px 5px;font-size:9px;margin-right:4px;vertical-align:1px;letter-spacing:.5px}
+#pkmn-phone-panel .devon-own-badge{position:absolute;right:6px;top:6px;background:#1f7a4d;color:#fff;border-radius:5px;padding:3px 6px;font-size:8px;font-style:normal;z-index:2;box-shadow:0 1px 4px rgba(0,0,0,.18)}
+#pkmn-phone-panel .devon-bag-meta{padding:9px 12px;color:#8994a0;font-size:10px;background:#f4f6f9;border-radius:9px;margin-bottom:10px;line-height:1.6}
+#pkmn-phone-panel .devon-bag-sec{margin-bottom:12px}
+#pkmn-phone-panel .devon-bag-sec-h{display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:12px;color:#284f80;padding:4px 2px}
+#pkmn-phone-panel .devon-bag-sec-h span{font-weight:600;font-size:10px;color:#8994a0}
+#pkmn-phone-panel .devon-bag-item{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #e0e6ed;border-radius:11px;padding:9px 11px;margin-top:7px}
+#pkmn-phone-panel .devon-bag-ico{width:34px;height:34px;object-fit:contain;flex:0 0 34px;image-rendering:pixelated}
+#pkmn-phone-panel .devon-bag-ico-ph{display:flex;align-items:center;justify-content:center;background:#f4f6f9;border-radius:8px;font-size:17px}
+#pkmn-phone-panel .devon-bag-info{flex:1;min-width:0}
+#pkmn-phone-panel .devon-bag-info b{display:block;font-size:12px;color:#22293a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#pkmn-phone-panel .devon-bag-info small{color:#8994a0;font-size:9px}
+#pkmn-phone-panel .devon-bag-cnt{font-weight:800;color:#284f80;font-size:13px;flex:0 0 auto}
+#pkmn-phone-panel.pkmn-theme-night .devon-bag-item{background:#172033;border-color:#2d3a50}
+#pkmn-phone-panel.pkmn-theme-night .devon-bag-info b{color:#dde5f2}
+#pkmn-phone-panel.pkmn-theme-night .devon-bag-meta{background:#131a28;color:#68758a}
+#pkmn-phone-panel.pkmn-theme-night .devon-bag-sec-h{color:#7fa8d9}
+#pkmn-phone-panel.pkmn-theme-night .devon-bag-ico-ph{background:#1c2536}
+
+/* ===== v0.17.0 得文商店 · 出售按钮 ===== */
+#pkmn-phone-panel .devon-bag-sell{flex:0 0 auto;background:#f2f7f3;border:1px solid #bcd9c4;color:#1f7a4d;border-radius:8px;padding:6px 9px;font-size:10px;font-weight:700;white-space:nowrap;cursor:pointer}
+#pkmn-phone-panel .devon-bag-sell:active{transform:scale(.96)}
+#pkmn-phone-panel.pkmn-theme-night .devon-bag-sell{background:#15261c;border-color:#2c4a38;color:#5fbf85}
+
+/* ============================================================
+   v0.17.3 通讯录 · 拼音分组/字母索引/星标/入口卡
+   ============================================================ */
+#pkmn-phone-panel .wx2-scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;background:#ededed;position:relative;scrollbar-width:none}
+#pkmn-phone-panel .wx2-scroll::-webkit-scrollbar{display:none}
+#pkmn-phone-panel .wx2-search{position:sticky;top:0;z-index:4;background:#ededed;padding:8px 12px 6px}
+#pkmn-phone-panel .wx2-search-ico{position:absolute;left:22px;top:26px;font-size:15px;color:#8a8a8a;pointer-events:none;line-height:1}
+#pkmn-phone-panel .wx2-search input{width:100%;box-sizing:border-box;height:36px;border:0;outline:0;background:#f7f7f7;border-radius:10px;font-size:14px;color:#191919;padding:0 12px 0 32px}
+#pkmn-phone-panel .wx2-search input::placeholder{color:#a8a8a8}
+#pkmn-phone-panel .wx2-entries{background:#fff;margin:2px 0 8px}
+#pkmn-phone-panel .wx2-entry{width:100%;display:flex;align-items:center;gap:12px;background:#fff;border:0;border-bottom:1px solid #f2f2f2;padding:0 14px;height:54px;cursor:pointer;text-align:left;font-size:16px;color:#191919;box-sizing:border-box}
+#pkmn-phone-panel .wx2-entry:last-child{border-bottom:0}
+#pkmn-phone-panel .wx2-entry:active{background:#e5e5e5}
+#pkmn-phone-panel .wx2-entry-ico{width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:19px;font-style:normal;flex:none;background:#f2f3f5;color:#4a4a4a}
+/* v0.17.6：入口卡改为简约浅灰底 + Lucide 线性图标（原彩色渐变已移除） */
+#pkmn-phone-panel .wx2-entry::after{content:'›';margin-left:auto;color:#c8c8c8;font-size:20px;line-height:1}
+#pkmn-phone-panel .wx2-group{background:#fff}
+#pkmn-phone-panel .wx2-letter{position:sticky;top:50px;z-index:2;background:#ededed;color:#808080;font-size:12px;font-weight:600;padding:3px 14px;letter-spacing:.5px}
+#pkmn-phone-panel .wx2-row{width:100%;display:flex;align-items:center;gap:12px;background:#fff;border:0;border-bottom:1px solid #f0f0f0;padding:0 14px;height:58px;cursor:pointer;text-align:left;box-sizing:border-box}
+#pkmn-phone-panel .wx2-row:last-child{border-bottom:0}
+#pkmn-phone-panel .wx2-row:active{background:#e5e5e5}
+#pkmn-phone-panel .wx2-avatar{width:40px;height:40px;border-radius:11px;flex:none;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;color:#fff;font-size:16px;font-weight:600;letter-spacing:.02em;box-shadow:inset 0 1px 0 rgba(255,255,255,.38),0 1px 2px rgba(18,28,40,.12);user-select:none;-webkit-user-select:none}
+#pkmn-phone-panel .wx2-av-0{background:linear-gradient(145deg,#7CC4AF,#3F8F79)}
+#pkmn-phone-panel .wx2-av-1{background:linear-gradient(145deg,#86B3E8,#4374C2)}
+#pkmn-phone-panel .wx2-av-2{background:linear-gradient(145deg,#EBB36E,#CE7F3E)}
+#pkmn-phone-panel .wx2-av-3{background:linear-gradient(145deg,#A893DE,#6E5CBE)}
+#pkmn-phone-panel .wx2-av-4{background:linear-gradient(145deg,#E596AC,#C1617E)}
+#pkmn-phone-panel .wx2-av-5{background:linear-gradient(145deg,#6EC7B8,#33948A)}
+#pkmn-phone-panel .wx2-av-6{background:linear-gradient(145deg,#EFC877,#CE9438)}
+#pkmn-phone-panel .wx2-av-7{background:linear-gradient(145deg,#9BABC0,#66768E)}
+/* v0.17.6 头像：首字在下、图片在上覆盖；图片加载失败被移除后首字自动露出 */
+#pkmn-phone-panel .wx2-av-txt{position:relative;z-index:0;line-height:1;text-shadow:0 1px 1px rgba(0,0,0,.15)}
+#pkmn-phone-panel .wx2-av-img{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:cover;display:block;background:#e9ecef;border-radius:inherit}
+#pkmn-phone-panel .wx2-av-ico{width:26px;height:26px;stroke-width:2.1}
+#pkmn-phone-panel .wx2-name{flex:1;min-width:0;font-size:16px;color:#191919;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#pkmn-phone-panel .wx2-meta{font-size:12px;color:#b2b2b2;flex:none}
+#pkmn-phone-panel .wx2-count{background:#fff;padding:14px;text-align:center;color:#9a9a9a;font-size:13px}
+#pkmn-phone-panel .wx2-empty{padding:64px 20px;text-align:center;color:#9a9a9a}
+#pkmn-phone-panel .wx2-empty-ico{font-size:44px;margin-bottom:12px;opacity:.7}
+#pkmn-phone-panel .wx2-empty-t{font-size:15px;color:#666;margin-bottom:6px}
+#pkmn-phone-panel .wx2-empty-d{font-size:12px;color:#a0a0a0;line-height:1.7}
+#pkmn-phone-panel .wx2-index{position:absolute;right:2px;top:130px;bottom:110px;display:none;flex-direction:column;justify-content:center;align-items:center;z-index:6}
+#pkmn-phone-panel .wx2-index span{display:block;width:20px;height:17px;line-height:17px;text-align:center;font-size:10px;color:#7f7f7f;cursor:pointer;border-radius:8px;user-select:none}
+#pkmn-phone-panel .wx2-index span:active{background:#e0e0e0;color:#1a1a1a}
+#pkmn-phone-panel .wx2-index-hint{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.8);width:84px;height:84px;border-radius:14px;background:rgba(0,0,0,.72);color:#fff;display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:700;z-index:9;opacity:0;pointer-events:none;transition:opacity .18s ease,transform .18s ease}
+#pkmn-phone-panel .wx2-index-hint.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+#pkmn-phone-panel.pkmn-theme-night .wx2-scroll,
+#pkmn-phone-panel.pkmn-theme-night .wx2-search{background:#111}
+#pkmn-phone-panel.pkmn-theme-night .wx2-search input{background:#1e1e1e;color:#ececec}
+#pkmn-phone-panel.pkmn-theme-night .wx2-search input::placeholder{color:#5d5d5d}
+#pkmn-phone-panel.pkmn-theme-night .wx2-search-ico{color:#666}
+#pkmn-phone-panel.pkmn-theme-night .wx2-entries,
+#pkmn-phone-panel.pkmn-theme-night .wx2-group,
+#pkmn-phone-panel.pkmn-theme-night .wx2-row,
+#pkmn-phone-panel.pkmn-theme-night .wx2-count{background:#1e1e1e}
+#pkmn-phone-panel.pkmn-theme-night .wx2-entry{background:#1e1e1e;border-bottom-color:#2a2a2a;color:#ececec}
+#pkmn-phone-panel.pkmn-theme-night .wx2-entry:active,
+#pkmn-phone-panel.pkmn-theme-night .wx2-row:active{background:#2c2c2c}
+#pkmn-phone-panel.pkmn-theme-night .wx2-entry::after{color:#4a4a4a}
+#pkmn-phone-panel.pkmn-theme-night .wx2-letter{background:#111;color:#7f7f7f}
+#pkmn-phone-panel.pkmn-theme-night .wx2-row{border-bottom-color:#2a2a2a}
+#pkmn-phone-panel.pkmn-theme-night .wx2-name{color:#ececec}
+#pkmn-phone-panel.pkmn-theme-night .wx2-meta{color:#6e6e6e}
+#pkmn-phone-panel.pkmn-theme-night .wx2-empty-t{color:#9a9a9a}
+
+/* ============================================================
+   v0.17.6 三栏（消息/通讯录/我）
+   ============================================================ */
+#pkmn-phone-panel .wx2-pane{display:flex;flex-direction:column;min-height:0;flex:1}
+#pkmn-phone-panel #wx2-pane-chats{display:flex}
+#pkmn-phone-panel .wx2-scroll{display:flex;flex-direction:column}
+#pkmn-phone-panel .wx2-pane{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
+#pkmn-phone-panel .wx2-pane::-webkit-scrollbar{display:none}
+#pkmn-phone-panel .wx2-tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:0;background:transparent;font-size:20px;color:#7f7f7f;height:100%;cursor:pointer;padding:4px 0 0}
+#pkmn-phone-panel .wx2-tabbar button small{font-size:10px;transform:scale(.92)}
+#pkmn-phone-panel .wx2-tabbar button.active{color:#1a1a1a}
+#pkmn-phone-panel .wx2-conv{width:100%;display:flex;align-items:center;gap:12px;background:#fff;border:0;border-bottom:1px solid #f0f0f0;padding:0 14px;height:64px;cursor:pointer;text-align:left;box-sizing:border-box}
+#pkmn-phone-panel .wx2-conv:active{background:#e5e5e5}
+#pkmn-phone-panel .wx2-avatar.lg{width:48px;height:48px;border-radius:10px;font-size:20px}
+#pkmn-phone-panel .wx2-conv-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+#pkmn-phone-panel .wx2-conv-main b{font-size:16px;color:#191919;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#pkmn-phone-panel .wx2-conv-main small{font-size:13px;color:#9a9a9a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#pkmn-phone-panel .wx2-conv time{font-size:11px;color:#b2b2b2;flex:none;align-self:flex-start;margin-top:4px}
+#pkmn-phone-panel .wx2-avatar.xl{width:60px;height:60px;border-radius:12px;font-size:26px}
+#pkmn-phone-panel .wx2-me-card{background:#fff;display:flex;align-items:center;gap:14px;padding:22px 16px;border-bottom:1px solid #f0f0f0}
+#pkmn-phone-panel .wx2-me-main{flex:1;min-width:0}
+#pkmn-phone-panel .wx2-me-nick{font-size:19px;font-weight:700;color:#191919;margin-bottom:5px}
+#pkmn-phone-panel .wx2-me-wxid{font-size:13px;color:#9a9a9a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#pkmn-phone-panel .wx2-me-arrow{color:#c8c8c8;font-size:22px;font-style:normal}
+#pkmn-phone-panel .wx2-me-group{background:#fff;margin-top:8px}
+#pkmn-phone-panel .wx2-me-row{width:100%;display:flex;align-items:center;gap:12px;background:#fff;border:0;border-bottom:1px solid #f2f2f2;padding:0 16px;height:52px;cursor:pointer;text-align:left;box-sizing:border-box;font-size:15px;color:#191919}
+#pkmn-phone-panel .wx2-me-row:last-child{border-bottom:0}
+#pkmn-phone-panel .wx2-me-row:active{background:#e5e5e5}
+#pkmn-phone-panel .wx2-me-ico{font-style:normal;font-size:17px;width:24px;text-align:center;flex:none}
+#pkmn-phone-panel .wx2-me-row span{flex:none}
+#pkmn-phone-panel .wx2-me-row em{flex:1;text-align:right;font-style:normal;color:#9a9a9a;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#pkmn-phone-panel .wx2-me-row b{color:#c8c8c8;font-weight:400;font-size:18px}
+#pkmn-phone-panel .wx2-me-edit{background:#fff;margin-top:8px;padding:14px 16px}
+#pkmn-phone-panel .wx2-me-edit label{display:block;font-size:13px;color:#666}
+#pkmn-phone-panel .wx2-me-edit .pkmn-input,
+#pkmn-phone-panel .wx2-me-edit .pkmn-textarea{width:100%;margin-top:8px;box-sizing:border-box}
+#pkmn-phone-panel .wx2-me-edit-btns{display:flex;gap:10px;margin-top:12px}
+#pkmn-phone-panel .wx2-me-edit-btns .pkmn-btn{flex:1}
+#pkmn-phone-panel .wx2-me-foot{padding:26px 0 30px;text-align:center;color:#b2b2b2;font-size:12px}
+#pkmn-phone-panel.pkmn-theme-night .wx2-conv,
+#pkmn-phone-panel.pkmn-theme-night .wx2-me-card,
+#pkmn-phone-panel.pkmn-theme-night .wx2-me-group,
+#pkmn-phone-panel.pkmn-theme-night .wx2-me-row,
+#pkmn-phone-panel.pkmn-theme-night .wx2-me-edit{background:#1e1e1e}
+#pkmn-phone-panel.pkmn-theme-night .wx2-conv:active,
+#pkmn-phone-panel.pkmn-theme-night .wx2-me-row:active{background:#2c2c2c}
+#pkmn-phone-panel.pkmn-theme-night .wx2-conv{border-bottom-color:#2a2a2a}
+#pkmn-phone-panel.pkmn-theme-night .wx2-conv-main b,
+#pkmn-phone-panel.pkmn-theme-night .wx2-me-nick,
+#pkmn-phone-panel.pkmn-theme-night .wx2-me-row{color:#ececec}
+#pkmn-phone-panel.pkmn-theme-night .wx2-me-row em{color:#6e6e6e}
+#pkmn-phone-panel.pkmn-theme-night .wx2-tabbar{background:#1e1e1e;border-top-color:#2a2a2a}
+#pkmn-phone-panel.pkmn-theme-night .wx2-tabbar button{color:#6e6e6e}
+#pkmn-phone-panel.pkmn-theme-night .wx2-tabbar button.active{color:#ffffff}
+
+/* ===== v0.17.6 Lucide 内联图标（ISC 许可，https://lucide.dev）===== */
+#pkmn-phone-panel .pkmn-ico{width:1em;height:1em;display:inline-block;vertical-align:-.125em;flex:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#pkmn-phone-panel .pkmn-ico-lg{width:1.25em;height:1.25em}
+#pkmn-phone-panel .pkmn-ico-sm{width:.875em;height:.875em}
+/* ===== v0.17.6 通讯录：Lucide 图标尺寸 + 简约配色夜间适配 ===== */
+#pkmn-phone-panel .wx2-tab-ico{width:22px;height:22px;margin-bottom:1px}
+#pkmn-phone-panel .wx2-idx-star{width:11px;height:11px;vertical-align:1px}
+#pkmn-phone-panel.pkmn-theme-night .wx2-entry-ico{background:#2c2c2c;color:#c8c8c8}
+#pkmn-phone-panel.pkmn-theme-night .wx2-index span:active{background:#3a3a3a;color:#fff}
+#pkmn-phone-panel.pkmn-theme-night .pkmn-contacts-icon .pkmn-contacts-logo{background:#2c2c2c;color:#e8e8e8}
+#pkmn-phone-panel.pkmn-theme-night .wx2-me-arrow,
+#pkmn-phone-panel.pkmn-theme-night .wx2-me-ico,
+#pkmn-phone-panel.pkmn-theme-night .wx2-me-row b{color:#8a8a8a}
+
+/* ===== v0.17.6 头像升级：夜间压暗、图片头像占位底色 ===== */
+#pkmn-phone-panel.pkmn-theme-night .wx2-avatar,
+#pkmn-phone-panel.pkmn-theme-night .wechat-avatar,
+#pkmn-phone-panel.pkmn-theme-night .contact-settings-avatar{filter:saturate(.8) brightness(.84)}
+#pkmn-phone-panel.pkmn-theme-night .wx2-av-img{background:#2a2a2a}
+#pkmn-phone-panel.pkmn-theme-night .contact-settings-icon{background:#2c2c2c;color:#c8c8c8}
+#pkmn-phone-panel.pkmn-theme-night .wx2-av-ico{color:#fff}
+
+/* ===== v0.17.6 星标 / 空状态图标 ===== */
+#pkmn-phone-panel .wx2-meta-star{width:13px;height:13px;fill:#f5c33b;stroke:#f5c33b;stroke-width:1.5;vertical-align:-1px}
+#pkmn-phone-panel .wx2-empty-ico .pkmn-ico{stroke-width:1.5}
+#pkmn-phone-panel.pkmn-theme-night .wx2-meta-star{fill:#8a7332;stroke:#8a7332}
+
+/* ===== v0.18.0 群聊 ===== */
+#pkmn-phone-panel .wx2-av-group{background:linear-gradient(145deg,#9FB2C6,#6C8098)}
+#pkmn-phone-panel .group-member-count{font-style:normal;font-weight:400;color:#8a8a8a;font-size:12px;margin-left:2px}
+
+/* 群聊导航栏有 4 个元素：返回 / 标题 / 刷新 / 更多，标题居中 */
+#pkmn-phone-panel #pkmn-group-chat-view .wechat-nav{padding:0 4px}
+#pkmn-phone-panel #pkmn-group-chat-view .wechat-nav-title{flex:1;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#pkmn-phone-panel #pkmn-group-chat-view .wechat-nav button{width:38px}
+#pkmn-phone-panel #pkmn-group-chat-refresh{font-size:21px}
+#pkmn-phone-panel #pkmn-group-chat-refresh.is-busy{opacity:.5;animation:pkmn-group-spin .9s linear infinite}
+@keyframes pkmn-group-spin{to{transform:rotate(360deg)}}
+
+/* 成员多选 */
+#pkmn-phone-panel .group-member-pick{max-height:190px;overflow:auto;border:1px solid #ececec;border-radius:10px;padding:4px 0}
+#pkmn-phone-panel .group-member-row{display:flex;align-items:center;gap:8px;padding:8px 11px;font-size:14px;color:#333;cursor:pointer}
+#pkmn-phone-panel .group-member-row:active{background:#f4f5f7}
+#pkmn-phone-panel .group-member-row input{width:16px;height:16px;flex:none;accent-color:#1a1a1a}
+#pkmn-phone-panel .group-member-row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* 群聊里发送者昵称 */
+#pkmn-phone-panel #pkmn-group-messages .wechat-msg-name{font-size:11px;color:#8a8a8a;margin-bottom:3px}
+
+/* 夜间适配 */
+#pkmn-phone-panel.pkmn-theme-night .wx2-av-group{filter:saturate(.8) brightness(.84)}
+#pkmn-phone-panel.pkmn-theme-night .group-member-count{color:#8a8a8a}
+#pkmn-phone-panel.pkmn-theme-night .group-member-pick{border-color:#3a3a3a}
+#pkmn-phone-panel.pkmn-theme-night .group-member-row{color:#d5d5d5}
+#pkmn-phone-panel.pkmn-theme-night .group-member-row:active{background:#2c2c2c}
+#pkmn-phone-panel.pkmn-theme-night #pkmn-group-messages .wechat-msg-name{color:#8a8a8a}
+
+/* ===== v0.18.1 长按消息出 × 删除 ===== */
+#pkmn-phone-panel .msg-del-x{align-self:flex-start;margin-top:4px;width:22px;height:22px;border:none;border-radius:50%;background:#e5e5e5;color:#666;font-size:15px;line-height:20px;text-align:center;cursor:pointer;padding:0;flex:0 0 auto}
+#pkmn-phone-panel .msg-del-x:active{background:#e64340;color:#fff}
+#pkmn-phone-panel .wechat-msg-row.mine .msg-del-x{align-self:flex-end}
+#pkmn-phone-panel.pkmn-theme-night .msg-del-x{background:#2c2c2c;color:#8a8a8a}
+#pkmn-phone-panel.pkmn-theme-night .msg-del-x:active{background:#e64340;color:#fff}

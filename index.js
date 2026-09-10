@@ -1,5 +1,5 @@
 /**
- * 宝可梦小手机论坛 - SillyTavern 扩展版 (v0.14.0)
+ * 宝可梦小手机论坛 - SillyTavern 扩展版 (v0.20.0)
  * 基于酒馆助手脚本「测试论坛0.331」完整转换，脱离 Tavern Helper。
  * 使用 SillyTavern.getContext() / setExtensionPrompt / eventSource / loadWorldInfo。
  *
@@ -44,7 +44,13 @@
         const NS = 'pkmn_phone_forum_v9';
     const LEGACY_NS = 'pkmn_phone_forum_v7';
     const LEGACY_NS_2 = 'pkmn_phone_forum_v5';
-    const VERSION = "0.14.0"; // persist contact API independently
+    const VERSION = "0.20.0"; // 与 manifest.json / README 对齐
+    // v0.17.6 Lucide 图标（ISC 许可，https://lucide.dev）内联；stroke=currentColor 自动适配日/夜间
+    const PKMN_ICONS = {"arrow-up-right":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"> <path d=\"M7 7h10v10\"/> <path d=\"M7 17 17 7\"/> </svg>","camera":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"> <path d=\"M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z\"/> <circle cx=\"12\" cy=\"13\" r=\"3\"/> </svg>","check":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"> <path d=\"M20 6 9 17l-5-5\"/> </svg>","chevron-right":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"> <path d=\"m9 18 6-6-6-6\"/> </svg>","contact":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"> <path d=\"M16 2v2\"/> <path d=\"M7 21v-2a2 2 0 012-2h6a2 2 0 012 2v2\"/> <path d=\"M8 2v2\"/> <circle cx=\"12\" cy=\"10\" r=\"3\"/> <rect x=\"3\" y=\"3\" rx=\"2\"/> </svg>","download":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"> <path d=\"M12 15V3\"/> <path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/> <path d=\"m7 10 5 5 5-5\"/> </svg>","globe":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"> <circle cx=\"12\" cy=\"12\" r=\"10\"/> <path d=\"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20\"/> <path d=\"M2 12h20\"/> </svg>","image":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"> <rect x=\"3\" y=\"3\" rx=\"2\" ry=\"2\"/> <circle cx=\"9\" cy=\"9\" r=\"2\"/> <path d=\"m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\"/> </svg>","link":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"> <path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\"/> <path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\"/> </svg>","megaphone":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"> <path d=\"M11 6a13 13 0 0 0 8.4-2.8A1 1 0 0 1 21 4v12a1 1 0 0 1-1.6.8A13 13 0 0 0 11 14H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z\"/> <path d=\"M6 14a12 12 0 0 0 2.4 7.2 2 2 0 0 0 3.2-2.4A8 8 0 0 1 10 14\"/> <path d=\"M8 6v8\"/> </svg>","message-circle":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"> <path d=\"M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719\"/> </svg>","message-square-dashed":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"> <path d=\"M14 3h2\"/> <path d=\"M16 19h-2\"/> <path d=\"M2 12v-2\"/> <path d=\"M2 16v5.286a.71.71 0 0 0 1.212.502l1.149-1.149\"/> <path d=\"M20 19a2 2 0 0 0 2-2v-1\"/> <path d=\"M22 10v2\"/> <path d=\"M22 6V5a2 2 0 0 0-2-2\"/> <path d=\"M4 3a2 2 0 0 0-2 2v1\"/> <path d=\"M8 19h2\"/> <path d=\"M8 3h2\"/> </svg>","pencil":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"> <path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\"/> <path d=\"m15 5 4 4\"/> </svg>","plus":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"> <path d=\"M5 12h14\"/> <path d=\"M12 5v14\"/> </svg>","save":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"> <path d=\"M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z\"/> <path d=\"M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7\"/> <path d=\"M7 3v4a1 1 0 0 0 1 1h7\"/> </svg>","scroll-text":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"> <path d=\"M15 12h-5\"/> <path d=\"M15 8h-5\"/> <path d=\"M19 17V5a2 2 0 0 0-2-2H4\"/> <path d=\"M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3\"/> </svg>","search":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"> <path d=\"m21 21-4.34-4.34\"/> <circle cx=\"11\" cy=\"11\" r=\"8\"/> </svg>","settings":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"> <path d=\"M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915\"/> <circle cx=\"12\" cy=\"12\" r=\"3\"/> </svg>","shield":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"> <path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/> </svg>","star":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"> <path d=\"M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z\"/> </svg>","tag":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"> <path d=\"M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z\"/> <circle cx=\"7.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\"/> </svg>","trash-2":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"> <path d=\"M10 11v6\"/> <path d=\"M14 11v6\"/> <path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6\"/> <path d=\"M3 6h18\"/> <path d=\"M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\"/> </svg>","user":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"> <path d=\"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2\"/> <circle cx=\"12\" cy=\"7\" r=\"4\"/> </svg>","user-plus":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"> <path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\"/> <circle cx=\"9\" cy=\"7\" r=\"4\"/> <line x1=\"19\" x2=\"19\" y1=\"8\" y2=\"14\"/> <line x1=\"22\" x2=\"16\" y1=\"11\" y2=\"11\"/> </svg>","users":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"> <path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\"/> <path d=\"M16 3.128a4 4 0 0 1 0 7.744\"/> <path d=\"M22 21v-2a4 4 0 0 0-3-3.87\"/> <circle cx=\"9\" cy=\"7\" r=\"4\"/> </svg>","users-round":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"> <path d=\"M18 21a8 8 0 0 0-16 0\"/> <circle cx=\"10\" cy=\"8\" r=\"5\"/> <path d=\"M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3\"/> </svg>","zap":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"> <path d=\"M15.914 4a1.5 1.5 0 00-2.474-1.561l-9 9A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l9-9A1.5 1.5 0 0018.5 10h-3.997a.5.5 0 01-.472-.667z\"/> </svg>"};
+    function pkmnIcon(name, cls){
+        const s = PKMN_ICONS[name]; if(!s) return '';
+        return s.replace('<svg', '<svg class="' + (cls||'pkmn-ico') + '"');
+    }
 
     // 必须尽早声明，否则严格模式下赋值会直接启动失败
     let chatState = null;
@@ -524,6 +530,9 @@
 
         readDepth: 12,
 
+        // v0.19.0: 破限提示词，作为系统提示词置于所有 AI 请求的最前面。
+        jailbreakPrompt: '',
+
         // 主题：light=当前普通模式，dark=夜间模式。
         theme: 'light',
 
@@ -554,9 +563,13 @@
         matureBoards:
             MATURE_BOARDS.map(x => ({ ...x })),
 
-        // 独立通讯录/微信式聊天配置
+        // 独立通讯录/聊天配置
         contacts: [],
         contactChats: {},
+        // v0.18.0 群聊：contactGroups 存群定义，groupChats 按群 id 存消息
+        contactGroups: [],
+        groupChats: {},
+        groupInjection: {},
         contactLinkMeta: {},
         contactPlayerNickname: '',
         contactPlayerIdentity: '',
@@ -569,8 +582,10 @@
             model: '',
             temperature: 0.85,
             maxTokens: 900,
-            systemPrompt: '你正在模拟宝可梦世界中的通讯软件聊天。请严格按照联系人本人的身份、性格、经历、当前所在地和当前剧情进行回复。你不是旁白，不要替玩家决定行动。回复要像真实微信消息一样自然、简洁、有来有回。除非剧情需要，不要使用舞台说明、JSON或长篇旁白。',
-            readForumAll: true
+            systemPrompt: '你正在模拟宝可梦世界中的通讯软件聊天。请严格按照联系人本人的身份、性格、经历、当前所在地和当前剧情进行回复。你不是旁白，不要替玩家决定行动。回复要自然、简洁、有来有回。除非剧情需要，不要使用舞台说明、JSON或长篇旁白。',
+            readForumAll: true,
+            // v0.18.0 群聊：点刷新后 AI 成员轮流发言的默认条数（每群可在群设置里单独覆盖）
+            groupAiTurns: 6
         }
     };
 
@@ -1722,6 +1737,22 @@
     // AI调用
     // ------------------------------------------------------------
 
+    // v0.19.0: 破限提示词 —— 作为首条系统消息插入所有 AI 请求
+    function jailbreakPromptText() {
+        return String(config.jailbreakPrompt || '').trim();
+    }
+
+    function prependJailbreakPrompt(messages) {
+        if (!Array.isArray(messages)) return messages;
+        // 无论是否启用，都先清掉可能在调用链中途遗留的同 ID 破限消息，避免重复。
+        const rest = messages.filter(
+            m => !(m && m.role === 'system' && m.id === 'pkmn_jailbreak')
+        );
+        const jb = jailbreakPromptText();
+        if (!jb) return rest;
+        return [{ role: 'system', id: 'pkmn_jailbreak', content: jb }, ...rest];
+    }
+
     async function callAI(
         messages,
         temperature = 0.9
@@ -1747,6 +1778,9 @@
                 '没有可用模型'
             );
         }
+
+        messages =
+            prependJailbreakPrompt(messages);
 
         const data =
             await requestJSON(
@@ -1801,7 +1835,7 @@
   <defs>
     <linearGradient id="rotomPhoneBody" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#ff7050"/>
-      <stop offset="0.13.19" stop-color="#f0443e"/>
+      <stop offset="0.5" stop-color="#f0443e"/>
       <stop offset="1" stop-color="#c92738"/>
     </linearGradient>
     <linearGradient id="rotomPhoneScreen" x1="0" y1="0" x2="0" y2="1">
@@ -1884,7 +1918,7 @@
             </div>
 
             <div class="pkmn-app-icon pkmn-contacts-icon" id="pkmn-open-contacts">
-                <div class="pkmn-app-image wechat-app-logo">💬</div>
+                <div class="pkmn-app-image pkmn-contacts-logo">${pkmnIcon('contact','pkmn-app-ico')}</div>
                 通讯录
             </div>
 
@@ -1896,8 +1930,62 @@
                 设置
             </div>
 
+            <div
+                class="pkmn-app-icon pkmn-devon-app-icon"
+                id="pkmn-open-devon-shop"
+            >
+                <div class="pkmn-devon-logo">D</div>
+                得文商店
+            </div>
+
         </div>
 
+    </div>
+
+
+    <!-- 得文商店 -->
+    <div id="pkmn-devon-shop" class="pkmn-view pkmn-devon-shop-view">
+        <div class="devon-shop-top">
+            <button id="pkmn-devon-back" class="devon-back" aria-label="返回">‹</button>
+            <div class="devon-brand">
+                <div class="devon-brand-mark">D</div>
+                <div><b>得文商店</b><small>DEVON SHOP</small></div>
+            </div>
+            <button id="pkmn-devon-cart" class="devon-cart" aria-label="购物车">🛒<i id="pkmn-devon-cart-count">0</i></button>
+            <button id="pkmn-devon-settings" class="devon-cart" aria-label="商店设置">⚙</button>
+        </div>
+        <div class="devon-shop-scroll">
+            <div id="pkmn-devon-wallet-slot"></div>
+            <div class="devon-search"><span>⌕</span><input id="pkmn-devon-search" placeholder="搜索道具、商品…"></div>
+            <div class="devon-hero" id="pkmn-devon-hero">
+                <div><small>DEVON CORPORATION</small><strong>训练家装备<br>研发与配送中心</strong><span>得文科技 · 正品保障 · 快速配送</span></div>
+                <div class="devon-hero-right"><span class="devon-member-badge">🥇 黄金会员</span><div class="devon-hero-orb">D</div></div>
+            </div>
+            <div class="devon-shop-section-head"><b>商品分类</b><div class="devon-head-actions"><button id="pkmn-devon-sync">同步百科</button><button id="pkmn-devon-bag-entry">🎒 我的道具</button><button id="pkmn-devon-orders">我的订单</button></div></div>
+            <div class="devon-categories" id="pkmn-devon-categories"></div>
+            <div class="devon-shop-section-head"><b id="pkmn-devon-section-title">热销商品</b><span id="pkmn-devon-result-count"></span></div>
+            <div class="devon-products" id="pkmn-devon-products"></div>
+        </div>
+    </div>
+
+    <div id="pkmn-devon-detail" class="pkmn-view pkmn-devon-shop-view">
+        <div class="devon-detail-top"><button id="pkmn-devon-detail-back">‹</button><b>商品详情</b><button id="pkmn-devon-detail-cart">🛒</button></div>
+        <div class="devon-detail-scroll" id="pkmn-devon-detail-body"></div>
+    </div>
+
+    <div id="pkmn-devon-orders-view" class="pkmn-view pkmn-devon-shop-view">
+        <div class="devon-detail-top"><button id="pkmn-devon-orders-back">‹</button><b>我的订单</b><span></span></div>
+        <div class="devon-orders-scroll" id="pkmn-devon-orders-body"></div>
+    </div>
+
+    <div id="pkmn-devon-settings-view" class="pkmn-view pkmn-devon-shop-view">
+        <div class="devon-detail-top"><button id="pkmn-devon-settings-back">‹</button><b>商店设置</b><span></span></div>
+        <div class="devon-orders-scroll" id="pkmn-devon-settings-body"></div>
+    </div>
+
+    <div id="pkmn-devon-bag-view" class="pkmn-view pkmn-devon-shop-view">
+        <div class="devon-detail-top"><button id="pkmn-devon-bag-back">‹</button><b>🎒 我的道具</b><span></span></div>
+        <div class="devon-orders-scroll" id="pkmn-devon-bag-body"></div>
     </div>
 
 
@@ -1999,6 +2087,21 @@
 
 
     <!-- 玩家发帖弹窗 -->
+    <!-- 测试版应用门禁弹窗（v0.20.0） -->
+    <div class="pkmn-modal" id="pkmn-devon-beta-modal">
+        <div class="pkmn-modal-box">
+            <div style="font-size:16px;font-weight:700;margin-bottom:10px">🧪 测试版应用</div>
+            <div class="pkmn-small" id="pkmn-devon-beta-hint">此为测试版，未开放。</div>
+            <div id="pkmn-devon-beta-input-row" style="display:none;margin-top:8px">
+                <input class="pkmn-input" id="pkmn-devon-beta-pass" maxlength="16" inputmode="numeric" placeholder="请输入测试员口令" style="width:100%">
+            </div>
+            <div class="pkmn-row" style="margin-top:10px">
+                <button class="pkmn-btn pkmn-secondary" id="pkmn-devon-beta-exit">退出</button>
+                <button class="pkmn-btn pkmn-primary" id="pkmn-devon-beta-test">测试</button>
+            </div>
+        </div>
+    </div>
+
     <div class="pkmn-modal" id="pkmn-post-modal">
         <div class="pkmn-modal-box">
             <div style="font-size:16px;font-weight:700;margin-bottom:10px">发表新帖</div>
@@ -2028,22 +2131,42 @@
 
     </div>
 
-    <!-- 通讯录 -->
+    <!-- 通讯录（v0.17.6 · 消息/通讯录/我 三栏） -->
     <div id="pkmn-contacts" class="pkmn-view pkmn-chat-app">
         <div class="wechat-nav">
             <button id="pkmn-contacts-back">‹</button>
-            <div class="wechat-nav-title">通讯录</div>
+            <div class="wechat-nav-title" id="wx2-nav-title">消息</div>
             <button id="pkmn-contacts-add">＋</button>
         </div>
-        <div class="wechat-search"><span>⌕</span><input id="pkmn-contact-search" placeholder="搜索"></div>
-        <div class="wechat-contact-list" id="pkmn-contact-list"></div>
-        <div class="wechat-bottom-nav">
-            <button class="active">👤<small>通讯录</small></button>
-            <button id="pkmn-contact-settings">⚙️<small>设置</small></button>
+        <div class="wx2-scroll" id="wx2-scroll">
+            <div class="wx2-pane" id="wx2-pane-chats">
+                <div class="wx2-list" id="wx2-chat-list"></div>
+            </div>
+            <div class="wx2-pane" id="wx2-pane-contacts" style="display:none">
+                <div class="wx2-search">${pkmnIcon('search','pkmn-ico wx2-search-ico')}<input id="pkmn-contact-search" placeholder="搜索"></div>
+                <div class="wx2-entries">
+                    <button class="wx2-entry" id="wx2-entry-add"><i class="wx2-entry-ico">${pkmnIcon('user-plus','pkmn-ico')}</i><span>新认识的训练家</span></button>
+                    <button class="wx2-entry" id="wx2-entry-groups"><i class="wx2-entry-ico">${pkmnIcon('users-round','pkmn-ico')}</i><span>群聊</span></button>
+                    <button class="wx2-entry" id="wx2-entry-tags"><i class="wx2-entry-ico">${pkmnIcon('tag','pkmn-ico')}</i><span>标签</span></button>
+                    <button class="wx2-entry" id="wx2-entry-mp"><i class="wx2-entry-ico">${pkmnIcon('megaphone','pkmn-ico')}</i><span>公告板</span></button>
+                    <button class="wx2-entry" id="wx2-entry-settings"><i class="wx2-entry-ico">${pkmnIcon('settings','pkmn-ico')}</i><span>设置</span></button>
+                </div>
+                <div class="wx2-list" id="pkmn-contact-list"></div>
+            </div>
+            <div class="wx2-pane" id="wx2-pane-me" style="display:none">
+                <div id="wx2-me-body"></div>
+            </div>
+        </div>
+        <div class="wx2-index" id="wx2-index"></div>
+        <div class="wx2-index-hint" id="wx2-index-hint">A</div>
+        <div class="wechat-bottom-nav" id="wx2-tabbar">
+            <button id="wx2-tab-chats" class="active">${pkmnIcon('message-circle','pkmn-ico wx2-tab-ico')}<small>消息</small></button>
+            <button id="wx2-tab-contacts">${pkmnIcon('users','pkmn-ico wx2-tab-ico')}<small>通讯录</small></button>
+            <button id="wx2-tab-me">${pkmnIcon('user','pkmn-ico wx2-tab-ico')}<small>我</small></button>
         </div>
     </div>
 
-    <!-- 微信式聊天 -->
+    <!-- 聊天 -->
     <div id="pkmn-chat" class="pkmn-view pkmn-chat-app">
         <div class="wechat-nav">
             <button id="pkmn-chat-back">‹</button>
@@ -2074,6 +2197,38 @@
             <span>聊天设置</span>
         </div>
         <div class="pkmn-settings" id="pkmn-contact-person-settings-body"></div>
+    </div>
+
+    <!-- v0.18.0 群聊：群列表 / 群会话 / 群设置 -->
+    <div id="pkmn-group-list-view" class="pkmn-view">
+        <div class="wechat-nav">
+            <button id="pkmn-group-list-back">‹</button>
+            <div class="wechat-nav-title">群聊</div>
+            <button id="pkmn-group-create">＋</button>
+        </div>
+        <div class="pkmn-settings" id="pkmn-group-list-body"></div>
+    </div>
+
+    <div id="pkmn-group-chat-view" class="pkmn-view pkmn-chat-app">
+        <div class="wechat-nav">
+            <button id="pkmn-group-chat-back">‹</button>
+            <div class="wechat-nav-title" id="pkmn-group-chat-title">群聊</div>
+            <button id="pkmn-group-chat-refresh" title="让 AI 互聊" aria-label="让 AI 互聊">↻</button>
+            <button id="pkmn-group-chat-more">⋯</button>
+        </div>
+        <div class="wechat-messages" id="pkmn-group-messages"></div>
+        <div class="wechat-inputbar">
+            <textarea id="pkmn-group-input" rows="1" placeholder="说点什么…（长按头像可 @ 成员）"></textarea>
+            <button class="wechat-send" id="pkmn-group-send">发送</button>
+        </div>
+    </div>
+
+    <div id="pkmn-group-settings-view" class="pkmn-view">
+        <div class="pkmn-head">
+            <button id="pkmn-group-settings-back">‹</button>
+            <span>群聊设置</span>
+        </div>
+        <div class="pkmn-settings" id="pkmn-group-settings-body"></div>
     </div>
 
 </div>
@@ -2512,7 +2667,16 @@
             contacts: which === 'contacts' ? 'translate3d(0,0,0)' : 'translate3d(100%,0,0)',
             chat: which === 'chat' ? 'translate3d(0,0,0)' : 'translate3d(100%,0,0)',
             contactSettings: which === 'contactSettings' ? 'translate3d(0,0,0)' : 'translate3d(100%,0,0)',
-            contactPersonSettings: which === 'contactPersonSettings' ? 'translate3d(0,0,0)' : 'translate3d(100%,0,0)'
+            contactPersonSettings: which === 'contactPersonSettings' ? 'translate3d(0,0,0)' : 'translate3d(100%,0,0)',
+            devonShop: which === 'devonShop' ? 'translate3d(0,0,0)' : 'translate3d(100%,0,0)',
+            devonDetail: which === 'devonDetail' ? 'translate3d(0,0,0)' : 'translate3d(100%,0,0)',
+            devonOrders: which === 'devonOrders' ? 'translate3d(0,0,0)' : 'translate3d(100%,0,0)',
+            devonSettings: which === 'devonSettings' ? 'translate3d(0,0,0)' : 'translate3d(100%,0,0)',
+            devonBag: which === 'devonBag' ? 'translate3d(0,0,0)' : 'translate3d(100%,0,0)',
+            // v0.18.0 群聊视图
+            groupList: which === 'groupList' ? 'translate3d(0,0,0)' : 'translate3d(100%,0,0)',
+            groupChat: which === 'groupChat' ? 'translate3d(0,0,0)' : 'translate3d(100%,0,0)',
+            groupSettings: which === 'groupSettings' ? 'translate3d(0,0,0)' : 'translate3d(100%,0,0)'
         };
 
         home.style.transform = positions.home;
@@ -2524,10 +2688,27 @@
         const chat = $('pkmn-chat');
         const contactSettings = $('pkmn-contact-settings-view');
         const contactPersonSettings = $('pkmn-contact-person-settings-view');
+        const devonShop = $('pkmn-devon-shop');
+        const devonDetail = $('pkmn-devon-detail');
+        const devonOrders = $('pkmn-devon-orders-view');
+        const devonSettings = $('pkmn-devon-settings-view');
+        const devonBag = $('pkmn-devon-bag-view');
         if (contacts) contacts.style.transform = positions.contacts;
         if (chat) chat.style.transform = positions.chat;
         if (contactSettings) contactSettings.style.transform = positions.contactSettings;
         if (contactPersonSettings) contactPersonSettings.style.transform = positions.contactPersonSettings;
+        if (devonShop) devonShop.style.transform = positions.devonShop;
+        if (devonDetail) devonDetail.style.transform = positions.devonDetail;
+        if (devonOrders) devonOrders.style.transform = positions.devonOrders;
+        if (devonSettings) devonSettings.style.transform = positions.devonSettings;
+        if (devonBag) devonBag.style.transform = positions.devonBag;
+        // v0.18.0 群聊
+        const groupList = $('pkmn-group-list-view');
+        const groupChat = $('pkmn-group-chat-view');
+        const groupSettings = $('pkmn-group-settings-view');
+        if (groupList) groupList.style.transform = positions.groupList;
+        if (groupChat) groupChat.style.transform = positions.groupChat;
+        if (groupSettings) groupSettings.style.transform = positions.groupSettings;
     }
 
     // ============================================================
@@ -2616,6 +2797,8 @@
  * ========================================================= */
 const CONTACT_INJECT_PROMPT_ID = 'pokemon_forum_contact_injection_v2';
 const CONTACT_INJECT_STORAGE_KEY = 'pokemon_forum_contact_injection_v2';
+// v0.18.0：群聊注入条目由 IIFE 内的群聊模块注册进来（顶层无法直接访问其内部函数）
+let pkmnGroupEntriesProvider = null;
 
 function getCurrentChatInjectionKey() {
     try {
@@ -2730,20 +2913,35 @@ function getAllEnabledContactInjectionEntries() {
 
 function buildContactInjectionText() {
     const entries = getAllEnabledContactInjectionEntries();
-    if (!entries.length) return '';
+    // v0.18.0：群聊注入条目（由群聊模块注册）
+    const groupEntries = typeof pkmnGroupEntriesProvider === 'function'
+        ? (pkmnGroupEntriesProvider() || [])
+        : [];
+    if (!entries.length && !groupEntries.length) return '';
     const grouped = new Map();
     for (const e of entries) {
         if (!grouped.has(e.contactId)) grouped.set(e.contactId, { name: e.contactName, items: [] });
         grouped.get(e.contactId).items.push(e);
     }
     const lines = [
-        '【通讯录私聊记忆｜当前酒馆聊天】',
-        '以下是被用户单独开启“注入正文”的通讯录私聊内容。它们属于私聊剧情记忆，不是公开论坛帖子。',
-        '请仅将其作为背景事实参考。通讯录昵称后括号内为当前酒馆主角的正式姓名；不要将通讯录昵称误认为主角姓名。不要擅自替主角发言，也不要把私聊内容伪装成论坛内容。'
+        '【通讯录聊天记忆｜当前酒馆聊天】',
+        '以下是被用户单独开启“注入正文”的通讯录私聊与群聊内容。它们属于剧情记忆，不是公开论坛帖子。',
+        '请仅将其作为背景事实参考。通讯录昵称后括号内为当前酒馆主角的正式姓名；不要将通讯录昵称误认为主角姓名。不要擅自替主角发言，也不要把私聊或群聊内容伪装成论坛内容。'
     ];
     for (const g of grouped.values()) {
         lines.push(`\n【联系人：${g.name}】`);
         g.items.forEach((e, i) => lines.push(`${i + 1}. ${e.speaker}: ${e.content}`));
+    }
+    if (groupEntries.length) {
+        const gg = new Map();
+        for (const e of groupEntries) {
+            if (!gg.has(e.groupId)) gg.set(e.groupId, { name: e.groupName, items: [] });
+            gg.get(e.groupId).items.push(e);
+        }
+        for (const g of gg.values()) {
+            lines.push(`\n【群聊：${g.name}】`);
+            g.items.forEach((e, i) => lines.push(`${i + 1}. ${e.speaker}: ${e.content}`));
+        }
     }
     return lines.join('\n');
 }
@@ -3208,6 +3406,13 @@ const FORUM_INJECT_PROMPT_ID = 'pkmn-forum-thread-injection';
                                                 t.id
                                         )
                                 );
+
+                                // 修复：删除已注入的帖子后同步刷新正文注入，
+                                // 否则已删帖子的内容仍会继续注入给 AI。
+                                if (injectedThreadIds && injectedThreadIds.has(t.id)) {
+                                    injectedThreadIds.delete(t.id);
+                                    try { applyForumInjections(); } catch (_) {}
+                                }
 
                                 saveChatState();
 
@@ -4122,6 +4327,17 @@ ${targetContent}
             npcBtn.textContent = '生成中…';
         }
 
+        // v0.14.3 修复：任何退出路径都必须恢复 generating 与按钮状态，
+        // 否则首次互聊后全局死锁，按钮永远显示"生成中…"。
+        const restoreNpcBtn = () => {
+            generating = false;
+            if (npcBtn) {
+                npcBtn.disabled = false;
+                npcBtn.textContent = npcBtn.dataset.oldText || '💬互聊';
+                delete npcBtn.dataset.oldText;
+            }
+        };
+
         const target =
             threads().filter(
                 t =>
@@ -4130,6 +4346,8 @@ ${targetContent}
             );
 
         if (!target.length) {
+
+            restoreNpcBtn();
 
             showToast(
                 '当前板块没有帖子'
@@ -4342,6 +4560,10 @@ ${buildLinkedContactMemory()}
             );
 
             return 0;
+
+        } finally {
+
+            restoreNpcBtn();
         }
     }
 
@@ -4636,6 +4858,35 @@ ${buildLinkedContactMemory()}
     <div class="pkmn-small">
         世界书改为逐条选择。你勾选的 Entry 会作为明确上下文提供给所有 AI 模块，不再根据聊天关键词二次过滤。
     </div>
+
+</div>
+
+
+<div class="pkmn-group">
+
+    <div class="pkmn-label">
+        破限提示词
+    </div>
+
+    <textarea
+        class="pkmn-textarea"
+        id="set-jailbreak-prompt"
+        maxlength="20000"
+        placeholder="输入破限提示词，留空则不启用。保存后将作为系统提示词插入所有 AI 请求（论坛生成、评论回复、通讯录私聊、群聊、道德检定）的最前面。"
+        style="min-height:140px"
+    >${esc(config.jailbreakPrompt || '')}</textarea>
+
+    <div class="pkmn-small" id="pkmn-jb-status" style="margin-top:6px">
+        ${config.jailbreakPrompt && String(config.jailbreakPrompt).trim() ? '● 已启用（作为首条系统消息）' : '○ 未启用'}
+    </div>
+
+    <button
+        class="pkmn-btn pkmn-primary"
+        id="set-save-jailbreak"
+        style="width:100%;margin-top:8px"
+    >
+        💾 保存破限提示词
+    </button>
 
 </div>
 
@@ -5002,6 +5253,41 @@ ${buildLinkedContactMemory()}
                         )
                     );
             };
+
+        // v0.19.0: 破限提示词保存
+
+        const jbInput =
+            $('set-jailbreak-prompt');
+
+        const jbSaveBtn =
+            $('set-save-jailbreak');
+
+        if (jbInput && jbSaveBtn) {
+
+            jbSaveBtn.onclick = () => {
+
+                config.jailbreakPrompt =
+                    String(jbInput.value || '').trim();
+
+                saveGlobalConfig();
+
+                const st =
+                    $('pkmn-jb-status');
+
+                if (st) {
+
+                    st.textContent = config.jailbreakPrompt
+                        ? '● 已启用（作为首条系统消息）'
+                        : '○ 未启用';
+                }
+
+                showToast(
+                    config.jailbreakPrompt
+                        ? '破限提示词已保存并启用'
+                        : '破限提示词已清空'
+                );
+            };
+        }
 
         config.worldbookForceSelected = true;
         saveGlobalConfig();
@@ -5736,7 +6022,7 @@ ${esc(b.prompt)}
 
 
     // ============================================================
-    // 通讯录 / 微信式聊天
+    // 通讯录 / 聊天
     // ============================================================
     let currentContactId = null;
 
@@ -5762,6 +6048,18 @@ ${esc(b.prompt)}
         saveContactConfig();
     }
 
+    // v0.17.6 玩家头像：可填自定义图片地址，留空则用昵称首字渐变方块
+    function getContactPlayerAvatar() {
+        contactCfg();
+        return typeof config.contactPlayerAvatar === 'string' ? config.contactPlayerAvatar.trim() : '';
+    }
+
+    function setContactPlayerAvatar(value) {
+        contactCfg();
+        config.contactPlayerAvatar = String(value || '').trim();
+        saveContactConfig();
+    }
+
     function getContactPlayerDisplayName() {
         return getContactPlayerNickname().trim() || '我';
     }
@@ -5784,6 +6082,24 @@ ${esc(b.prompt)}
             config.contacts = config.contacts.filter(x => !legacyIds.has(String(x?.id || '')));
         }
         if (!config.contactChats || typeof config.contactChats !== 'object') config.contactChats = {};
+        // v0.18.0 群聊：群定义 / 群消息 / 群注入设置
+        if (!Array.isArray(config.contactGroups)) config.contactGroups = [];
+        if (!config.groupChats || typeof config.groupChats !== 'object') config.groupChats = {};
+        if (!config.groupInjection || typeof config.groupInjection !== 'object') config.groupInjection = {};
+        if (!Number.isFinite(Number(config.contactApi.groupAiTurns))) config.contactApi.groupAiTurns = 6;
+        config.contactGroups.forEach(g => {
+            if (!g || typeof g !== 'object') return;
+            if (!g.id) g.id = 'g_' + Math.random().toString(36).slice(2, 10);
+            if (!g.name) g.name = '未命名群聊';
+            if (!Array.isArray(g.memberIds)) g.memberIds = [];
+            // aiTurns 为 null 表示跟随全局设置
+            if (!(Number.isFinite(Number(g.aiTurns)) && Number(g.aiTurns) >= 1)) g.aiTurns = null;
+            if (!Array.isArray(config.groupChats[g.id])) config.groupChats[g.id] = [];
+        });
+        // 清掉已删群的孤儿消息，避免存储无限膨胀
+        Object.keys(config.groupChats).forEach(id => {
+            if (!config.contactGroups.some(g => g && g.id === id)) delete config.groupChats[id];
+        });
         if (!config.contactLinkMeta || typeof config.contactLinkMeta !== 'object') config.contactLinkMeta = {};
         config.contacts.forEach(c => {
             if (!c || typeof c !== 'object') return;
@@ -5860,7 +6176,11 @@ ${esc(b.prompt)}
     function switchContactChat(forcedKey = null, options = {}) {
         const key = getContactChatArchiveKey(forcedKey);
         if (!key) return false;
-        const current = getContactChatArchiveKey(config.__contactActiveChatKey);
+        // 修复：__contactActiveChatKey 为空时不能回退到当前 chatKey，
+        // 否则 current 永远等于 key，档案切换被短路，新聊天会沿用旧聊天的通讯录。
+        const current = config.__contactActiveChatKey
+            ? getContactChatArchiveKey(config.__contactActiveChatKey)
+            : null;
         if (current === key) {
             currentContactId = null;
             return true;
@@ -5890,7 +6210,7 @@ ${esc(b.prompt)}
 
         // 当前正显示通讯录时立即刷新；新聊天没有档案时自然显示空通讯录。
         try {
-            if (document.getElementById('pkmn-contacts')?.classList.contains('active')) renderContacts();
+            if (document.getElementById('pkmn-contacts')?.classList.contains('active')) { renderContacts(); renderWx2Chats(); }
             if (document.getElementById('pkmn-chat')?.classList.contains('active')) openView('contacts');
         } catch (_) {}
         if (!options.silent) showToast(next ? '已恢复本聊天通讯录' : '新聊天：通讯录已清空');
@@ -5928,6 +6248,7 @@ ${esc(b.prompt)}
         const base = contactApiBase();
         if (!base) throw new Error('请先在通讯录设置中配置 API');
         if (!c.model) throw new Error('请先填写通讯录模型');
+        messages = prependJailbreakPrompt(messages);
         const res = await fetch(base + '/chat/completions', {
             method:'POST',
             headers:{
@@ -6082,7 +6403,7 @@ function contactByNickname(nickname) {
             const memory = getContactChatMemory(c);
             const rawMoral = Number(c.moralScore);
             const moral = Number.isFinite(rawMoral) ? Math.max(0, Math.min(100, rawMoral)) : 50;
-            return `【联系人：${nickname}】\n身份说明：论坛昵称与微信原昵称一致；玩家在私聊中是“玩家本人”，不是普通匿名网友。\n道德值：${moral}/100\n聊天记忆：\n${memory || '（暂无聊天记录）'}`;
+            return `【联系人：${nickname}】\n身份说明：论坛昵称与原昵称一致；玩家在私聊中是“玩家本人”，不是普通匿名网友。\n道德值：${moral}/100\n聊天记忆：\n${memory || '（暂无聊天记录）'}`;
         });
         return `【已开启“此聊天与论坛联动”的通讯录联系人】
 ${blocks.join('\n\n')}
@@ -6280,49 +6601,248 @@ ${blocks.join('\n\n')}
         if (chatBtn) chatBtn.onclick = () => { close(); openContact(existing.id); };
     }
 
+    // ===== v0.17.3 通讯录 · 拼音首字母分组 / 字母索引 / 星标朋友 / 人数统计 =====
+    const WX2_PINYIN_BOUNDS = [['a','阿'],['b','芭'],['c','擦'],['d','搭'],['e','蛾'],['f','发'],['g','噶'],['h','哈'],['j','击'],['k','喀'],['l','垃'],['m','妈'],['n','拿'],['o','哦'],['p','啪'],['q','期'],['r','然'],['s','撒'],['t','塌'],['w','挖'],['x','昔'],['y','压'],['z','匝']];
+    let wx2Collator = null;
+    try { wx2Collator = new Intl.Collator('zh-Hans-CN-u-co-pinyin'); } catch (_) { wx2Collator = null; }
+    function pinyinInitial(str) {
+        const ch = String(str || '').trim().charAt(0);
+        if (!ch) return '#';
+        if (/[a-z]/i.test(ch)) return ch.toUpperCase();
+        if (/[0-9]/.test(ch)) return '#';
+        if (!wx2Collator) return '#';
+        let cur = '#';
+        for (const pair of WX2_PINYIN_BOUNDS) {
+            if (wx2Collator.compare(pair[1], ch) <= 0) cur = pair[0].toUpperCase();
+            else break;
+        }
+        return cur;
+    }
+    function contactAvatarClass(c) {
+        const key = String((c && c.id) || '');
+        let h = 0;
+        for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) >>> 0;
+        return 'wx2-av-' + (h % 8);
+    }
+    function contactAvatarChar(c) {
+        const disp = contactDisplayName(c);
+        return disp ? disp.slice(0, 1).toUpperCase() : '匿';
+    }
+    // v0.17.6 头像：c.avatar 为图片地址时渲染圆角照片，否则回落首字渐变方块。
+    // 图片加载失败时 onerror 直接移除 <img>，底层首字自动露出，不留空白。
+    function contactAvatarIsImage(v) {
+        const s = String(v || '').trim();
+        if (!s || s.length > 600) return false;
+        return /^(https?:\/\/|data:image\/|blob:|\.{0,2}\/)/i.test(s)
+            || /\.(png|jpe?g|gif|webp|avif|bmp|svg)(\?.*)?$/i.test(s);
+    }
+    function contactAvatarHTML(c, sizeCls, label, baseCls) {
+        const cls = String((baseCls || 'wx2-avatar') + ' ' + (sizeCls || '') + ' ' + contactAvatarClass(c)).replace(/\s+/g, ' ').trim();
+        const txt = esc(typeof label === 'string' && label ? label : contactAvatarChar(c));
+        const v = String((c && c.avatar) || '').trim();
+        if (contactAvatarIsImage(v)) {
+            return `<span class="${cls}"><b class="wx2-av-txt">${txt}</b><img class="wx2-av-img" src="${esc(v)}" alt="" loading="lazy" onerror="this.remove()"></span>`;
+        }
+        return `<span class="${cls}"><b class="wx2-av-txt">${txt}</b></span>`;
+    }
+    function wx2IndexBar(listEl, letters) {
+        const bar = $('wx2-index'), hint = $('wx2-index-hint');
+        if (!bar) return;
+        if (!letters.length) { bar.style.display = 'none'; return; }
+        bar.style.display = 'flex';
+        bar.innerHTML = letters.map(L => `<span data-wx2-idx="${L}">${L === '★' ? pkmnIcon('star','pkmn-ico wx2-idx-star') : L}</span>`).join('');
+        bar.querySelectorAll('[data-wx2-idx]').forEach(el => {
+            el.onclick = () => {
+                const L = el.dataset.wx2Idx;
+                const g = listEl.querySelector('[data-wx2-letter="' + L + '"]');
+                if (g && g.scrollIntoView) g.scrollIntoView({ block: 'start', behavior: 'smooth' });
+                if (hint) {
+                    hint.textContent = L;
+                    hint.classList.add('show');
+                    clearTimeout(hint.__t);
+                    hint.__t = setTimeout(() => hint.classList.remove('show'), 700);
+                }
+            };
+        });
+    }
+    // ===== v0.17.6 三栏：消息 / 通讯录 / 我 =====
+    let wx2ActiveTab = 'chats';
+    let wx2MeEdit = null;
+    function wx2SwitchTab(tab) {
+        wx2ActiveTab = tab;
+        const panes = { chats: 'wx2-pane-chats', contacts: 'wx2-pane-contacts', me: 'wx2-pane-me' };
+        Object.keys(panes).forEach(k => { const el = $(panes[k]); if (el) el.style.display = k === tab ? '' : 'none'; });
+        ['chats', 'contacts', 'me'].forEach(k => { const el = $('wx2-tab-' + k); if (el) el.classList.toggle('active', k === tab); });
+        const title = $('wx2-nav-title');
+        const addBtn = $('pkmn-contacts-add');
+        if (addBtn) addBtn.style.display = tab === 'me' ? 'none' : '';
+        const idx = $('wx2-index');
+        if (idx && tab !== 'contacts') idx.style.display = 'none';
+        if (tab === 'contacts') { renderContacts($('pkmn-contact-search')?.value || ''); if (title) title.textContent = '通讯录'; }
+        else if (tab === 'chats') { renderWx2Chats(); if (title) title.textContent = '消息'; }
+        else { renderWx2Me(); if (title) title.textContent = '我'; }
+    }
+    // v0.18.0：把 HH:MM 转成可排序的分钟数，供会话列表排序
+    function wx2TsOf(last) {
+        const tm = last ? String(last.time || '').match(/(\d{1,2}):(\d{2})/) : null;
+        return tm ? Number(tm[1]) * 60 + Number(tm[2]) : -1;
+    }
+    function renderWx2Chats() {
+        contactCfg();
+        const box = $('wx2-chat-list');
+        if (!box) return;
+        const items = [];
+        // 群聊会话
+        (config.contactGroups || []).forEach(g => {
+            const chat = groupMessages(g.id);
+            const last = chat.length ? chat[chat.length - 1] : null;
+            items.push({ kind: 'group', id: g.id, g, last, ts: wx2TsOf(last) });
+        });
+        // 私聊会话
+        (config.contacts || []).forEach(c => {
+            const chat = Array.isArray(config.contactChats[c.id]) ? config.contactChats[c.id] : [];
+            const last = chat.length ? chat[chat.length - 1] : null;
+            items.push({ kind: 'contact', id: c.id, c, last, ts: wx2TsOf(last) });
+        });
+        if (!items.length) {
+            box.innerHTML = `<div class="wx2-empty"><div class="wx2-empty-ico">${pkmnIcon('message-square-dashed','pkmn-ico')}</div><div class="wx2-empty-t">还没有会话</div><div class="wx2-empty-d">到「通讯录」添加联系人，或在「群聊」里建个群</div></div>`;
+            return;
+        }
+        items.sort((a, b) => b.ts - a.ts);
+        box.innerHTML = items.map(item => {
+            const last = item.last;
+            if (item.kind === 'group') {
+                const g = item.g;
+                return `<button class="wx2-conv group-conv" data-group-conv="${esc(g.id)}">
+                    ${groupAvatarHTML(g, 'lg')}
+                    <span class="wx2-conv-main"><b>${esc(g.name)}<em class="group-member-count">（${groupMemberContacts(g).length}）</em></b><small>${esc(groupLastPreview(g))}</small></span>
+                    <time>${esc((last && last.time) || '')}</time>
+                </button>`;
+            }
+            const c = item.c;
+            const preview = last ? esc(String(last.content || '').replace(/\s+/g, ' ')).slice(0, 40) : '暂无消息';
+            return `<button class="wx2-conv" data-conv="${esc(c.id)}">
+                ${contactAvatarHTML(c, 'lg')}
+                <span class="wx2-conv-main"><b>${esc(contactDisplayName(c))}</b><small>${preview}</small></span>
+                <time>${esc((last && last.time) || '')}</time>
+            </button>`;
+        }).join('');
+        box.querySelectorAll('[data-conv]').forEach(el => el.onclick = () => openContact(el.dataset.conv));
+        box.querySelectorAll('[data-group-conv]').forEach(el => el.onclick = () => openGroupChat(el.dataset.groupConv));
+    }
+    function renderWx2Me() {
+        contactCfg();
+        const body = $('wx2-me-body');
+        if (!body) return;
+        const rawNick = getContactPlayerNickname().trim();
+        const nick = rawNick || '未设置昵称';
+        const identity = getContactPlayerIdentity().trim();
+        let editCard = '';
+        if (wx2MeEdit === 'nickname') {
+            editCard = `<div class="wx2-me-edit"><label>昵称<input class="pkmn-input" id="wx2-me-nick-input" value="${esc(rawNick)}" placeholder="例如：阿岚" maxlength="20"></label><div class="wx2-me-edit-btns"><button class="pkmn-btn pkmn-primary" id="wx2-me-nick-save">保存</button><button class="pkmn-btn pkmn-secondary" id="wx2-me-cancel">取消</button></div></div>`;
+        } else if (wx2MeEdit === 'identity') {
+            editCard = `<div class="wx2-me-edit"><label>介绍（AI 会作为你的身份读取）<textarea class="pkmn-textarea" id="wx2-me-identity-input" rows="3" placeholder="例如：宝可梦训练家、沼王饲养员……">${esc(identity)}</textarea></label><div class="wx2-me-edit-btns"><button class="pkmn-btn pkmn-primary" id="wx2-me-identity-save">保存</button><button class="pkmn-btn pkmn-secondary" id="wx2-me-cancel">取消</button></div></div>`;
+        }
+        body.innerHTML = `
+            <div class="wx2-me-card">
+                ${contactAvatarHTML({ id: 'player-me', avatar: getContactPlayerAvatar() }, 'xl', rawNick ? nick.slice(0, 1).toUpperCase() : pkmnIcon('user', 'pkmn-ico wx2-av-ico'))}
+                <div class="wx2-me-main">
+                    <div class="wx2-me-nick">${esc(nick)}</div>
+                    <div class="wx2-me-wxid">训练家 ID：${identity ? esc(identity.replace(/\s+/g, ' ').slice(0, 22)) : '点击下方「介绍」设置'}</div>
+                </div>
+                <i class="wx2-me-arrow">${pkmnIcon('chevron-right','pkmn-ico')}</i>
+            </div>
+            <div class="wx2-me-group">
+                <button class="wx2-me-row" id="wx2-me-nick-row"><i class="wx2-me-ico">${pkmnIcon('pencil','pkmn-ico')}</i><span>昵称</span><em>${rawNick ? esc(nick) : '未设置'}</em><b>${pkmnIcon('chevron-right','pkmn-ico')}</b></button>
+                <button class="wx2-me-row" id="wx2-me-identity-row"><i class="wx2-me-ico">${pkmnIcon('scroll-text','pkmn-ico')}</i><span>介绍</span><em>${identity ? esc(identity.replace(/\s+/g, ' ').slice(0, 12)) + (identity.length > 12 ? '…' : '') : '未设置'}</em><b>${pkmnIcon('chevron-right','pkmn-ico')}</b></button>
+            </div>
+            ${editCard}
+            <div class="wx2-me-group">
+                <button class="wx2-me-row" id="pkmn-contact-settings"><i class="wx2-me-ico">${pkmnIcon('settings','pkmn-ico')}</i><span>设置</span><b>${pkmnIcon('chevron-right','pkmn-ico')}</b></button>
+            </div>
+            <div class="wx2-me-foot">宝可梦小手机 · 通讯录 v0.17.6</div>`;
+        const nickRow = $('wx2-me-nick-row'); if (nickRow) nickRow.onclick = () => { wx2MeEdit = 'nickname'; renderWx2Me(); };
+        const idRow = $('wx2-me-identity-row'); if (idRow) idRow.onclick = () => { wx2MeEdit = 'identity'; renderWx2Me(); };
+        const cancelBtn = $('wx2-me-cancel'); if (cancelBtn) cancelBtn.onclick = () => { wx2MeEdit = null; renderWx2Me(); };
+        const nickSave = $('wx2-me-nick-save');
+        if (nickSave) nickSave.onclick = () => {
+            const v = String($('wx2-me-nick-input').value || '').trim();
+            if (!v) { showToast('昵称不能为空'); return; }
+            setContactPlayerNickname(v);
+            wx2MeEdit = null; renderWx2Me(); renderWx2Chats();
+            showToast('✓ 昵称已保存');
+        };
+        const idSave = $('wx2-me-identity-save');
+        if (idSave) idSave.onclick = () => {
+            setContactPlayerIdentity(String($('wx2-me-identity-input').value || '').trim());
+            wx2MeEdit = null; renderWx2Me();
+            showToast('✓ 介绍已保存');
+        };
+        const st = $('pkmn-contact-settings');
+        if (st) st.onclick = () => { renderContactSettings(); openView('contactSettings'); };
+    }
+
     function renderContacts(filter='') {
         contactCfg();
         const list = $('pkmn-contact-list');
         if (!list) return;
+        const total = config.contacts.length;
+        const titleEl = $('pkmn-contacts')?.querySelector('.wechat-nav-title');
+        if (titleEl && wx2ActiveTab === 'contacts') titleEl.textContent = total ? `通讯录 (${total})` : '通讯录';
         const q = String(filter || '').trim().toLowerCase();
-        const items = config.contacts.filter(c => !q || [c.nickname,c.name,c.note,c.location].join(' ').toLowerCase().includes(q));
-        list.innerHTML = items.map(c => {
-            const chat = config.contactChats[c.id] || [];
-            const last = chat.length ? chat[chat.length-1].content : (c.note || '点击开始聊天');
-            const time = chat.length ? chat[chat.length-1].time : '';
-            return `<button class="wechat-contact" data-contact="${esc(c.id)}">
-                <span class="wechat-avatar">${esc(c.avatar || '👤')}</span>
-                <span class="wechat-contact-main"><b>${esc(contactDisplayName(c))}</b><small>${esc(last).slice(0,48)}</small></span>
-                <time>${esc(time)}</time>
-            </button>`;
-        }).join('') || '<div class="wechat-empty">没有找到联系人</div>';
+        const items = config.contacts.filter(c => !q || [c.nickname,c.name,c.note,c.location,c.bio].join(' ').toLowerCase().includes(q));
+        if (!total) {
+            list.innerHTML = `<div class="wx2-empty"><div class="wx2-empty-ico">${pkmnIcon('users','pkmn-ico')}</div><div class="wx2-empty-t">通讯录还是空的</div><div class="wx2-empty-d">点击右上角「＋」添加第一位联系人<br>或在论坛用户资料页加好友</div></div>`;
+            wx2IndexBar(list, []);
+            return;
+        }
+        if (!items.length) {
+            list.innerHTML = `<div class="wx2-empty"><div class="wx2-empty-ico">${pkmnIcon('search','pkmn-ico')}</div><div class="wx2-empty-t">没有找到联系人</div><div class="wx2-empty-d">换个关键词试试</div></div>`;
+            wx2IndexBar(list, []);
+            return;
+        }
+        const groups = [];
+        const starred = items.filter(c => c.star);
+        if (starred.length) groups.push({ letter: '★', list: starred });
+        const bucket = new Map();
+        items.filter(c => !c.star).forEach(c => {
+            const L = pinyinInitial(contactDisplayName(c));
+            if (!bucket.has(L)) bucket.set(L, []);
+            bucket.get(L).push(c);
+        });
+        [...bucket.keys()].sort((a, b) => {
+            if (a === '#') return 1;
+            if (b === '#') return -1;
+            return a < b ? -1 : a > b ? 1 : 0;
+        }).forEach(L => {
+            const arr = bucket.get(L);
+            arr.sort((x, y) => (wx2Collator ? wx2Collator.compare(contactDisplayName(x), contactDisplayName(y)) : contactDisplayName(x).localeCompare(contactDisplayName(y), 'zh')));
+            groups.push({ letter: L, list: arr });
+        });
+        list.innerHTML = groups.map(g => `
+            <section class="wx2-group" data-wx2-letter="${g.letter}">
+                <div class="wx2-letter">${g.letter === '★' ? '★ 星标朋友' : g.letter}</div>
+                ${g.list.map(c => `
+                <button class="wx2-row" data-contact="${esc(c.id)}">
+                    ${contactAvatarHTML(c, '', contactAvatarChar(c))}
+                    <span class="wx2-name">${esc(contactDisplayName(c))}</span>
+                    ${c.star ? `<span class="wx2-meta">${pkmnIcon('star','pkmn-ico wx2-meta-star')}</span>` : ''}
+                </button>`).join('')}
+            </section>`).join('') + `<div class="wx2-count">${q ? '找到 ' + items.length + ' 位联系人' : items.length + ' 位联系人'}</div>`;
         list.querySelectorAll('[data-contact]').forEach(el => el.onclick = () => openContact(el.dataset.contact));
+        wx2IndexBar(list, groups.map(g => g.letter));
     }
 
     
-    let contactMultiDeleteMode = false;
-    let contactSelectedMessages = new Set();
+    // v0.18.1 长按消息 → 气泡下方出现小 ×，点击 × 直接删除该条（替代原顶部多选工具栏）
+    let contactMsgDeleteIndex = null;
     let contactLongPressTimer = null;
+    let contactJustLongPressed = false;
 
-    function exitContactDeleteMode() {
-        contactMultiDeleteMode = false;
-        contactSelectedMessages.clear();
-        renderChat();
-    }
-
-    function deleteSelectedContactMessages() {
-        if (!contactSelectedMessages.size) {
-            showToast('请选择要删除的消息');
-            return;
-        }
-        const chat = config.contactChats[currentContactId] || [];
-        config.contactChats[currentContactId] = chat.filter((_, i) => !contactSelectedMessages.has(i));
-        saveContactConfig();
-        showToast(`已删除 ${contactSelectedMessages.size} 条消息`);
-        contactSelectedMessages.clear();
-        contactMultiDeleteMode = false;
-        renderChat();
-        autoRefreshContactInjection(currentContactId);
+    function contactDelX(msgIndex) {
+        return contactMsgDeleteIndex === msgIndex
+            ? '<button class="msg-del-x" data-del-contact-msg="' + msgIndex + '" type="button" aria-label="删除这条消息">×</button>'
+            : '';
     }
 
     function bindContactMessageLongPress() {
@@ -6332,36 +6852,52 @@ ${blocks.join('\n\n')}
         box.querySelectorAll('.wechat-msg-row[data-msg-index]').forEach(row => {
             const index = Number(row.dataset.msgIndex);
 
-            const toggleSelect = () => {
-                if (!contactMultiDeleteMode) return;
-                if (contactSelectedMessages.has(index)) contactSelectedMessages.delete(index);
-                else contactSelectedMessages.add(index);
+            const press = () => {
+                // 长按同一条：显示 / 收起 ×
+                contactMsgDeleteIndex = contactMsgDeleteIndex === index ? null : index;
+                contactJustLongPressed = true;
                 renderChat();
             };
 
-            row.addEventListener('click', toggleSelect);
-
             row.addEventListener('touchstart', () => {
-                contactLongPressTimer = setTimeout(() => {
-                    contactMultiDeleteMode = true;
-                    contactSelectedMessages.add(index);
-                    renderChat();
-                }, 550);
+                contactLongPressTimer = setTimeout(press, 550);
             }, {passive:true});
 
             row.addEventListener('touchend', () => clearTimeout(contactLongPressTimer));
             row.addEventListener('touchmove', () => clearTimeout(contactLongPressTimer));
 
             row.addEventListener('mousedown', () => {
-                contactLongPressTimer = setTimeout(() => {
-                    contactMultiDeleteMode = true;
-                    contactSelectedMessages.add(index);
-                    renderChat();
-                }, 550);
+                contactLongPressTimer = setTimeout(press, 550);
             });
 
             row.addEventListener('mouseup', () => clearTimeout(contactLongPressTimer));
             row.addEventListener('mouseleave', () => clearTimeout(contactLongPressTimer));
+
+            // 点击消息其他区域：收起 ×
+            row.addEventListener('click', () => {
+                if (contactJustLongPressed) { contactJustLongPressed = false; return; }
+                if (contactMsgDeleteIndex !== null) {
+                    contactMsgDeleteIndex = null;
+                    renderChat();
+                }
+            });
+        });
+
+        // 点击小 × 直接删除该条消息
+        box.querySelectorAll('[data-del-contact-msg]').forEach(btn => {
+            btn.addEventListener('click', e => {
+                e.stopPropagation();
+                const i = Number(btn.getAttribute('data-del-contact-msg'));
+                const chat = config.contactChats[currentContactId] || [];
+                if (i >= 0 && i < chat.length) {
+                    chat.splice(i, 1);
+                    saveContactConfig();
+                    showToast('已删除该消息');
+                    autoRefreshContactInjection(currentContactId);
+                }
+                contactMsgDeleteIndex = null;
+                renderChat();
+            });
         });
     }
 
@@ -6373,22 +6909,21 @@ function renderChat() {
         $('pkmn-chat-title').textContent = contactName;
         const box = $('pkmn-chat-messages');
         const msgs = config.contactChats[currentContactId] || [];
-        box.innerHTML = (contactMultiDeleteMode ? `<div class="wechat-delete-toolbar"><button data-contact-cancel-delete>取消</button><span>已选择 ${contactSelectedMessages.size} 条</span><button data-contact-delete-selected>删除</button></div>` : '') + msgs.map((m, msgIndex) => {
+        box.innerHTML = msgs.map((m, msgIndex) => {
             const mine = m.role === 'user';
             const displayName = mine ? playerName : contactName;
-            const avatarText = mine ? playerName.slice(0, 1) : String(c.avatar || contactName || '👤').slice(0, 1);
-            return `<div data-msg-index="${msgIndex}" class="wechat-msg-row ${mine?'mine':'theirs'} ${contactSelectedMessages.has(msgIndex)?'contact-msg-selected':''}">
-                ${mine ? '' : `<span class="wechat-avatar mini">${esc(avatarText)}</span>`}
+            const avatarText = mine ? playerName.slice(0, 1) : (contactAvatarIsImage(c.avatar) ? '' : String(c.avatar || contactName || '匿').slice(0, 1));
+            return `<div data-msg-index="${msgIndex}" class="wechat-msg-row ${mine?'mine':'theirs'}">
+                ${mine ? '' : contactAvatarHTML(c, 'mini', avatarText, 'wechat-avatar')}
                 <div class="wechat-msg-main">
                     <div class="wechat-msg-name">${esc(displayName)}</div>
                     <div class="wechat-bubble">${esc(m.content).replace(/\n/g,'<br>')}</div>
                     <small class="wechat-time">${esc(m.time||'')}</small>
+                    ${contactDelX(msgIndex)}
                 </div>
-                ${mine ? `<span class="wechat-avatar mini me">${esc(avatarText)}</span>` : ''}
+                ${mine ? contactAvatarHTML({ id: 'player-me', avatar: getContactPlayerAvatar() }, 'mini me', avatarText, 'wechat-avatar') : ''}
             </div>`;
         }).join('') || `<div class="wechat-daytip">与 ${esc(contactName)} 的聊天</div>`;
-        box.querySelector('[data-contact-cancel-delete]')?.addEventListener('click', exitContactDeleteMode);
-        box.querySelector('[data-contact-delete-selected]')?.addEventListener('click', deleteSelectedContactMessages);
         bindContactMessageLongPress();
         box.scrollTop = box.scrollHeight;
     }
@@ -6400,11 +6935,17 @@ function renderChat() {
         setTimeout(() => $('pkmn-chat-input')?.focus(), 120);
     }
 
+    let contactSending = false;
     async function sendContactMessage() {
+        if (contactSending) {
+            showToast('上一条消息还在回复中，请稍候…');
+            return;
+        }
         const input = $('pkmn-chat-input');
         const text = String(input?.value || '').trim();
         const c = contactById(currentContactId);
         if (!text || !c) return;
+        contactSending = true;
         contactCfg();
         if (!config.contactChats[currentContactId]) config.contactChats[currentContactId] = [];
         const chat = config.contactChats[currentContactId];
@@ -6425,7 +6966,7 @@ function renderChat() {
             }
             const contactPlayerNickname = getContactPlayerDisplayName();
             const contactPlayerIdentity = getContactPlayerIdentity();
-            const system = `${contactCfg().systemPrompt}\n\n【联系人资料】\n微信原昵称：${c.nickname || c.name}\n通讯录备注：${c.note||''}\n简介：${c.bio||''}\n当前位置：${c.location||'未知'}\n道德值：${Math.max(0,Math.min(100,Number.isFinite(Number(c.moralScore)) ? Number(c.moralScore) : 50))}/100\n${getMoralBehaviorText(Number(c.moralScore))}\n对玩家忠诚倾向：${Math.max(0,Math.min(100,Number.isFinite(Number(c.moralLoyalty)) ? Number(c.moralLoyalty) : 50))}/100\n对玩家好感倾向：${Math.max(0,Math.min(100,Number.isFinite(Number(c.moralAffinity)) ? Number(c.moralAffinity) : 50))}/100\n\n【微信玩家身份】\n玩家昵称：${contactPlayerNickname}\n玩家身份：${contactPlayerIdentity || '未设置'}\n当前聊天对象就是上述昵称与身份的玩家本人，不要把玩家当成普通论坛网友。\n${context ? '\n【当前世界/剧情资料】\n'+context : ''}${forumContext}`;
+            const system = `${contactCfg().systemPrompt}\n\n【联系人资料】\n原昵称：${c.nickname || c.name}\n通讯录备注：${c.note||''}\n简介：${c.bio||''}\n当前位置：${c.location||'未知'}\n道德值：${Math.max(0,Math.min(100,Number.isFinite(Number(c.moralScore)) ? Number(c.moralScore) : 50))}/100\n${getMoralBehaviorText(Number(c.moralScore))}\n对玩家忠诚倾向：${Math.max(0,Math.min(100,Number.isFinite(Number(c.moralLoyalty)) ? Number(c.moralLoyalty) : 50))}/100\n对玩家好感倾向：${Math.max(0,Math.min(100,Number.isFinite(Number(c.moralAffinity)) ? Number(c.moralAffinity) : 50))}/100\n\n【玩家身份】\n玩家昵称：${contactPlayerNickname}\n玩家身份：${contactPlayerIdentity || '未设置'}\n当前聊天对象就是上述昵称与身份的玩家本人，不要把玩家当成普通论坛网友。\n${context ? '\n【当前世界/剧情资料】\n'+context : ''}${forumContext}`;
             const recent = chat.slice(-20).map(m => ({role:m.role, content:m.content}));
             const reply = await callContactAI([{role:'system',content:system}, ...recent]);
             typing.remove();
@@ -6434,11 +6975,635 @@ function renderChat() {
             await autoRefreshContactInjection(currentContactId);
             renderChat();
             renderContacts($('pkmn-contact-search')?.value || '');
+            renderWx2Chats();
         } catch (e) {
             typing.remove();
             chat.push({role:'assistant', content:'消息发送失败：'+(e.message||e), time:new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})});
             renderChat();
+            renderWx2Chats();
+        } finally {
+            contactSending = false;
         }
+    }
+
+    /* ================= v0.18.0 群聊 ================= */
+    // 数据：config.contactGroups[] 存群定义，config.groupChats[groupId] 存消息，
+    //      config.groupInjection[groupId] 存该群的正文注入设置。
+
+    function nowHM() {
+        return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function contactGroupById(id) {
+        if (!id) return null;
+        // 注意：contactCfg() 返回的是 contactApi 配置，群列表在 config.contactGroups
+        return ((config.contactGroups) || []).find(g => g && String(g.id) === String(id)) || null;
+    }
+
+    function groupMemberContacts(g) {
+        const ids = Array.isArray(g && g.memberIds) ? g.memberIds : [];
+        return ids.map(id => contactById(id)).filter(Boolean);
+    }
+
+    // 每群可覆盖全局条数；未设置（null）时跟随设置页的全局默认值
+    function groupAiTurns(g) {
+        const own = Number(g && g.aiTurns);
+        if (Number.isFinite(own) && own >= 1) return Math.max(1, Math.min(20, Math.floor(own)));
+        const def = Number(contactCfg().groupAiTurns);
+        return Math.max(1, Math.min(20, Number.isFinite(def) && def >= 1 ? Math.floor(def) : 6));
+    }
+
+    function groupMessages(groupId) {
+        contactCfg();
+        if (!Array.isArray(config.groupChats[groupId])) config.groupChats[groupId] = [];
+        return config.groupChats[groupId];
+    }
+
+    function groupAvatarHTML(g, sizeCls) {
+        const cls = String('wx2-avatar wx2-av-group ' + (sizeCls || '')).replace(/\s+/g, ' ').trim();
+        const ico = pkmnIcon('users-round', 'pkmn-ico wx2-av-ico');
+        const v = String((g && g.avatar) || '').trim();
+        if (contactAvatarIsImage(v)) {
+            return `<span class="${cls}"><b class="wx2-av-txt">${ico}</b><img class="wx2-av-img" src="${esc(v)}" alt="" loading="lazy" onerror="this.remove()"></span>`;
+        }
+        return `<span class="${cls}">${ico}</span>`;
+    }
+
+    function groupLastPreview(g) {
+        const msgs = groupMessages(g.id);
+        const last = msgs[msgs.length - 1];
+        if (!last) return '还没有消息';
+        const name = String(last.senderName || '').trim();
+        const body = String(last.content || '').replace(/\s+/g, ' ').trim();
+        return (name ? name + '：' : '') + body.slice(0, 28);
+    }
+
+    let currentGroupId = null;
+    let groupGenerating = false;
+
+    function setGroupRefreshBusy(busy) {
+        const btn = $('pkmn-group-chat-refresh');
+        if (!btn) return;
+        btn.classList.toggle('is-busy', !!busy);
+        btn.disabled = !!busy;
+    }
+
+    // ---------- 群聊列表 ----------
+    function renderGroupList() {
+        const body = $('pkmn-group-list-body');
+        if (!body) return;
+        contactCfg();
+        const groups = config.contactGroups || [];
+        if (!groups.length) {
+            body.innerHTML = `
+                <div class="wx2-empty">
+                    <div class="wx2-empty-ico">${pkmnIcon('users-round', 'pkmn-ico')}</div>
+                    <div class="wx2-empty-t">还没有群聊</div>
+                    <div class="wx2-empty-d">点右上角 ＋ 拉几位训练家进群</div>
+                </div>`;
+            return;
+        }
+        body.innerHTML = groups.map(g => `
+            <button class="wx2-conv group-conv" data-group="${esc(g.id)}">
+                ${groupAvatarHTML(g, 'lg')}
+                <span class="wx2-conv-main">
+                    <b>${esc(g.name)}<em class="group-member-count">（${groupMemberContacts(g).length}）</em></b>
+                    <small>${esc(groupLastPreview(g))}</small>
+                </span>
+            </button>`).join('');
+        body.querySelectorAll('[data-group]').forEach(btn => {
+            btn.onclick = () => openGroupChat(btn.getAttribute('data-group'));
+        });
+    }
+
+    function renderGroupCreate() {
+        const body = $('pkmn-group-list-body');
+        if (!body) return;
+        contactCfg();
+        const all = config.contacts || [];
+        if (!all.length) {
+            showToast('先在通讯录里添加联系人');
+            return;
+        }
+        body.innerHTML = `
+            <div class="wechat-setting-card">
+                <div class="wechat-setting-title">新建群聊</div>
+                <label class="pkmn-label">群名称
+                    <input class="pkmn-input" id="group-new-name" placeholder="例如：常青森林探险队">
+                </label>
+                <div class="pkmn-small" style="margin:9px 0 6px">选择成员（至少 2 位，AI 会让他们轮流发言）</div>
+                <div class="group-member-pick">
+                    ${all.map(c => `<label class="group-member-row"><input type="checkbox" class="group-new-member" value="${esc(c.id)}"><span>${esc(contactDisplayName(c))}</span></label>`).join('')}
+                </div>
+                <div class="pkmn-row" style="margin-top:10px">
+                    <button class="pkmn-btn pkmn-primary" id="group-create-confirm" style="flex:1">创建</button>
+                    <button class="pkmn-btn pkmn-secondary" id="group-create-cancel">取消</button>
+                </div>
+            </div>`;
+        $('group-create-cancel').onclick = () => renderGroupList();
+        $('group-create-confirm').onclick = () => {
+            const name = String(($('group-new-name') || {}).value || '').trim() || '未命名群聊';
+            const ids = [...body.querySelectorAll('.group-new-member:checked')].map(x => x.value);
+            if (ids.length < 2) {
+                showToast('至少选择 2 位成员');
+                return;
+            }
+            const g = {
+                id: 'g_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+                name,
+                avatar: '',
+                memberIds: ids,
+                aiTurns: null,
+                speakCursor: 0,
+                createdAt: Date.now()
+            };
+            config.contactGroups.push(g);
+            config.groupChats[g.id] = [];
+            saveContactConfig();
+            showToast('✓ 群聊已创建');
+            openGroupChat(g.id);
+        };
+    }
+
+    // ---------- 群聊会话 ----------
+    function openGroupChat(groupId) {
+        const g = contactGroupById(groupId);
+        if (!g) return;
+        currentGroupId = g.id;
+        renderGroupChat();
+        openView('groupChat');
+    }
+
+    // v0.18.1 群聊：长按消息出 × 删除；长按成员头像 @ 该成员
+    let groupMsgDeleteIndex = null;
+    let groupLongPressTimer = null;
+    let groupAvatarPressTimer = null;
+    let groupJustLongPressed = false;
+
+    function groupDelX(i) {
+        return groupMsgDeleteIndex === i
+            ? '<button class="msg-del-x" data-del-group-msg="' + i + '" type="button" aria-label="删除这条消息">×</button>'
+            : '';
+    }
+
+    function insertGroupMention(index) {
+        const g = contactGroupById(currentGroupId);
+        if (!g) return;
+        const m = groupMessages(g.id)[index];
+        const name = m ? String(m.senderName || '').trim() : '';
+        if (!name || name === '我') return;
+        const input = $('pkmn-group-input');
+        if (!input) return;
+        input.value = String(input.value || '').replace(/\s*$/, ' ') + '@' + name + ' ';
+        input.focus();
+        showToast('已 @ ' + name);
+    }
+
+    function bindGroupMessageLongPress() {
+        const box = $('pkmn-group-messages');
+        if (!box) return;
+        box.querySelectorAll('.wechat-msg-row[data-group-msg-index]').forEach(row => {
+            const index = Number(row.dataset.groupMsgIndex);
+            const press = () => {
+                groupMsgDeleteIndex = groupMsgDeleteIndex === index ? null : index;
+                groupJustLongPressed = true;
+                renderGroupChat();
+            };
+            row.addEventListener('touchstart', () => { groupLongPressTimer = setTimeout(press, 550); }, {passive:true});
+            ['touchend', 'touchmove'].forEach(ev => row.addEventListener(ev, () => clearTimeout(groupLongPressTimer)));
+            row.addEventListener('mousedown', () => { groupLongPressTimer = setTimeout(press, 550); });
+            ['mouseup', 'mouseleave'].forEach(ev => row.addEventListener(ev, () => clearTimeout(groupLongPressTimer)));
+            row.addEventListener('click', () => {
+                if (groupJustLongPressed) { groupJustLongPressed = false; return; }
+                if (groupMsgDeleteIndex !== null) { groupMsgDeleteIndex = null; renderGroupChat(); }
+            });
+        });
+        box.querySelectorAll('[data-del-group-msg]').forEach(btn => {
+            btn.addEventListener('click', e => {
+                e.stopPropagation();
+                const g = contactGroupById(currentGroupId);
+                const i = Number(btn.getAttribute('data-del-group-msg'));
+                if (g) {
+                    const msgs = groupMessages(g.id);
+                    if (i >= 0 && i < msgs.length) {
+                        msgs.splice(i, 1);
+                        saveContactConfig();
+                        showToast('已删除该消息');
+                        autoRefreshGroupInjection(g.id);
+                        renderGroupList();
+                        renderWx2Chats();
+                    }
+                }
+                groupMsgDeleteIndex = null;
+                renderGroupChat();
+            });
+        });
+    }
+
+    function bindGroupAvatarLongPress() {
+        const box = $('pkmn-group-messages');
+        if (!box) return;
+        // 只绑定成员头像（ theirs 行）；stopPropagation 避免触发消息长按删除
+        box.querySelectorAll('.wechat-msg-row.theirs[data-group-msg-index]').forEach(row => {
+            const index = Number(row.dataset.groupMsgIndex);
+            const av = row.querySelector('.wechat-avatar');
+            if (!av) return;
+            av.addEventListener('touchstart', e => {
+                e.stopPropagation();
+                groupAvatarPressTimer = setTimeout(() => insertGroupMention(index), 550);
+            }, {passive:true});
+            ['touchend', 'touchmove'].forEach(ev => av.addEventListener(ev, () => clearTimeout(groupAvatarPressTimer)));
+            av.addEventListener('mousedown', e => {
+                e.stopPropagation();
+                groupAvatarPressTimer = setTimeout(() => insertGroupMention(index), 550);
+            });
+            ['mouseup', 'mouseleave'].forEach(ev => av.addEventListener(ev, () => clearTimeout(groupAvatarPressTimer)));
+        });
+    }
+
+    function renderGroupChat() {
+        const g = contactGroupById(currentGroupId);
+        const box = $('pkmn-group-messages');
+        if (!g || !box) return;
+        const titleEl = $('pkmn-group-chat-title');
+        if (titleEl) titleEl.textContent = `${g.name}（${groupMemberContacts(g).length}）`;
+        const msgs = groupMessages(g.id);
+        const playerNick = getContactPlayerDisplayName() || '我';
+        const playerContact = { id: 'player-me', avatar: getContactPlayerAvatar(), nickname: playerNick };
+        if (!msgs.length) {
+            box.innerHTML = `<div class="wechat-daytip">群聊已创建，点右上角 ↻ 让 AI 们聊起来</div>`;
+        } else {
+            box.innerHTML = msgs.map((m, gi) => {
+                const mine = m.role === 'user';
+                const name = mine ? (m.senderName || playerNick) : (m.senderName || '成员');
+                const speaker = mine ? null : contactById(m.senderId);
+                const av = mine
+                    ? contactAvatarHTML(playerContact, 'mini me', (m.senderName || playerNick).slice(0, 1), 'wechat-avatar')
+                    : (speaker
+                        ? contactAvatarHTML(speaker, 'mini', contactAvatarChar(speaker), 'wechat-avatar')
+                        : `<span class="wechat-avatar mini">${esc(name.slice(0, 1))}</span>`);
+                return `<div data-group-msg-index="${gi}" class="wechat-msg-row ${mine ? 'mine' : 'theirs'}">
+                    ${av}
+                    <div class="wechat-msg-main">
+                        ${mine ? '' : `<div class="wechat-msg-name">${esc(name)}</div>`}
+                        <div class="wechat-bubble">${esc(m.content)}</div>
+                        ${groupDelX(gi)}
+                    </div>
+                </div>`;
+            }).join('');
+        }
+        bindGroupMessageLongPress();
+        bindGroupAvatarLongPress();
+        box.scrollTop = box.scrollHeight;
+    }
+
+    // 找出最后一条玩家消息里 @ 到的成员，让他们优先回应
+    function findMentionedMemberIds(g, msgs) {
+        const arr = Array.isArray(msgs) ? msgs : [];
+        let last = null;
+        for (let i = arr.length - 1; i >= 0; i--) {
+            if (arr[i] && arr[i].role === 'user') { last = arr[i]; break; }
+        }
+        if (!last) return [];
+        const text = String(last.content || '');
+        if (!text.includes('@')) return [];
+        return groupMemberContacts(g)
+            .filter(m => [contactDisplayName(m), m.nickname, m.name].filter(Boolean).some(n => text.includes('@' + n)))
+            .map(m => m.id);
+    }
+
+    async function generateGroupMemberLine(g, member) {
+        const members = groupMemberContacts(g);
+        const roster = members
+            .map(m => `- ${contactDisplayName(m)}${m.bio ? '（' + m.bio + '）' : ''}`)
+            .join('\n');
+        const msgs = groupMessages(g.id);
+        const context = await buildContext();
+        let forumContext = '';
+        if (contactCfg().readForumAll) {
+            const allThreads = [...(chatState.safeThreads || []), ...(chatState.matureThreads || [])];
+            forumContext = '\n【论坛全部内容】\n' + JSON.stringify(allThreads).slice(0, 30000);
+        }
+        const score = Math.max(0, Math.min(100, Number.isFinite(Number(member.moralScore)) ? Number(member.moralScore) : 50));
+        const system = `${contactCfg().systemPrompt}
+
+【当前场景：群聊】
+你正在一个名为「${g.name}」的群聊里发言，群里还有这些成员：
+${roster}
+你现在要用「${contactDisplayName(member)}」的身份说话。只输出这一句发言本身：不要加自己的昵称前缀、不要加引号、不要写旁白或动作描写、不要替其他人说话。一到两句话即可，像真实群聊一样简短自然。可以回应别人刚说的话，也可以起新话题，但不要重复别人已经说过的内容。
+
+【你的资料】
+原昵称：${member.nickname || member.name || ''}
+通讯录备注：${member.note || ''}
+简介：${member.bio || ''}
+当前位置：${member.location || '未知'}
+道德值：${score}/100
+${getMoralBehaviorText(Number(member.moralScore))}
+对玩家忠诚倾向：${Math.max(0, Math.min(100, Number.isFinite(Number(member.moralLoyalty)) ? Number(member.moralLoyalty) : 50))}/100
+对玩家好感倾向：${Math.max(0, Math.min(100, Number.isFinite(Number(member.moralAffinity)) ? Number(member.moralAffinity) : 50))}/100
+
+【玩家身份】
+玩家昵称：${getContactPlayerDisplayName()}
+玩家身份：${getContactPlayerIdentity() || '未设置'}
+${context ? '\n【当前世界/剧情资料】\n' + context : ''}${forumContext}`;
+
+        const history = msgs.slice(-30).map(m => {
+            const who = m.role === 'user'
+                ? (m.senderName || getContactPlayerDisplayName() || '我')
+                : (m.senderName || '成员');
+            return `${who}：${m.content}`;
+        }).join('\n');
+        const prompt = history
+            ? `以下是群里最近的对话：\n${history}\n\n现在轮到「${contactDisplayName(member)}」发言，请只输出这一句发言内容。`
+            : `群里还没有人说话，请你用「${contactDisplayName(member)}」的身份开个场，只输出这一句发言内容。`;
+        const reply = await callContactAI([
+            { role: 'system', content: system },
+            { role: 'user', content: prompt }
+        ]);
+        return String(reply || '').trim().replace(/^[\s"'`「」『』【】]+|[\s"'`「」『』【】]+$/g, '');
+    }
+
+    function appendGroupTyping(speaker) {
+        const box = $('pkmn-group-messages');
+        if (!box) return { remove() {} };
+        const el = document.createElement('div');
+        el.className = 'wechat-typing';
+        el.textContent = contactDisplayName(speaker) + ' 正在输入…';
+        box.appendChild(el);
+        box.scrollTop = box.scrollHeight;
+        return el;
+    }
+
+    // 刷新按钮核心：成员轮流各说一句，每句都能看到前面已生成的内容
+    async function runGroupChatRound(groupId, count) {
+        const g = contactGroupById(groupId);
+        if (!g) return 0;
+        const members = groupMemberContacts(g);
+        if (!members.length) {
+            showToast('这个群还没有成员');
+            return 0;
+        }
+        if (groupGenerating) {
+            showToast('群里还在聊，请稍候…');
+            return 0;
+        }
+        const turns = Math.max(1, Math.min(20, Math.floor(Number(count) || groupAiTurns(g))));
+        groupGenerating = true;
+        setGroupRefreshBusy(true);
+        const msgs = groupMessages(g.id);
+        // @ 到的人先说，剩下的按 cursor 轮流
+        const atIds = findMentionedMemberIds(g, msgs);
+        let cursor = Number.isFinite(Number(g.speakCursor)) ? Number(g.speakCursor) : 0;
+        let written = 0;
+        try {
+            for (let i = 0; i < turns; i++) {
+                let speaker = null;
+                if (i < atIds.length) {
+                    speaker = contactById(atIds[i]);
+                }
+                if (!speaker) {
+                    speaker = members[((cursor % members.length) + members.length) % members.length];
+                    cursor++;
+                }
+                if (!speaker) break;
+                const typing = appendGroupTyping(speaker);
+                try {
+                    const line = await generateGroupMemberLine(g, speaker);
+                    typing.remove();
+                    msgs.push({
+                        role: 'assistant',
+                        senderId: speaker.id,
+                        senderName: contactDisplayName(speaker),
+                        content: line || '……',
+                        time: nowHM()
+                    });
+                    written++;
+                    g.speakCursor = cursor % members.length;
+                    saveContactConfig();
+                    renderGroupChat();
+                    renderGroupList();
+                    renderWx2Chats();
+                    await autoRefreshGroupInjection(g.id);
+                } catch (e) {
+                    typing.remove();
+                    msgs.push({
+                        role: 'assistant',
+                        senderId: speaker.id,
+                        senderName: contactDisplayName(speaker),
+                        content: '（发言失败：' + (e && e.message ? e.message : e) + '）',
+                        time: nowHM()
+                    });
+                    saveContactConfig();
+                    renderGroupChat();
+                    break;
+                }
+            }
+        } finally {
+            groupGenerating = false;
+            setGroupRefreshBusy(false);
+            saveContactConfig();
+            renderGroupChat();
+            renderGroupList();
+            renderWx2Chats();
+        }
+        if (written) showToast(`✓ 群里新增 ${written} 句发言`);
+        return written;
+    }
+
+    async function sendGroupMessage() {
+        const g = contactGroupById(currentGroupId);
+        const input = $('pkmn-group-input');
+        if (!g || !input) return;
+        const text = String(input.value || '').trim();
+        if (!text) return;
+        if (groupGenerating) {
+            showToast('群里还在聊，请稍候…');
+            return;
+        }
+        input.value = '';
+        const msgs = groupMessages(g.id);
+        msgs.push({
+            role: 'user',
+            senderId: 'player',
+            senderName: getContactPlayerDisplayName() || '我',
+            content: text,
+            time: nowHM()
+        });
+        saveContactConfig();
+        renderGroupChat();
+        renderGroupList();
+        renderWx2Chats();
+        await autoRefreshGroupInjection(g.id);
+        // @ 了人就让被 @ 的先回应，否则群里随机接一句
+        const mentioned = findMentionedMemberIds(g, msgs);
+        await runGroupChatRound(g.id, mentioned.length ? mentioned.length : 1);
+    }
+
+    // ---------- 群聊正文注入 ----------
+    function getGroupInjectionSettings(groupId) {
+        contactCfg();
+        const s = config.groupInjection[groupId];
+        return {
+            enabled: !!(s && s.enabled),
+            auto: !!(s && s.auto),
+            limit: Math.max(1, Math.min(40, Number(s && s.limit) || 20))
+        };
+    }
+
+    function setGroupInjectionSettings(groupId, patch) {
+        contactCfg();
+        const cur = getGroupInjectionSettings(groupId);
+        config.groupInjection[groupId] = Object.assign({}, cur, patch || {});
+        saveContactConfig();
+    }
+
+    async function autoRefreshGroupInjection(groupId) {
+        const s = getGroupInjectionSettings(groupId);
+        if (!s.auto) return false;
+        if (!s.enabled) setGroupInjectionSettings(groupId, { enabled: true });
+        return applyContactInjectionToMainAI();
+    }
+
+    function getEnabledGroupInjectionEntries() {
+        contactCfg();
+        const entries = [];
+        for (const id of Object.keys(config.groupInjection || {})) {
+            const s = config.groupInjection[id];
+            if (!s || !s.enabled) continue;
+            const g = contactGroupById(id);
+            if (!g) continue;
+            const msgs = Array.isArray(config.groupChats[id]) ? config.groupChats[id] : [];
+            const limit = Math.max(1, Math.min(40, Number(s.limit) || 20));
+            msgs.slice(-limit).forEach(m => {
+                const content = String((m && m.content) || '').trim();
+                if (!content) return;
+                entries.push({
+                    groupId: String(id),
+                    groupName: String(g.name || '群聊'),
+                    speaker: String((m && m.senderName) || (m && m.role === 'user' ? '我' : '成员')),
+                    content
+                });
+            });
+        }
+        return entries;
+    }
+
+    // 注册给顶层的 buildContactInjectionText，让群聊内容也能注入酒馆正文
+    pkmnGroupEntriesProvider = getEnabledGroupInjectionEntries;
+
+    async function injectGroupChatToMainAI(groupId) {
+        const g = contactGroupById(groupId);
+        if (!g) return false;
+        setGroupInjectionSettings(groupId, { enabled: true });
+        const ok = applyContactInjectionToMainAI();
+        if (ok) showToast(`✓ 已注入群聊「${g.name}」的正文`);
+        return ok;
+    }
+
+    // ---------- 群设置 ----------
+    function renderGroupSettings() {
+        const g = contactGroupById(currentGroupId);
+        const body = $('pkmn-group-settings-body');
+        if (!g || !body) return;
+        contactCfg();
+        const inj = getGroupInjectionSettings(g.id);
+        const all = config.contacts || [];
+        body.innerHTML = `
+            <div class="wechat-setting-card">
+                <div class="wechat-setting-title">群资料</div>
+                <label class="pkmn-label">群名称
+                    <input class="pkmn-input" id="group-set-name" value="${esc(g.name)}">
+                </label>
+                <label class="pkmn-label" style="margin-top:8px;display:block">群头像（图片地址，可选）
+                    <input class="pkmn-input" id="group-set-avatar" value="${esc(g.avatar || '')}" placeholder="https://... 图片直链">
+                </label>
+            </div>
+            <div class="wechat-setting-card">
+                <div class="wechat-setting-title">群成员</div>
+                <div class="group-member-pick">
+                    ${all.length
+                        ? all.map(c => `<label class="group-member-row"><input type="checkbox" class="group-set-member" value="${esc(c.id)}" ${g.memberIds.includes(c.id) ? 'checked' : ''}><span>${esc(contactDisplayName(c))}</span></label>`).join('')
+                        : '<div class="pkmn-small">通讯录还是空的，先去添加联系人。</div>'}
+                </div>
+            </div>
+            <div class="wechat-setting-card">
+                <div class="wechat-setting-title">AI 互聊</div>
+                <label class="pkmn-label">本群每轮发言条数
+                    <input class="pkmn-input" id="group-set-turns" type="number" min="1" max="20" value="${groupAiTurns(g)}" placeholder="${contactCfg().groupAiTurns}">
+                </label>
+                <div class="pkmn-small" style="margin-top:6px">清空则跟随设置页的全局默认值（当前 ${contactCfg().groupAiTurns} 句）。在聊天页点右上角 ↻ 触发一轮。</div>
+            </div>
+            <div class="wechat-setting-card">
+                <div class="contact-settings-section-title"><span class="contact-settings-icon">${pkmnIcon('arrow-up-right', 'pkmn-ico contact-settings-ico')}</span> 正文注入</div>
+                <label class="contact-settings-toggle-row" for="group-inject-auto">
+                    <span>
+                        <b>自动注入群聊正文</b>
+                        <small>开启后，群里每次新增消息都会自动把最近群聊内容注入酒馆正文。</small>
+                    </span>
+                    <input type="checkbox" id="group-inject-auto" ${inj.auto ? 'checked' : ''}>
+                    <i aria-hidden="true"></i>
+                </label>
+                <label class="pkmn-label" style="margin-top:8px;display:block">注入最近消息条数
+                    <input class="pkmn-input" id="group-inject-limit" type="number" min="1" max="40" value="${inj.limit}">
+                </label>
+                <button class="pkmn-btn ${inj.enabled ? 'pkmn-primary' : 'pkmn-secondary'}" id="group-inject-toggle" style="margin-top:8px;width:100%">${inj.enabled ? '已注入正文（点击取消）' : '手动注入正文'}</button>
+            </div>
+            <div class="pkmn-row" style="margin:10px 0 22px">
+                <button class="pkmn-btn pkmn-primary" id="group-set-save" style="flex:1">保存群设置</button>
+                <button class="pkmn-btn pkmn-secondary" id="group-set-delete">删除群聊</button>
+            </div>`;
+
+        $('group-inject-auto').onchange = (e) => {
+            setGroupInjectionSettings(g.id, { auto: !!e.target.checked, enabled: e.target.checked ? true : getGroupInjectionSettings(g.id).enabled });
+            applyContactInjectionToMainAI();
+            showToast(e.target.checked ? '✓ 群聊已开启自动注入' : '✓ 群聊已关闭自动注入');
+            renderGroupSettings();
+        };
+        $('group-inject-toggle').onclick = () => {
+            const cur = getGroupInjectionSettings(g.id);
+            if (cur.enabled) {
+                setGroupInjectionSettings(g.id, { enabled: false });
+                applyContactInjectionToMainAI();
+                showToast('✓ 已取消群聊正文注入');
+            } else {
+                injectGroupChatToMainAI(g.id);
+            }
+            renderGroupSettings();
+        };
+        $('group-set-save').onclick = () => {
+            g.name = String(($('group-set-name') || {}).value || '').trim() || g.name;
+            g.avatar = String(($('group-set-avatar') || {}).value || '').trim();
+            const picked = [...body.querySelectorAll('.group-set-member:checked')].map(x => x.value);
+            if (picked.length < 2) {
+                showToast('群聊至少要有 2 位成员');
+                return;
+            }
+            g.memberIds = picked;
+            const turnsRaw = String(($('group-set-turns') || {}).value || '').trim();
+            g.aiTurns = turnsRaw === '' ? null : Math.max(1, Math.min(20, Math.floor(Number(turnsRaw) || 1)));
+            const limitRaw = Number(($('group-inject-limit') || {}).value);
+            setGroupInjectionSettings(g.id, {
+                limit: Math.max(1, Math.min(40, Number.isFinite(limitRaw) && limitRaw >= 1 ? Math.floor(limitRaw) : 20))
+            });
+            saveContactConfig();
+            applyContactInjectionToMainAI();
+            showToast('✓ 群设置已保存');
+            renderGroupChat();
+            renderGroupList();
+        };
+        $('group-set-delete').onclick = () => {
+            if (!confirm(`确定删除群聊「${g.name}」？群内聊天记录会一并删除。`)) return;
+            config.contactGroups = (config.contactGroups || []).filter(x => x && x.id !== g.id);
+            delete config.groupChats[g.id];
+            delete config.groupInjection[g.id];
+            saveContactConfig();
+            applyContactInjectionToMainAI();
+            showToast('✓ 群聊已删除');
+            currentGroupId = null;
+            renderGroupList();
+            renderWx2Chats();
+            openView('groupList');
+        };
     }
 
     function renderContactPersonSettings() {
@@ -6449,26 +7614,45 @@ function renderChat() {
         if (!body) return;
         const score = Math.max(0, Math.min(100, Number.isFinite(Number(c.moralScore)) ? Number(c.moralScore) : 50));
         const label = c.moralLabel || (score < 40 ? '较低' : score < 70 ? '一般' : score < 85 ? '较高' : '很高');
-        const avatar = String(c.avatar || (c.nickname || c.name || '匿').slice(0,1));
         body.innerHTML = `
             <div class="contact-settings-profile">
-                <div class="contact-settings-avatar">${esc(avatar)}</div>
+                ${contactAvatarHTML(c, '', contactAvatarChar(c), 'contact-settings-avatar')}
                 <div class="contact-settings-profile-main">
                     <div class="contact-settings-name">${esc(c.nickname || c.name || '匿名用户')}</div>
-                    <div class="contact-settings-original">微信原昵称：${esc(c.nickname || c.name || '匿名用户')}</div>
+                    <div class="contact-settings-original">原昵称：${esc(c.nickname || c.name || '匿名用户')}</div>
                 </div>
             </div>
 
             <section class="contact-settings-card">
-                <div class="contact-settings-section-title"><span class="contact-settings-icon">✎</span> 备注</div>
+                <div class="contact-settings-section-title"><span class="contact-settings-icon">${pkmnIcon('pencil','pkmn-ico contact-settings-ico')}</span> 备注</div>
                 <label class="contact-settings-field-label">备注名
                     <input class="pkmn-input contact-settings-input" id="contact-person-note" value="${esc(c.note||'')}" placeholder="设置备注名">
                 </label>
-                <div class="contact-settings-hint">通讯录列表显示备注名；不设置时显示原微信昵称。</div>
+                <div class="contact-settings-hint">通讯录列表显示备注名；不设置时显示原昵称。</div>
+            </section>
+
+            <section class="contact-settings-card">
+                <div class="contact-settings-section-title"><span class="contact-settings-icon">${pkmnIcon('camera','pkmn-ico contact-settings-ico')}</span> 头像</div>
+                <label class="contact-settings-field-label">头像图片地址（可选）
+                    <input class="pkmn-input contact-settings-input" id="contact-person-avatar" value="${esc(contactAvatarIsImage(c.avatar) ? String(c.avatar).trim() : '')}" placeholder="https://... 图片直链">
+                </label>
+                <div class="contact-settings-hint">填图片直链后通讯录与聊天里都显示这张图；留空或加载失败会自动回退到昵称首字方块。</div>
             </section>
 
             <section class="contact-settings-card contact-settings-link-card">
-                <div class="contact-settings-section-title"><span class="contact-settings-icon">🔗</span> 论坛联动</div>
+                <div class="contact-settings-section-title"><span class="contact-settings-icon">${pkmnIcon('star','pkmn-ico contact-settings-ico')}</span> 星标联系人</div>
+                <label class="contact-settings-toggle-row" for="contact-person-star">
+                    <span>
+                        <b>星标联系人</b>
+                        <small>星标的朋友将在通讯录顶部「★ 星标朋友」分组置顶展示。</small>
+                    </span>
+                    <input type="checkbox" id="contact-person-star" ${c.star ? 'checked' : ''}>
+                    <i aria-hidden="true"></i>
+                </label>
+            </section>
+
+            <section class="contact-settings-card contact-settings-link-card">
+                <div class="contact-settings-section-title"><span class="contact-settings-icon">${pkmnIcon('link','pkmn-ico contact-settings-ico')}</span> 论坛联动</div>
                 <label class="contact-settings-toggle-row" for="contact-person-link-forum">
                     <span>
                         <b>此聊天与论坛联动</b>
@@ -6483,7 +7667,7 @@ function renderChat() {
 
             <section class="contact-settings-card contact-settings-injection-card" id="contact-person-injection-panel">
                 <div class="contact-settings-section-title">
-                    <span class="contact-settings-icon">↗</span> 正文注入
+                    <span class="contact-settings-icon">${pkmnIcon('arrow-up-right','pkmn-ico contact-settings-ico')}</span> 正文注入
                 </div>
                 <div class="contact-injection-buttons">
                     <button type="button" class="contact-injection-btn" id="contact-injection-toggle" aria-pressed="false">手动注入</button>
@@ -6505,7 +7689,7 @@ function renderChat() {
                 <input id="contact-moral-unlock-input" type="text" autocomplete="off" style="width:100%;box-sizing:border-box;padding:9px;border:1px solid #ccc;border-radius:8px;" />
             </div>
             <section class="contact-settings-card" id="contact-moral-settings-panel" style="display:none;">
-                <div class="contact-settings-section-title"><span class="contact-settings-icon">◈</span> 道德检定</div>
+                <div class="contact-settings-section-title"><span class="contact-settings-icon">${pkmnIcon('shield','pkmn-ico contact-settings-ico')}</span> 道德检定</div>
                 <div class="contact-settings-score">AI 判定：<b>${esc(label)}</b><span>·</span><strong>${score} / 100</strong></div>
                 <div class="contact-settings-hint">加好友时由通讯录 AI 根据 NPC 人设、正文、世界书和论坛表现判断并保存。不能手动修改。</div>
                 <div class="contact-settings-reason">行为阶段：${esc(c.moralStage || moralBehaviorProfile(score).stage)}</div>
@@ -6513,9 +7697,17 @@ function renderChat() {
                 ${c.moralReason ? `<div class="contact-settings-reason">判断依据：${esc(c.moralReason)}</div>` : ''}
             </section>
 
-            <button class="contact-settings-save" id="contact-person-save"><span>✓</span> 保存联系人设置</button>
-            <button class="contact-settings-delete" id="contact-person-delete" type="button"><span>🗑</span> 删除联系人</button>
+            <button class="contact-settings-save" id="contact-person-save"><span>${pkmnIcon('check','pkmn-ico contact-settings-ico-sm')}</span> 保存联系人设置</button>
+            <button class="contact-settings-delete" id="contact-person-delete" type="button"><span>${pkmnIcon('trash-2','pkmn-ico contact-settings-ico-sm')}</span> 删除联系人</button>
         `;
+
+        const starToggle = $('contact-person-star');
+        if (starToggle) starToggle.onchange = (e) => {
+            c.star = !!e.target.checked;
+            saveContactConfig();
+            showToast(c.star ? '✓ 已设为星标联系人' : '已取消星标联系人');
+            renderContacts($('pkmn-contact-search')?.value || '');
+        };
 
         const toggle = $('contact-person-link-forum');
         toggle.onchange = (e) => {
@@ -6592,10 +7784,13 @@ function renderChat() {
         };
         $('contact-person-save').onclick = () => {
             c.note = $('contact-person-note').value.trim();
+            const avEl = $('contact-person-avatar');
+            if (avEl) c.avatar = String(avEl.value || '').trim();
             c.linkForum = !!toggle.checked;
             saveContactConfig();
             showToast('✓ 联系人设置已保存');
             renderContacts();
+            renderWx2Chats();
             $('pkmn-chat-title').textContent = contactDisplayName(c);
             renderContactPersonSettings();
         };
@@ -6604,6 +7799,7 @@ function renderChat() {
             if (!window.confirm(`删除联系人“${name}”？\n\n将删除该联系人在当前酒馆聊天中的资料、备注、联动设置及通讯录聊天记录。此操作无法恢复。`)) return;
             const idx = config.contacts.findIndex(x => String(x.id) === String(currentContactId));
             if (idx < 0) return;
+            const removingContactId = String(currentContactId);
             config.contacts.splice(idx, 1);
             if (config.contactChats && Object.prototype.hasOwnProperty.call(config.contactChats, currentContactId)) {
                 delete config.contactChats[currentContactId];
@@ -6613,7 +7809,17 @@ function renderChat() {
             }
             currentContactId = null;
             saveContactConfig();
+            // 修复：删除联系人后同步移除其私聊正文注入，避免已删联系人的聊天记录继续注入。
+            try {
+                const injState = getContactInjectionChatState();
+                if (injState && injState.state && injState.state.contacts && injState.state.contacts[removingContactId]) {
+                    delete injState.state.contacts[removingContactId];
+                    saveContactInjectionState(injState.all);
+                }
+                applyContactInjectionToMainAI();
+            } catch (_) {}
             renderContacts();
+            renderWx2Chats();
             openView('contacts');
             showToast(`✓ 已删除联系人：${name}`);
         };
@@ -6638,7 +7844,10 @@ function renderChat() {
                 <label class="pkmn-label" style="margin-top:9px;display:block">玩家身份
                     <textarea class="pkmn-textarea" id="contact-player-identity" rows="3" placeholder="例如：宝可梦训练家、沼王饲养员……">${esc(contactPlayerIdentity)}</textarea>
                 </label>
-                <div class="pkmn-small" style="margin-top:6px">微信/通讯录独立资料。聊天界面显示“玩家昵称”，AI 会同时读取“玩家身份”；两者都不与论坛玩家资料同步。</div>
+                <label class="pkmn-label" style="margin-top:9px;display:block">我的头像（图片地址，可选）
+                    <input class="pkmn-input" id="contact-player-avatar" value="${esc(getContactPlayerAvatar())}" placeholder="https://... 图片直链">
+                </label>
+                <div class="pkmn-small" style="margin-top:6px">通讯录独立资料。聊天界面显示“玩家昵称”，AI 会同时读取“玩家身份”；两者都不与论坛玩家资料同步。</div>
                 <button class="pkmn-btn pkmn-primary" id="contact-save-player-identity" style="margin-top:8px;width:100%">保存玩家资料</button>
             </div>
             <div class="wechat-setting-card">
@@ -6646,13 +7855,13 @@ function renderChat() {
                 <label>API Endpoint<input class="pkmn-input" id="contact-api-endpoint" value="${esc(c.endpoint)}" placeholder="https://.../v1"></label>
                 <label>API Key<input class="pkmn-input" id="contact-api-key" type="password" value="${esc(c.key)}" placeholder="留空则不发送 Authorization"></label>
                 <label>模型<select class="pkmn-select" id="contact-api-model">${models.map(m => `<option value="${esc(m)}" ${m===c.model?'selected':''}>${esc(m)}</option>`).join('')}${c.model && !models.includes(c.model) ? `<option selected value="${esc(c.model)}">${esc(c.model)}</option>` : ''}</select></label>
-                <div class="pkmn-row" style="margin-top:8px"><button class="pkmn-btn pkmn-secondary" id="contact-test-api">🔌 检测连接</button><button class="pkmn-btn pkmn-secondary" id="contact-load-models">📥 加载模型</button></div>
-                <button class="pkmn-btn pkmn-primary" id="contact-save-api" style="margin-top:8px;width:100%">💾 保存 API 设置</button>
+                <div class="pkmn-row" style="margin-top:8px"><button class="pkmn-btn pkmn-secondary" id="contact-test-api">${pkmnIcon('zap','pkmn-ico')} 检测连接</button><button class="pkmn-btn pkmn-secondary" id="contact-load-models">${pkmnIcon('download','pkmn-ico')} 加载模型</button></div>
+                <button class="pkmn-btn pkmn-primary" id="contact-save-api" style="margin-top:8px;width:100%">${pkmnIcon('save','pkmn-ico')} 保存 API 设置</button>
                 <div class="pkmn-small" id="contact-api-status" style="margin-top:8px">${models.length ? '● 已有模型缓存' : '● 未检测'}</div>
                 <div class="pkmn-row"><label>温度<input class="pkmn-input" id="contact-api-temp" value="${esc(c.temperature)}"></label><label>最大回复<input class="pkmn-input" id="contact-api-max" value="${esc(c.maxTokens)}"></label></div>
             </div>
             <div class="wechat-setting-card contact-settings-link-card">
-                <div class="contact-settings-section-title"><span class="contact-settings-icon">◎</span> 论坛内容读取</div>
+                <div class="contact-settings-section-title"><span class="contact-settings-icon">${pkmnIcon('globe','pkmn-ico contact-settings-ico')}</span> 论坛内容读取</div>
                 <label class="contact-settings-toggle-row" for="contact-read-forum-all">
                     <span>
                         <b>读取论坛全部内容</b>
@@ -6662,6 +7871,14 @@ function renderChat() {
                     <i aria-hidden="true"></i>
                 </label>
                 <div class="contact-settings-persist">ⓘ 此开关为通讯录全局设置，默认开启，修改后立即保存，下次打开仍保持当前状态。</div>
+            </div>
+            <div class="wechat-setting-card">
+                <div class="contact-settings-section-title"><span class="contact-settings-icon">${pkmnIcon('users-round','pkmn-ico contact-settings-ico')}</span> 群聊 AI 互聊</div>
+                <label class="pkmn-label">每轮发言条数（全局默认）
+                    <input class="pkmn-input" id="contact-group-turns" type="number" min="1" max="20" value="${esc(contactCfg().groupAiTurns)}">
+                </label>
+                <div class="pkmn-small" style="margin-top:6px">在群聊页点右上角 ↻ 时，AI 成员按顺序轮流发言的总句数。每个群还能在「群聊设置」里单独覆盖这个默认值。</div>
+                <button class="pkmn-btn pkmn-primary" id="contact-save-group-turns" style="margin-top:8px;width:100%">${pkmnIcon('save','pkmn-ico')} 保存群聊设置</button>
             </div>
             <div class="wechat-setting-card">
                 <div class="wechat-setting-title">通讯录 AI 提示词</div>
@@ -6678,10 +7895,20 @@ function renderChat() {
             saveContactConfig();
             showToast(c.readForumAll ? '✓ 已开启读取论坛全部内容' : '✓ 已关闭读取论坛全部内容');
         };
+        // v0.18.0 群聊：全局默认每轮 AI 发言条数
+        $('contact-save-group-turns').onclick = () => {
+            const raw = Number(($('contact-group-turns') || {}).value);
+            const n = Math.max(1, Math.min(20, Math.floor(Number.isFinite(raw) && raw >= 1 ? raw : 6)));
+            contactCfg().groupAiTurns = n;
+            saveContactConfig();
+            showToast('✓ 群聊每轮 AI 发言已设为 ' + n + ' 句');
+        };
         $('contact-save-player-identity').onclick = () => {
             setContactPlayerNickname($('contact-player-nickname').value.trim());
             setContactPlayerIdentity($('contact-player-identity').value.trim());
-            showToast('✓ 微信玩家资料已保存');
+            if ($('contact-player-avatar')) setContactPlayerAvatar($('contact-player-avatar').value.trim());
+            showToast('✓ 玩家资料已保存');
+            renderWx2Me();
             renderChat();
         };
         const readContactApiFields = () => {
@@ -6761,7 +7988,7 @@ function renderChat() {
             });
             const id = 'c_' + Date.now() + '_' + Math.floor(Math.random()*10000);
             config.contacts.push({
-                id, nickname:name, name, avatar:'👤', note:'', bio:'', location:'', linkForum:true,
+                id, nickname:name, name, avatar:'', note:'', bio:'', location:'', linkForum:true,
                 moralScore:moral.score, moralLabel:moral.label, moralStage:moral.stage,
                 moralLoyalty:moral.loyalty, moralAffinity:moral.affinity, moralReason:moral.reason,
                 moralEvidence:forumEvidence.slice(0,30000)
@@ -6769,6 +7996,7 @@ function renderChat() {
             config.contactChats[id] = [];
             saveContactConfig();
             renderContacts();
+            renderWx2Chats();
             hideContactAddProgress();
             showToast(`已添加联系人：${name}`);
         } catch (e) {
@@ -6778,22 +8006,1052 @@ function renderChat() {
     }
 
     // ============================================================
+    // 得文商店：基于神奇宝贝百科道具分类与《朱／紫》购买价
+    // ============================================================
+    const DEVON_STORE_KEY = 'pkmn_devon_shop_v2';
+    const DEVON_WIKI_URL = 'https://wiki.52poke.com/wiki/%E9%81%93%E5%85%B7%E5%88%97%E8%A1%A8';
+    const DEVON_WIKI_API = 'https://wiki.52poke.com/api.php?action=parse&page=%E9%81%93%E5%85%B7%E5%88%97%E8%A1%A8&prop=text&format=json&origin=*&redirects=1';
+    const DEVON_CACHE_KEY = 'pkmn_devon_52poke_items_v2';
+    const DEVON_PAGE_SIZE = 60;
+    // v0.14.4：训练家实用向分类重组（用户设定）
+    // 不再收录：重要物品(任务笔记)、野餐/食材(装饰餐具)、邮件
+    const DEVON_CATEGORIES = [
+        ['all','全部','▦'],
+        ['balls','精灵球','●'],
+        ['medicine','回复药剂','✚'],
+        ['battle','对战强化','⚔'],
+        ['held','携带道具','◇'],
+        ['berries','树果','🍓'],
+        ['evolution','进化道具','◆'],
+        ['training','培养道具','📈'],
+        ['tms','招式学习器','💿'],
+        ['megaz','Mega & Z','✧'],
+        ['treasure','宝物贵重','💰'],
+        ['field','野外探险','🌿'],
+        ['misc','杂项','📦'],
+        ['nursery','培育屋','🥚']
+    ];
+    // 百科页面标题 -> 新分类（h2/h3/h4 通用；未列出的标题一律不收录）
+    const DEVON_CAT_MAP = {
+        '精灵球':'balls','回复道具':'medicine','战斗道具':'battle','携带物品':'held',
+        '树果':'berries','进化道具':'evolution','化石':'evolution',
+        '培养宝可梦的道具':'training','可交换道具':'training',
+        '招式学习器':'tms','超级石':'megaz',
+        '训练家使用的Ｚ纯晶':'megaz','宝可梦使用的Ｚ纯晶':'megaz',
+        '训练家使用的Z纯晶':'megaz','宝可梦使用的Z纯晶':'megaz',
+        '宝物':'treasure','贵重道具':'treasure',
+        '野外使用的道具':'field',
+        '护符':'misc','材料':'misc','掉落物':'misc','工艺制作':'misc','洛托姆之力':'misc'
+        // '重要物品'、'野餐'、'食材'、'邮件' 及邮件各世代标题 → 不收录
+    };
+    const DEVON_FALLBACK_PRODUCTS = [
+        {id:'poke-ball',name:'精灵球',en:'Poké Ball',cat:'balls',price:200,sell:50,icon:'🔴',tag:'训练家必备',desc:'用于投向野生宝可梦并将其捕捉的球。它是胶囊样式的。'},
+        {id:'great-ball',name:'超级球',en:'Great Ball',cat:'balls',price:600,sell:150,icon:'🔵',tag:'热销',desc:'比起精灵球来更容易捉到宝可梦的，性能还算不错的球。'},
+        {id:'ultra-ball',name:'高级球',en:'Ultra Ball',cat:'balls',price:800,sell:200,icon:'🟡',tag:'推荐',desc:'性能优秀的球。比起超级球更容易捉到宝可梦。'},
+        {id:'premier-ball',name:'纪念球',en:'Premier Ball',cat:'balls',price:200,sell:100,icon:'⚪',tag:'限定',desc:'作为活动纪念品赠送的有点珍贵的球。'},
+        {id:'heal-ball',name:'治愈球',en:'Heal Ball',cat:'balls',price:300,sell:150,icon:'🩷',tag:'舒适',desc:'能治愈被捕捉的宝可梦，并恢复其体力与状态。'},
+        {id:'potion',name:'伤药',en:'Potion',cat:'medicine',price:200,sell:50,icon:'🧴',tag:'常备',desc:'喷雾式伤药。能让1只宝可梦回复20HP。'},
+        {id:'super-potion',name:'好伤药',en:'Super Potion',cat:'medicine',price:700,sell:175,icon:'💊',tag:'常备',desc:'喷雾式伤药。能让1只宝可梦回复60HP。'},
+        {id:'hyper-potion',name:'超级伤药',en:'Hyper Potion',cat:'medicine',price:1500,sell:375,icon:'🧪',tag:'高效',desc:'喷雾式伤药。能让1只宝可梦回复120HP。'},
+        {id:'full-heal',name:'万灵药',en:'Full Heal',cat:'medicine',price:400,sell:100,icon:'✨',tag:'状态回复',desc:'喷雾式药水。能治愈1只宝可梦的所有异常状态。'},
+        {id:'paralyze-heal',name:'解麻药',en:'Paralyze Heal',cat:'medicine',price:200,sell:50,icon:'⚡',tag:'状态回复',desc:'喷雾式药水。能治愈1只宝可梦的麻痹状态。'},
+        {id:'awakening',name:'解眠药',en:'Awakening',cat:'medicine',price:200,sell:50,icon:'💤',tag:'状态回复',desc:'喷雾式药水。能治愈1只宝可梦的睡眠状态。'},
+        {id:'antidote',name:'解毒药',en:'Antidote',cat:'medicine',price:200,sell:50,icon:'🟢',tag:'状态回复',desc:'喷雾式药水。能治愈1只宝可梦的中毒状态。'},
+        {id:'revive',name:'活力碎片',en:'Revive',cat:'medicine',price:2000,sell:500,icon:'💎',tag:'重要',desc:'能让陷入濒死状态的宝可梦复苏，并恢复一半HP。'},
+        {id:'repel',name:'除虫喷雾',en:'Repel',cat:'field',price:400,sell:200,icon:'🌫️',tag:'野外',desc:'使用后，在较短的一段时间内，弱小的野生宝可梦将完全不会出现。'},
+        {id:'super-repel',name:'白银喷雾',en:'Super Repel',cat:'field',price:700,sell:350,icon:'🌁',tag:'野外',desc:'弱小的野生宝可梦将完全不会出现。效果比除虫喷雾更持久。'},
+        {id:'max-repel',name:'黄金喷雾',en:'Max Repel',cat:'field',price:900,sell:450,icon:'✨',tag:'野外',desc:'弱小的野生宝可梦将完全不会出现。效果比白银喷雾更持久。'},
+        {id:'escape-rope',name:'离洞绳',en:'Escape Rope',cat:'field',price:550,sell:275,icon:'🪢',tag:'探险',desc:'在洞窟等地方使用，可以迅速回到入口。'},
+        {id:'fire-stone',name:'火之石',en:'Fire Stone',cat:'evolution',price:3000,sell:750,icon:'🔥',tag:'进化',desc:'能让某些特定宝可梦进化的神奇石头。看上去是橙黄色的。'},
+        {id:'water-stone',name:'水之石',en:'Water Stone',cat:'evolution',price:3000,sell:750,icon:'💧',tag:'进化',desc:'能让某些特定宝可梦进化的神奇石头。看上去是澄蓝色的。'},
+        {id:'thunder-stone',name:'雷之石',en:'Thunder Stone',cat:'evolution',price:3000,sell:750,icon:'⚡',tag:'进化',desc:'能让某些特定宝可梦进化的神奇石头。看上去是黄色的。'},
+        {id:'leaf-stone',name:'叶之石',en:'Leaf Stone',cat:'evolution',price:3000,sell:750,icon:'🍃',tag:'进化',desc:'能让某些特定宝可梦进化的神奇石头。有着叶子般的花纹。'},
+        {id:'moon-stone',name:'月之石',en:'Moon Stone',cat:'evolution',price:3000,sell:750,icon:'🌙',tag:'进化',desc:'能让某些特定宝可梦进化的神奇石头。像月亮一样闪耀。'},
+        {id:'x-attack',name:'力量强化',en:'X Attack',cat:'battle',price:1000,sell:500,icon:'⚔️',tag:'对战',desc:'使用后，在对战中提升宝可梦的攻击。'},
+        {id:'x-defense',name:'防御强化',en:'X Defense',cat:'battle',price:2000,sell:1000,icon:'🛡️',tag:'对战',desc:'使用后，在对战中提升宝可梦的防御。'},
+        {id:'x-speed',name:'速度强化',en:'X Speed',cat:'battle',price:1000,sell:500,icon:'💨',tag:'对战',desc:'使用后，在对战中提升宝可梦的速度。'},
+        {id:'guard-spec',name:'守住强化',en:'Guard Spec.',cat:'battle',price:1500,sell:750,icon:'🔰',tag:'对战',desc:'使用后，在对战中防止能力被降低。'},
+        {id:'dire-hit',name:'要害攻击',en:'Dire Hit',cat:'battle',price:1000,sell:500,icon:'🎯',tag:'对战',desc:'使用后，在对战中更容易击中要害。'},
+        {id:'oran-berry',name:'橙橙果',en:'Oran Berry',cat:'berries',price:80,sell:40,icon:'🟠',tag:'树果',desc:'宝可梦携带后，HP降低时会食用并回复少量HP。'},
+        {id:'sitrus-berry',name:'文柚果',en:'Sitrus Berry',cat:'berries',price:250,sell:125,icon:'🍋',tag:'树果',desc:'宝可梦携带后，HP降低时会食用并回复一定HP。'},
+        {id:'sitrus-berry-plus',name:'文柚果礼盒',en:'Devon Berry Pack',cat:'held',price:1200,sell:600,icon:'🎁',tag:'得文精选',desc:'得文公司特别包装的训练家补给礼盒，适合长途旅行。'}
+    ];
+    let DEVON_PRODUCTS = DEVON_FALLBACK_PRODUCTS.map(x=>({...x,cats:[x.cat],priceSource:'official'}));
+    let devonWikiStatus = '等待同步';
+    // ===== v0.15.0 会员体系与道具稀有度（常量需在 devonState 初始化前定义）=====
+    const DEVON_TIERS={gold:1,platinum:2,blackgold:3,machamp:4};
+    const DEVON_TIER_NAMES={gold:'🥇 黄金会员',platinum:'🥈 白金会员',blackgold:'🥉 黑金会员',machamp:'💥 怪力卡'};
+    const DEVON_TIER_SLOGANS={gold:'得文黄金会员 · 日常装备应有尽有',platinum:'白金专柜 · 进阶训练家的选择',blackgold:'黑金俱乐部 · 难得之物静候识货人',machamp:'怪力卡专区 · 传说中的库存'};
+    const DEVON_TIER_HERO={gold:'训练家装备<br>研发与配送中心',platinum:'白金专柜<br>进阶训练家的选择',blackgold:'黑金俱乐部<br>稀有道具直供',machamp:'怪力卡专区<br>传说中的库存'};
+    // 分类基础 tier（v0.16.0 按动漫稀有度整体上调：Mega/Z 整类升至 T4；越级商品灰显锁定）
+    const DEVON_CAT_TIER={balls:2,medicine:1,battle:1,held:2,berries:1,evolution:2,training:2,tms:2,megaz:4,treasure:3,field:1,misc:1,nursery:4};
+    // 名单覆盖：从上到下优先命中（v0.16.0 动漫稀有度上调版）
+    const DEVON_TIER_OVERRIDES=[
+        {t:4,kw:['大师球','究极球','超级石','Ｚ纯晶','Z纯晶','化石','彗星碎片','王冠','心之鳞片','神奇糖果','金刚宝珠','白玉宝珠','白金宝珠']},
+        {t:3,kw:['讲究','专爱','气势披带','吃剩的东西','剩饭','生命宝珠','突击背心','弱点保险','金珠','星星碎片','大珍珠','龙之牙','龙之鳞片','灵界之符','深海之牙','深海鳞片','月之石','日之石','光之石','暗之石','觉醒之石','升级数据','金属膜','王者之证','破坏光线','剑舞','龙之舞','龙之波动','暴风','流星群','大字爆炎','打雷','暴风雪','水炮','日光烈焰','真气弹','恶之波动','精神强念','大地之力','逆鳞','近身战','闪焰冲锋','冰冻光束','暗影球','冲浪']},
+        // v0.17.2：黄金会员专供——普通/低阶招式学习器（关键词已对 229 个招式名做子串防误伤核对）
+        {t:1,kw:['猛撞','假哭','掷泥','鬼面','踢倒','酸液炸弹','小偷','虫扑','泼冷水','毒尾','重踏','高速星星','泥巴射击','岩石封锁','下盘踢','电球','跺脚','岩崩','吼叫','虫咬','冰锥','浊流','电网']},
+        {t:1,kw:['精灵球','超级球','高级球','火之石','水之石','雷之石','叶之石']}
+    ];
+    function devonAssignTier(p){
+        const cat=p.cat||(p.cats&&p.cats[0])||'misc';
+        let t=DEVON_CAT_TIER[cat]??2;
+        const hay=(p.name||'')+'|'+(p.en||'')+'|'+(p.desc||'');
+        for(const o of DEVON_TIER_OVERRIDES){ if(o.kw.some(k=>hay.includes(k))){t=o.t;break;} }
+        p.tier=t; return p;
+    }
+    function devonMemberTier(){ const m=DEVON_TIERS[devonState.membership]; return m||1; }
+    let devonState = { category:'all', query:'', page:1, cart:{}, orders:[], balance:100000, selected:null, membership:'gold', mvu:{money:null,bag:{},source:'none',floor:null,updatedAt:0}, mvuSync:true, actions:[], tradeInject:true, tradeSnapshot:false };
+    try { const raw=localStorage.getItem(DEVON_STORE_KEY); if(raw) devonState={...devonState,...JSON.parse(raw)}; } catch(_){ }
+    if(!DEVON_TIERS[devonState.membership]) devonState.membership='gold'; // v0.15.0 旧存档兼容
+    // v0.17.0 MVU 读取状态兜底（旧存档浅合并后可能缺字段）
+    if(!devonState.mvu||typeof devonState.mvu!=='object') devonState.mvu={money:null,bag:{},source:'none',floor:null,updatedAt:0};
+    if(!devonState.mvu.bag||typeof devonState.mvu.bag!=='object') devonState.mvu.bag={};
+    if(devonState.mvuSync===undefined) devonState.mvuSync=true;
+    if(!Array.isArray(devonState.actions)) devonState.actions=[];
+    if(devonState.tradeInject===undefined) devonState.tradeInject=true;
+    if(devonState.tradeSnapshot===undefined) devonState.tradeSnapshot=false;
+    DEVON_PRODUCTS.forEach(devonAssignTier); // v0.15.0 兜底道具补算稀有度（需在常量定义后执行）
+    // ===== v0.16.0 培育屋：47 只稀有宝可梦的蛋（全怪力卡解锁；闪光版 ×3 封顶 1000 万）=====
+    const DEVON_EGG_MAX = 10000000;
+    const DEVON_EGG_SPRITE = 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/';
+    // [图鉴号, 名称, 地区, 普通价 ₽, 描述]
+    const DEVON_EGGS = [
+        // 各世代御三家（110万–180万，世代越新越贵）
+        [1,'妙蛙种子蛋','关都',1100000,'背上种着奇妙的种子，从出生起就与种子一起长大。'],
+        [4,'小火龙蛋','关都',1100000,'尾巴上有火焰燃烧。据说火焰熄灭时，它的生命也会结束。'],
+        [7,'杰尼龟蛋','关都',1100000,'背上的龟甲圆润可爱。受到攻击时会缩进壳里保护自己。'],
+        [152,'菊草叶蛋','城都',1200000,'脖子上挂着清香的叶子，气味能让身边的人平静下来。'],
+        [155,'火球鼠蛋','城都',1200000,'背上有燃烧的火团，胆小时火团会变得微弱。'],
+        [158,'小锯鳄蛋','城都',1200000,'嘴巴很大很有力，好奇心旺盛，最喜欢咬东西。'],
+        [252,'木守宫蛋','丰缘',1300000,'尾巴上的小刺是感知环境的雷达，能敏锐察觉季节变化。'],
+        [255,'火稚鸡蛋','丰缘',1300000,'体内的火焰袋让它热情满满，遇到困难从不轻言放弃。'],
+        [258,'水跃鱼蛋','丰缘',1300000,'头上的鳍能感知水流，湿润的皮肤是它的健康标志。'],
+        [387,'草苗龟蛋','神奥',1400000,'背上的甲壳由泥土硬化而成，喜欢在阳光下晒干身体。'],
+        [390,'小火猴蛋','神奥',1400000,'屁股上有火焰，斗志高昂时火焰会烧得更旺。'],
+        [393,'波加曼蛋','神奥',1400000,'头顶的自豪绒毛是它的骄傲，常向同伴炫耀发型。'],
+        [495,'藤藤蛇蛋','合众',1500000,'高傲冷静的蛇宝可梦，能从远处精准吐出毒液。'],
+        [498,'暖暖猪蛋','合众',1500000,'鼻孔喷出的火苗随心情起伏，最爱大口吃橡实。'],
+        [501,'水水獭蛋','合众',1500000,'胸口的扇贝是随身武器，性格认真又爱干净。'],
+        [650,'哈力栗蛋','卡洛斯',1600000,'坚硬的头部是它的骄傲，天天用撞树练习撞击。'],
+        [653,'火狐狸蛋','卡洛斯',1600000,'从耳朵喷出热气取暖，爱叼着树枝当零食。'],
+        [656,'呱呱泡蛙蛋','卡洛斯',1600000,'外表冷淡内心忠诚，遇到危险会制造水雾脱身。'],
+        [722,'木木枭蛋','阿罗拉',1650000,'白天睡觉晚上活动，飞羽几乎不带一点声音。'],
+        [725,'火斑喵蛋','阿罗拉',1650000,'毛发易燃，打完喷嚏嘴里会冒出火星。'],
+        [728,'水莲莲蛋','阿罗拉',1650000,'头顶的水珠能感知敌人，善用泡泡攻击。'],
+        [810,'敲音猴蛋','伽勒尔',1700000,'用木棒敲出节拍，是森林里天生的鼓手。'],
+        [813,'炎兔儿蛋','伽勒尔',1700000,'脚掌肉垫会发热，后旋踢是它的拿手好戏。'],
+        [816,'泪眼蜥蛋','伽勒尔',1700000,'胆小爱哭，眼泪含水量惊人，能借此脱身。'],
+        [906,'新叶喵蛋','帕底亚',1800000,'优雅爱干净的猫宝可梦，用气味小心标记领域。'],
+        [909,'呆火鳄蛋','帕底亚',1800000,'头顶的火盒储着火焰，就算淋雨也不会熄灭。'],
+        [912,'润水鸭蛋','帕底亚',1800000,'头上的羽毛爱吸水，走路蹦蹦跳跳惹人喜爱。'],
+        // 稀有人气（200万–320万，按人气与稀有度上调）
+        [54,'可达鸭蛋','关都',2000000,'头痛时会发挥神奇力量，呆呆的表情意外圈粉。'],
+        [92,'鬼斯蛋','关都',2000000,'气体状的身体，靠近时让人莫名感到头痛。'],
+        [175,'波克比蛋','城都',2200000,'壳里装满幸运的蛋宝可梦，据说能给人带来幸福。'],
+        [570,'索罗亚蛋','合众',2400000,'会变成人形戏弄人类的小狐狸，最讨厌被看穿。'],
+        [447,'利欧路蛋','神奥',2600000,'能感知他人心意的波导宝可梦，忠诚而勇敢。'],
+        [133,'伊布蛋','关都',2800000,'遗传基因不稳定，可进化成八种形态的奇妙宝可梦。'],
+        [25,'皮卡丘蛋','关都',3000000,'脸颊的电囊储存电力，全系列人气最高的电系宝可梦。'],
+        [143,'卡比兽蛋','关都',3000000,'一天能吃掉四百公斤食物，吃饱就睡的温顺巨兽。'],
+        [778,'谜拟Q蛋','阿罗拉',3000000,'披着皮卡丘布偶的幽灵宝可梦，孤独而害羞。'],
+        [131,'拉普拉斯蛋','关都',3200000,'温顺的乘骑宝可梦，背壳能载着训练家渡海。'],
+        // 龙系准传与稀有龙（350万–480万，种族值越高越贵）
+        [147,'迷你龙蛋','关都',3800000,'据说诞生于古代海洋的龙系宝可梦，蜕皮后不断成长。'],
+        [371,'宝贝龙蛋','丰缘',3800000,'梦想成为翱翔天空的龙，每日在瀑布下锻炼翅膀。'],
+        [610,'牙牙蛋','合众',3800000,'用牙齿磨树干锻炼獠牙，龙族新星的开端。'],
+        [633,'单首龙蛋','合众',4000000,'只有一个头依然凶暴的龙系，靠视觉记忆认主人。'],
+        [782,'心鳞宝蛋','阿罗拉',4000000,'额头的心形鳞片是它的宝物，碰撞声是交流方式。'],
+        [374,'铁哑铃蛋','丰缘',4200000,'身体由钢铁构成，磁力相连的双体配合无间。'],
+        [443,'圆陆鲨蛋','神奥',4200000,'居住在地底洞穴的龙系，性格活泼爱咬人。'],
+        [704,'黏黏宝蛋','卡洛斯',4200000,'黏糊糊的珍稀龙系，水润的皮肤价值连城。'],
+        [246,'幼基拉斯蛋','城都',4500000,'山崩般的力量沉睡在小小身体里。'],
+        [885,'多龙梅西亚蛋','伽勒尔',4800000,'掌握幽灵力量的新世代龙系，眼神仿佛能摄人魂魄。']
+    ];
+    function devonEggPrice(shiny, price){ return shiny ? Math.min(price*3, DEVON_EGG_MAX) : price; }
+    function devonEggProducts(){
+        const out=[];
+        for(const [dex,name,region,price,desc] of DEVON_EGGS){
+            const base='egg-'+dex;
+            out.push({id:base,name,en:'Pokémon Egg',cat:'nursery',cats:['nursery'],price,sell:null,icon:DEVON_EGG_SPRITE+dex+'.png',tag:region+' · 培育屋',desc,dex,tier:4,shiny:false,priceSource:'nursery'});
+            out.push({id:base+'-shiny',name:name.replace(/蛋$/,'蛋（闪光）'),en:'Shiny Pokémon Egg',cat:'nursery',cats:['nursery'],price:devonEggPrice(true,price),sell:null,icon:DEVON_EGG_SPRITE+'shiny/'+dex+'.png',tag:'✨ 闪光 · '+region,desc:'散发奇妙星光的稀有蛋，据说孵出的宝可梦拥有与众不同的颜色。'+desc,dex,tier:4,shiny:true,shinyOf:base,priceSource:'nursery'});
+        }
+        return out;
+    }
+    function devonInjectNursery(){
+        let added=false;
+        for(const p of devonEggProducts()){ if(!DEVON_PRODUCTS.some(x=>x.id===p.id)){DEVON_PRODUCTS.push(p);added=true;} }
+        if(added)DEVON_PRODUCTS.forEach(devonAssignTier);
+        return added;
+    }
+    devonInjectNursery(); // v0.16.0 培育屋蛋注入（缓存恢复/同步完成后会再次调用，幂等）
+    function saveDevonStore(){ try{localStorage.setItem(DEVON_STORE_KEY,JSON.stringify(devonState));}catch(_){} }
+
+    // ===== v0.17.0 模块A：MVU/正文读取层（每层楼自动同步金钱与背包） =====
+    function devonMvuApi(){
+        // 扩展可能运行在 iframe 中，MVU 对象挂在 SillyTavern 主窗口
+        for(const w of [window,window.parent,window.top]){
+            try{ if(w&&w.Mvu&&typeof w.Mvu.getMvuData==='function')return w.Mvu; }catch(_){ }
+        }
+        return null;
+    }
+    function devonChatFloors(){
+        // 楼层列表：优先 ctx.chat（数据最全），兜底扫描主文档 .mes[mesid]
+        const ctx=getSTContext();
+        if(ctx&&Array.isArray(ctx.chat))return ctx.chat.map((m,i)=>({id:i,mes:m.mes||m.message||m.content||''}));
+        try{
+            const list=[];
+            topDoc.querySelectorAll('.mes[mesid]').forEach(el=>{
+                const id=parseInt(el.getAttribute('mesid')||'',10);
+                const t=el.querySelector('.mes_text');
+                if(!isNaN(id))list.push({id,mes:(t?t.textContent:el.textContent)||''});
+            });
+            return list.sort((a,b)=>a.id-b.id);
+        }catch(_){ return []; }
+    }
+    function devonParseStatText(text){
+        // 兜底：解析楼层正文中 MVU 风格的 [训练家信息]/[背包_分类] 文本块
+        if(!text||typeof text!=='string')return null;
+        const re=/\[([^\]\r\n]{1,24})\]([\s\S]*?)\[\/\1\]/g; const blocks={}; let bm;
+        while((bm=re.exec(text))!==null){
+            const o={};
+            String(bm[2]||'').trim().split('\n').forEach(line=>{
+                const i=line.indexOf(':'); if(i<0)return;
+                o[line.slice(0,i).trim()]=line.slice(i+1).trim();
+            });
+            blocks[bm[1]]=o;
+        }
+        let money=null; const bag={};
+        const tr=blocks['训练家信息'];
+        if(tr&&tr['金钱']!=null){
+            const mm=String(tr['金钱']).split('|')[0].match(/-?\d[\d,，]*/);
+            if(mm)money=Number(mm[0].replace(/[,,]/g,''))||0;
+        }
+        for(const bk in blocks){
+            if(String(bk).indexOf('背包_')!==0)continue;
+            const cat=String(bk).slice(3);
+            for(const it in blocks[bk]){
+                const ps=String(blocks[bk][it]).split(',');
+                bag[it]={类型:cat,数量:parseInt(ps[0],10)||0,图标:(ps[1]||'').trim()};
+            }
+        }
+        if(money==null&&!Object.keys(bag).length)return null;
+        return {money,bag};
+    }
+    function devonBagFromStat(sd){
+        const bag={}; const src=sd&&sd.背包;
+        if(src&&typeof src==='object'){
+            Object.keys(src).forEach(name=>{
+                const it=src[name];
+                if(it&&typeof it==='object'&&('类型' in it))bag[name]={类型:String(it.类型||'道具'),数量:Number(it.数量)||0,图标:String(it.图标||'')};
+            });
+        }
+        return bag;
+    }
+    async function devonReadMvuSnapshot(){
+        // ① MVU 框架：从最新楼层倒序找含 stat_data 的最终状态
+        try{
+            const mvu=devonMvuApi();
+            const floors=devonChatFloors();
+            if(mvu&&floors.length){
+                for(let i=floors.length-1;i>=0;i--){
+                    let d=null;
+                    try{
+                        d=mvu.getMvuData({type:'message',message_id:floors[i].id});
+                        if(d&&typeof d.then==='function')d=await d;
+                    }catch(_){ }
+                    const sd=d&&(d.stat_data||(d.data&&d.data.stat_data));
+                    if(sd&&sd.训练家&&(sd.训练家.金钱!=null||Object.keys(devonBagFromStat(sd)).length)){
+                        const money=sd.训练家.金钱!=null?Number(sd.训练家.金钱):null;
+                        return {money:(money==null||isNaN(money))?null:money,bag:devonBagFromStat(sd),source:'mvu',floor:floors[i].id};
+                    }
+                }
+            }
+        }catch(_){ }
+        // ② 正文解析兜底：倒序找最近的含 [训练家信息]/[背包_] 块的楼层
+        try{
+            const floors=devonChatFloors();
+            for(let i=floors.length-1;i>=0;i--){
+                const r=devonParseStatText(floors[i].mes);
+                if(r)return {...r,source:'text',floor:floors[i].id};
+            }
+        }catch(_){ }
+        return null;
+    }
+    let devonMvuSyncing=false,devonMvuSyncAt=0;
+    async function devonSyncMvu(reason){
+        // 同步入口：800ms 防抖（手动触发不受限）+ 在途锁，仅在实际变化时重渲染
+        if(devonState.mvuSync===false)return false;
+        const now=Date.now();
+        if(reason!=='manual'&&now-devonMvuSyncAt<800)return false;
+        devonMvuSyncAt=now;
+        if(devonMvuSyncing)return false;
+        devonMvuSyncing=true;
+        let changed=false;
+        try{
+            const snap=await devonReadMvuSnapshot();
+            if(snap){
+                const m=devonState.mvu||{money:null,bag:{},source:'none',floor:null,updatedAt:0};
+                changed=(snap.money!==m.money)||JSON.stringify(snap.bag)!==JSON.stringify(m.bag||{})||snap.floor!==m.floor;
+                devonState.mvu={money:snap.money,bag:snap.bag,source:snap.source,floor:snap.floor,updatedAt:Date.now()};
+                devonConfirmActions(snap.floor); // v0.17.0：更新到更高楼层 = AI 已有机会处理此前交易
+                if(changed){
+                    saveDevonStore();
+                    try{ renderDevonShop(); }catch(_){ }
+                    if(typeof renderDevonBag==='function'){ try{ renderDevonBag(); }catch(_){ } }
+                    console.log('[得文商店] MVU 同步（'+reason+'）：金钱 '+snap.money+' ｜ 背包 '+Object.keys(snap.bag).length+' 种 ｜ 楼层 #'+snap.floor);
+                }
+            }
+        }catch(_){ }
+        finally{ devonMvuSyncing=false; }
+        return changed;
+    }
+    function devonMvuStatusText(){
+        const m=devonState.mvu||{};
+        if(!m.updatedAt||m.source==='none')return '未检测到 MVU 变量（商店金钱暂用本地余额）';
+        const src=m.source==='mvu'?'MVU 变量':'正文解析';
+        const bag=Object.keys(m.bag||{}).length;
+        const money=m.money==null?'—':'₽ '+Number(m.money).toLocaleString('zh-CN');
+        return '来源：'+src+' ｜ 楼层 #'+(m.floor==null?'—':m.floor)+' ｜ 金钱 '+money+' ｜ 背包 '+bag+' 种 ｜ '+new Date(m.updatedAt).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+    }
+    // ===== v0.17.0 模块B：金钱与持有道具展示 =====
+    function devonWalletMoney(){
+        // 金额展示：MVU 金钱优先（方案1A），未同步到 MVU 时回落商店本地余额
+        const m=devonState.mvu||{};
+        if(m.updatedAt&&m.source!=='none'&&m.money!=null)return {val:m.money+devonPendingNet(),src:'mvu'}; // v0.17.0 叠加未确认交易净额
+        return {val:devonState.balance,src:'local'};
+    }
+    function devonWalletHTML(){
+        const w=devonWalletMoney();
+        const tag=w.src==='mvu'?'<span class="devon-wallet-src">MVU</span>':'';
+        return `<div class="devon-wallet">${tag}钱包余额 <b>${devonMoney(w.val)}</b></div>`;
+    }
+    function renderDevonBag(){
+        const el=$('pkmn-devon-bag-body'); if(!el)return;
+        const m=devonState.mvu||{money:null,bag:{},source:'none',floor:null,updatedAt:0};
+        const bag=m.bag||{};
+        const names=Object.keys(bag);
+        const srcTxt=m.source==='mvu'?'MVU 变量':(m.source==='text'?'正文解析':'未检测到');
+        const timeTxt=m.updatedAt?new Date(m.updatedAt).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+        const cats=['道具','精灵球','重要物品'];
+        const total=names.reduce((a,n)=>a+(Number(bag[n].数量)||0),0);
+        const icoHTML=it=>it.图标?`<img class="devon-bag-ico" src="${esc(it.图标)}" alt="" onerror="this.style.display='none'">`:'<span class="devon-bag-ico devon-bag-ico-ph">📦</span>';
+        const sec=(title,items)=>{
+            const sum=items.reduce((a,n)=>a+(Number(bag[n].数量)||0),0);
+            return `<div class="devon-bag-sec"><div class="devon-bag-sec-h">${esc(title)}<span>${items.length} 种 · ${sum} 件</span></div>${items.map(n=>{const it=bag[n];const sp=devonSellPrice(n);const sell=sp!=null?`<button class="devon-bag-sell" data-devon-sell="${esc(n)}">出售 ₽${sp.toLocaleString('zh-CN')}</button>`:'';return `<div class="devon-bag-item">${icoHTML(it)}<div class="devon-bag-info"><b>${esc(n)}</b><small>${esc(it.类型||'道具')}</small></div>${sell}<span class="devon-bag-cnt">×${Number(it.数量)||0}</span></div>`;}).join('')}</div>`;
+        };
+        let body='';
+        if(!names.length){
+            body=`<div class="devon-empty">${m.updatedAt?'背包是空的':'尚未同步到 MVU 数据<br>同步后这里会显示训练家当前持有的道具'}</div>`+(m.updatedAt?'':'<button class="devon-load-more" data-devon-bag-sync>立即同步</button>');
+        }else{
+            cats.forEach(c=>{ const items=names.filter(n=>bag[n]&&bag[n].类型===c); if(items.length)body+=sec(c,items); });
+            const other=names.filter(n=>bag[n]&&!cats.includes(bag[n].类型));
+            if(other.length)body+=sec('其他',other);
+            body=`<div class="devon-bag-meta">共 ${names.length} 种 · ${total} 件 ｜ 同步来源：${esc(srcTxt)} ｜ 楼层 #${m.floor==null?'—':m.floor} ｜ ${esc(timeTxt)}</div>`+body;
+        }
+        el.innerHTML=devonWalletHTML()+body;
+        el.querySelectorAll('[data-devon-bag-sync]').forEach(b=>b.onclick=async()=>{b.disabled=true;b.textContent='同步中…';await devonSyncMvu('manual');renderDevonBag();});
+        el.querySelectorAll('[data-devon-sell]').forEach(b=>b.onclick=e=>{e.stopPropagation();devonSellItem(b.dataset.devonSell);}); // v0.17.0 出售
+    }
+    // ===== v0.17.0 模块C/D：交易行为注入 + 出售 =====
+    const DEVON_ACTION_INJECT_KEY='pkmn-devon-shop-actions';
+    const DEVON_ACTION_MAX=20;
+    function devonMvuActive(){
+        const m=devonState.mvu||{};
+        return !!(m.updatedAt&&m.source!=='none');
+    }
+    function devonPendingNet(){
+        return (devonState.actions||[]).reduce((a,t)=>a+(t.kind==='buy'?-t.total:+t.total),0);
+    }
+    function devonSellPrice(name){
+        // 回收价 = 商品库价（官方/参考）→ 官方价表 → 分类估值，统一 ×50%（方案3A）
+        const prod=DEVON_PRODUCTS.find(x=>x.name===name);
+        let full=(prod&&prod.price!=null)?prod.price:DEVON_PRICE_TABLE[name];
+        if(full==null){
+            const bag=(devonState.mvu&&devonState.mvu.bag)||{};
+            const catMap={'精灵球':'balls','道具':'medicine','重要物品':'treasure','其他':'misc'};
+            full=devonEstimatePrice(catMap[(bag[name]&&bag[name].类型)]||'misc',name);
+        }
+        if(full==null||isNaN(full))return null;
+        return Math.max(1,Math.floor(Number(full)*0.5));
+    }
+    function devonMvuCatOf(p){
+        const c=p&&((p.cats&&p.cats[0])||p.cat);
+        if(c==='balls')return '精灵球';
+        if(c==='treasure')return '重要物品';
+        return '道具';
+    }
+    function devonAdjustBag(name,delta,cat,icon){
+        // 乐观更新本地背包显示；真实值以 AI 更新后的 MVU 同步为准（覆盖语义）
+        const m=devonState.mvu;
+        if(!m||typeof m.bag!=='object')return;
+        const cur=m.bag[name];
+        const n=(cur?Number(cur.数量)||0:0)+(Number(delta)||0);
+        if(n<=0)delete m.bag[name];
+        else if(cur)cur.数量=n;
+        else m.bag[name]={类型:cat||'道具',数量:n,图标:icon||''};
+        saveDevonStore();
+    }
+    function devonRecordAction(kind,name,q,unit){
+        const qN=Number(q)||0,uN=Number(unit)||0;
+        if(!qN)return;
+        if(!Array.isArray(devonState.actions))devonState.actions=[];
+        devonState.actions.push({t:Date.now(),kind,name,q:qN,unit:uN,total:qN*uN,base:devonWalletMoney().val,floor:(devonState.mvu&&devonState.mvu.floor!=null)?devonState.mvu.floor:null});
+        if(devonState.actions.length>DEVON_ACTION_MAX)devonState.actions=devonState.actions.slice(-DEVON_ACTION_MAX);
+        saveDevonStore();
+        devonApplyTradeInjection();
+    }
+    function devonConfirmActions(floor){
+        // 同步到更高楼层说明 AI 已在新楼层的上下文里见过注入：从待注入列表移除
+        if(floor==null)return;
+        const list=devonState.actions||[];
+        const keep=list.filter(a=>!(a.floor!=null&&floor>a.floor));
+        if(keep.length!==list.length){
+            devonState.actions=keep;
+            saveDevonStore();
+            devonApplyTradeInjection();
+        }
+    }
+    function devonBuildTradeInjection(){
+        if(devonState.tradeInject===false)return '';
+        const list=(devonState.actions||[]).slice(-DEVON_ACTION_MAX);
+        if(!list.length)return '';
+        const tm=t=>new Date(t).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+        const fmt=n=>'₽'+Number(n||0).toLocaleString('zh-CN');
+        const before=Math.max(0,list[0].base||0);
+        let spend=0,income=0; const delta={};
+        const lines=list.map((a,i)=>{
+            if(a.kind==='buy'){spend+=a.total;delta[a.name]=(delta[a.name]||0)+a.q;return `${i+1}. ${tm(a.t)} 购买　${a.name} ×${a.q}　单价 ${fmt(a.unit)}　支出 −${fmt(a.total)}`;}
+            income+=a.total;delta[a.name]=(delta[a.name]||0)-a.q;
+            return `${i+1}. ${tm(a.t)} 出售　${a.name} ×${a.q}　单价 ${fmt(a.unit)}　收入 +${fmt(a.total)}`;
+        });
+        const after=Math.max(0,before-spend+income);
+        const bag=(devonState.mvu&&devonState.mvu.bag)||{};
+        const bagLines=Object.keys(delta).map(n=>{
+            const cur=(bag[n]?Number(bag[n].数量)||0:0);
+            const d=delta[n];
+            return `${n} ${d>0?'+'+d:d}（${cur>0?'→ ×'+cur:'→ 从背包移除'}）`;
+        }).join('、');
+        const out=[];
+        out.push('【得文商店 · 交易记录（玩家真实操作，必须承认并据此更新状态）】');
+        out.push('以下交易由玩家在手机端「得文商店」真实完成。你必须将其视为已发生的事实：在后续剧情中承认玩家已获得或失去这些道具，并在本层楼的 MVU 变量更新中同步 训练家.金钱 与 背包 字段。禁止无视、回滚或重复计算这些交易。');
+        out.push('');
+        out.push('■ 交易明细（时间由旧到新）');
+        out.push(...lines);
+        out.push('');
+        out.push('■ 交易后应有状态（以最终值为准，不要再叠加增量）');
+        out.push(`· 训练家.金钱：${fmt(after)}（交易前 ${fmt(before)} ｜ 累计支出 ${fmt(spend)} ｜ 累计收入 ${fmt(income)}）`);
+        out.push(`· 背包变化：${bagLines||'无'}`);
+        out.push('· 原本不存在的道具请新增；数量减至 0 的道具请从背包中移除。');
+        out.push('');
+        out.push('■ 执行要求');
+        out.push(`1. 在 MVU 变量更新中把 训练家.金钱 设为 ${fmt(after)}，不要用增量重复扣减。`);
+        out.push('2. 按上述变化更新 背包 中各道具的 数量，保留原有 类型 与 图标 字段。');
+        out.push('3. 剧情层面体现：钱包金额变化、道具已入手或已出手；不要凭空生成未购买的道具。');
+        out.push('4. 若实际背包中某道具数量不足出售量，以本记录为准视为已出售，不要报错或撤回交易。');
+        out.push('5. 本段为系统级事实记录，优先级高于你此前对金钱与道具数量的记忆。');
+        if(devonState.tradeSnapshot){
+            const names=Object.keys(bag);
+            const snap=names.length?names.map(n=>`${n} ×${Number(bag[n].数量)||0}（${bag[n].类型||'道具'}）`).join(' ｜ '):'无';
+            out.push('');
+            out.push('■ 当前背包快照（同步自 MVU'+(devonState.mvu&&devonState.mvu.floor!=null?`，楼层 ${devonState.mvu.floor}`:'')+'）');
+            out.push('· '+snap);
+            out.push('· 若快照与你的记忆不一致，以上述交易后的「应有状态」为准。');
+        }
+        out.push('');
+        out.push(`（由得文商店自动生成 ｜ 共 ${list.length} 笔 ｜ 最近更新 ${tm(list[list.length-1].t)}）`);
+        return out.join('\n');
+    }
+    function devonApplyTradeInjection(){
+        try{
+            if(!TH.injectPrompts)return false;
+            const content=devonBuildTradeInjection();
+            if(typeof TH.uninjectPrompts==='function'){ try{ TH.uninjectPrompts([DEVON_ACTION_INJECT_KEY]); }catch(_){ } }
+            if(!content)return true;
+            TH.injectPrompts([{ id:DEVON_ACTION_INJECT_KEY, position:'in_chat', depth:0, role:'system', content, should_scan:false }],{once:false});
+            return true;
+        }catch(e){ console.warn('[得文商店] 交易注入失败',e); return false; }
+    }
+    function devonSellItem(name){
+        const bag=(devonState.mvu&&devonState.mvu.bag)||{};
+        const it=bag[name];
+        const have=it?Number(it.数量)||0:0;
+        if(have<=0)return;
+        const price=devonSellPrice(name);
+        if(price==null){showToast('该道具没有可参考的回收价，无法出售');return;}
+        if(!window.confirm(`以 ₽${price.toLocaleString('zh-CN')} 出售「${name}」×1？\n回收价 = 官方价/估值 × 50%\n交易将同步给 AI 更新金钱与背包变量。`))return;
+        devonAdjustBag(name,-1,it&&it.类型,it&&it.图标);
+        if(!devonMvuActive())devonState.balance=(devonState.balance||0)+price; // 未对接 MVU 时收入进商店余额
+        devonRecordAction('sell',name,1,price);
+        showToast(`已出售 ${name} ×1 ｜ 收入 +₽${price.toLocaleString('zh-CN')}`);
+        renderDevonBag(); renderDevonShop();
+    }
+    function devonMoney(n){ return n==null ? '价格待核实' : '₽ ' + Number(n||0).toLocaleString('zh-CN'); }
+    function devonCartCount(){ return Object.values(devonState.cart||{}).reduce((a,b)=>a+Number(b||0),0); }
+    function devonCartTotal(){ return Object.entries(devonState.cart||{}).reduce((sum,[id,q])=>{const p=DEVON_PRODUCTS.find(x=>x.id===id);return sum+(p&&p.price!=null?p.price:0)*q;},0); }
+    function devonIcon(cat){ return ({balls:'🔴',medicine:'🧴',battle:'⚔️',evolution:'💎',field:'🌿',berries:'🍓',held:'◇',training:'📈',megaz:'✧',treasure:'💰',tms:'💿',misc:'📦',nursery:'🥚'})[cat]||'📦'; }
+    function devonCatName(cat){ const c=DEVON_CATEGORIES.find(x=>x[0]===cat); return c?c[1]:'道具'; }
+
+    // v0.14.4 价格策略（用户设定）：朱紫官方价 -> 其他世代官方价 -> 分类参考估值
+    // DEVON_PRICE_TABLE：高置信官方购买价（中文/英文名精确匹配）
+    const DEVON_PRICE_TABLE = {
+        // 精灵球（朱紫友好商店）
+        '精灵球':200,'超级球':600,'高级球':800,'纪念球':200,'治愈球':300,
+        // 回复药剂（朱紫友好商店）
+        '伤药':200,'好伤药':700,'厉害伤药':1500,'全满药':3000,'全复药':3000,
+        '活力碎片':2000,'活力块':5000,'万灵药':400,'解毒药':200,'烧伤药':250,
+        '解麻药':200,'解眠药':250,'冰冻药':250,'ＰＰ回复剂':1000,'PP回复剂':1000,
+        'ＰＰ提升剂':2000,'PP提升剂':2000,'ＰＰ极限提升剂':50000,'PP极限提升剂':50000,
+        'ＨＰ增强剂':9800,'HP增强剂':9800,'攻击增强剂':9800,'防御增强剂':9800,
+        '特攻增强剂':9800,'特防增强剂':9800,'速度增强剂':9800,'神奇糖果':4800,
+        // 对战强化（多世代官方价）
+        '力量强化':500,'防御强化':2000,'速度强化':500,'特攻强化':500,
+        '特防强化':3500,'要害攻击':500,'守住强化':3500,'治愈强化':3000,
+        // 野外探险（朱紫友好商店）
+        '除虫喷雾':400,'白银喷雾':700,'黄金喷雾':900,'离洞绳':550,
+        // 进化道具（朱紫桌面百货）
+        '火之石':3000,'水之石':3000,'雷之石':3000,'叶之石':3000,
+        '觉醒之石':3000,'光之石':3000,'暗之石':3000,'日之石':3000,'月之石':3000,
+        // 携带道具中可购买的（多世代）
+        '不变之石':3000,'护身符':5000,'学习装置':5000,
+        // 树果（多世代官方价）
+        '樱子果':200,'零余果':200,'桃桃果':100,'莓莓果':100,'利木果':100,
+        '橙橙果':250,'文柚果':250,'木子果':500,'榴石果':500,'藻根果':500,
+        // 宝物（多世代官方价）
+        '星星沙子':500,'星星碎片':4900,'珍珠':1400,'大珍珠':3750,'金珠':7500
+    };
+    // v0.17.5：52Poké 全量購入价固化（朱紫优先；朱紫无价取其他世代最高有价世代）
+    // 键=道具中文名；值>0=可购購入价（网站价），值=0=全世代非卖品（归入怪力卡专区，不可下单）
+    const DEVON_WIKI_ITEM={"Bステンレスボトル":1500,"Rステンレスボトル":1500,"Yステンレスボトル":1500,"あおいはたピック":120,"あおぞらおはなピック":1000,"あおチェッククロス":3000,"あおボールピック":200,"あかいはたピック":120,"あかチェッククロス":3000,"あかボールピック":200,"あさやけおはなピック":1000,"うらめしクロス":4000,"おいわいはなびピック":1600,"かいじゅうクロス":2000,"きいろチェッククロス":3000,"くさむらモノクロス":0,"けいとボール":1000,"しょうぶクロス":4000,"たてストライプカップ":800,"はいたつぶつ２":0,"はいたつぶつ３":0,"ふるいポエム１０":0,"ふるいポエム１１":0,"ふるいポエム１２":0,"ふるいポエム１３":0,"ふるいポエム１４":0,"ふるいポエム１５":0,"ふるいポエム１６":0,"ふるいポエム１７":0,"ふるいポエム１８":0,"ふるいポエム１９":0,"ふるいポエム２":0,"ふるいポエム２０":0,"ふるいポエム３":0,"ふるいポエム４":0,"ふるいポエム５":0,"ふるいポエム６":0,"ふるいポエム７":0,"ふるいポエム８":0,"ふるいポエム９":0,"みずたまカップ":800,"みずたまクロス":1500,"みずたまボトル":1000,"みどりボールピック":200,"ゆうしゃのけんピック":2000,"ゆうやけおはなピック":1000,"よこストライプカップ":800,"イエローカップ":1500,"イエロークロス":5000,"イエロープレート":500,"イエローボトル":2000,"イーブイカップ":2000,"オレンジプレート":500,"クリティカッター":1000,"グリーンプレート":0,"ゲーミングボール":2000,"コレクレーのコイン":800,"ゴールドチタンカップ":15000,"ゴールドチタンボトル":30000,"ゴールドピック":400,"シルバーチタンカップ":10000,"シルバーチタンボトル":20000,"シルバーピック":40,"スクールカップ":0,"スクールクロス":0,"スクールボトル":0,"スクールボール":0,"ストライプクロス":1500,"ストライプボトル":1000,"ダイヤカップ":800,"ダイヤクロス":1500,"ダイヤボトル":1000,"ニコブイピック":1200,"ネイチャークロス":2000,"バランスボール":2000,"パチピカピック":1200,"パラソルピック":800,"パープルクロス":1000,"ピカチュウカップ":2000,"ピカピカピック":480,"ピンクカップ":1500,"ピンククロス":5000,"ピンクボトル":2000,"ファイヤーカップ":800,"ファンシークロス":2000,"フラワーカップ":800,"ブイブイピック":480,"ブルーカップ":1500,"ブルークロス":5000,"ブループレート":500,"ブルーベリークロス":0,"ブルーベリーチェア":0,"ブルーボトル":2000,"ブロンズチタンカップ":5000,"ブロンズチタンボトル":10000,"ベージュクロス":1000,"ホワイトプレート":500,"マジカルスターピック":600,"マジカルハートピック":600,"マリルボール":2000,"ミントクロス":1000,"メラメラピック":0,"ヤドンカップ":0,"レッドプレート":500,"一般太晶碎块":2000,"一般宝石":15000,"一般Ｚ":0,"一边的耳环":0,"七夕青鸟进化石":100000,"七彩通行船券":0,"万灵药":400,"万能伞":15000,"万能粉":300,"三岛通行船券":0,"上锁的容器":0,"不变之石":3000,"不融冰":3000,"丝绸围巾":3000,"丰缘的粗盐":0,"丸子珍珠":40000,"久久肥":400,"乌贼王进化石":0,"乐天薄荷":20000,"乐芭果":80,"乐队的签名":0,"亚克诺姆之牙":0,"亚开果":80,"亲密碰碰":0,"仓库钥匙":0,"他人的遗失物":0,"代币盒":0,"伊利马的一般Ｚ":0,"伊布邮件":0,"伊布Ｚ":0,"优惠碰碰":0,"会员卡":0,"传说石板":0,"传说笔记１":0,"伤药":200,"似珍石":0,"伽勒豆蔻手环":3000,"伽勒豆蔻枝":0,"伽勒豆蔻花圈":3000,"体力之羽":300,"体力粘糕":0,"佛柑果":80,"健康护符１":500,"健康护符２":500,"健康护符３":500,"健康护符４":500,"健康护符５":500,"元气根":1200,"元气粉":500,"元气糖果":0,"元气糖果L":0,"元气糖果XL":0,"充电电池":5000,"先制之爪":8000,"先机球":1000,"光之石":3000,"光之黏土":20000,"光明石":0,"光滑泥球":0,"光粉":30000,"光苔":5000,"光辉石":0,"光辉花瓣":0,"兌換券":0,"兑换券１":0,"兑换券２":0,"兑换券３":0,"全复药":3000,"全息影像通讯器":0,"全满药":2500,"公园球":0,"兰紫色花蜜":300,"兰萨果":80,"关都石板":0,"具甲武者进化石":0,"内敛薄荷":20000,"冒险笔记":0,"冰之宝石":0,"冰之石":3000,"冰冷岩石":8000,"冰冻卡带":0,"冰冻的果实":0,"冰太晶碎块":2000,"冰柱石板":1000,"冰萝卜":0,"冰雪存储碟":0,"冰鬼护进化石":0,"冰Ｚ":0,"冲浪邮件":50,"冷静薄荷":20000,"净空石板":0,"净空粘糕":0,"凡作茶碗":0,"凤梨片":250,"凯罗斯进化石":100000,"凰梨果":0,"凸凸头盔":50000,"列阵兵进化石":0,"初次邮件":50,"利木果":80,"刺耳果":80,"刺角果":0,"剑舞菇":0,"剧毒宝珠":15000,"剧毒石板":1000,"力量头带":8000,"力量强化":1000,"力量护腕":10000,"力量护踝":10000,"力量束带":10000,"力量糖果":0,"力量糖果L":0,"力量糖果XL":0,"力量腰带":10000,"力量负重":10000,"力量镜":10000,"加油碰碰":0,"劲劲肥":0,"劲爽汽水":300,"勇敢薄荷":20000,"勾魂眼进化石":100000,"勿花果":80,"包裹":0,"化妆包":0,"化石海兽":0,"化石翼龙进化石":100000,"化石鱼":0,"化石鸟":0,"化石龙":0,"匿声喷雾":0,"千香果":80,"升级数据":40000,"华丽大赛参加证":0,"南国贝壳":0,"博士的信":0,"博士的面罩":0,"博识眼镜":8000,"卡比兽Ｚ":0,"卡洛斯勋章":0,"卡璞Ｚ":0,"即时通讯器":0,"即食咖喱":950,"即食肉排":150,"即食面":150,"厉害中药":0,"厉害伤药":1500,"厉害密阿雷格雷派饼":0,"厉害耳塞":0,"厉害钓竿":0,"厚底靴":20000,"友友球":0,"双人票":0,"双倍腌菜":0,"发电厂通行证":0,"发电厂钥匙":0,"变身邮件":0,"古代之壶":0,"古代手镯":0,"古代护符":0,"古代王冠":0,"古代石像":0,"古代金币":0,"古代铜币":0,"古代银币":0,"古老日记":0,"古老诗文１":0,"古航海图":0,"可爱邮件":50,"可疑补丁":60000,"可达鸭喷壶":0,"叶之石":3000,"吃剩的东西":20000,"吃惊肥":0,"吉利拳":0,"同步器":0,"后攻之尾":20000,"吐司面包":150,"向尾喵的尾巴":15000,"吼吼鲸喷壶":0,"呆壳兽进化石":100000,"命中强化":1000,"咒术之铠":3000,"咖喱粉":450,"哈密果":80,"哞哞乳酪":2200,"哞哞鲜奶":600,"喜爱邮件":50,"喷火驼进化石":100000,"喷火龙进化石Ｘ":100000,"喷火龙进化石Ｙ":100000,"嘉珍果":80,"噼里啪啦糖果":0,"回复口袋":0,"回复邮件":50,"固执薄荷":20000,"圆庆票":0,"圆形护符":0,"土豆沙拉":110,"圣灰":0,"地下钥匙":0,"地面太晶碎块":2000,"地面宝石":0,"地面Ｚ":0,"坚坚矿":200,"城都石板":0,"城镇地图":0,"基因之楔":0,"基因石板":0,"基格尔德多面体":0,"基格尔德进化石":0,"墨莓果":600,"声弹":500,"声音记录器":0,"复古邮件":50,"复合金属":0,"复活草":2800,"多重强化":0,"大力鳄进化石":0,"大嘴娃进化石":100000,"大地存储碟":0,"大地石板":1000,"大地膜":15000,"大师球":0,"大师黄油":0,"大木的信":0,"大根茎":10000,"大比鸟进化石":100000,"大海石板":0,"大珍珠":16000,"大白宝玉":0,"大白金宝玉":0,"大竹笋":6000,"大竺葵进化石":0,"大胆薄荷":20000,"大葱":0,"大蘑菇":10000,"大金刚宝玉":0,"大针蜂进化石":100000,"大钢蛇进化石":70000,"大陆石板":0,"大食花进化石":0,"大马拉萨达":350,"天界之笛":0,"天真薄荷":20000,"天空石板":0,"天空邮件":50,"天蓝玉石":0,"太晶珠":0,"太阳之笛":0,"头巾混混进化石":0,"头盖化石":7000,"头领凭证":0,"奇异卡片":0,"奇异果片":180,"奇异球":0,"奇异薰香":9600,"奇秘果":80,"奇迹的果实":0,"奇迹种子":3000,"奇迹邮件":0,"奈克洛索尔合体器":0,"奈克洛露奈合体器":0,"奋斗岩":0,"奋斗沙":0,"奋斗石":0,"奋斗砾":0,"奖牌盒":0,"奥利瓦油":0,"奶油芝士":280,"好中药":0,"好伤药":700,"好胜毛蟹进化石":0,"好钓竿":0,"妖怪石板":1000,"妖火红狐进化石":0,"妖精之羽":3000,"妖精太晶碎块":2000,"妖精存储碟":0,"妖精宝石":0,"妖精石板":1000,"妖精Ｚ":0,"妙蛙花进化石":10000,"姆克鹰进化石":0,"娑罗沙布蕾":350,"子茄果":0,"学习装置":0,"孵蛋碰碰":0,"守护糖果":0,"守护糖果L":0,"守护糖果XL":0,"安全护符１":3000,"安全护符２":3000,"安全护符３":3000,"安全护符４":3000,"安全护符５":3000,"安抚之铃":5000,"定期月票":0,"宝可尾草":1000,"宝可方块套装":0,"宝可方块盒":0,"宝可梦之笛":0,"宝可梦木娃娃":0,"宝可梦的蛋兑换券":0,"宝可梦盒":0,"宝物袋":0,"宝石海星进化石":0,"宝芬盒":0,"客房服务":20000,"家乡玛芬":0,"密勒顿的球":0,"密探斗篷":20000,"密阿雷格雷派饼":350,"密阿雷黄油":0,"对战口袋":0,"对战搜寻器":0,"对战记录器":0,"对焦镜":10000,"小小花束":0,"小番茄块":120,"小石头":0,"小竹笋":1500,"小蘑菇":1000,"小辣椒":220,"小黄瓜片":130,"山之镇宝":0,"岩石太晶碎块":2000,"岩石存储碟":0,"岩石宝石":0,"岩石石板":1000,"岩石薰香":9600,"岩石Ｚ":0,"岳竹果":0,"巢穴球":1000,"工艺套组":0,"巧可果":80,"巨大金珠":80000,"巨沼怪进化石":1500,"巨牙鲨进化石":100000,"巨重球":0,"巨金怪进化石":100000,"巨钳螳螂进化石":50000,"差不多娃娃进化石":100000,"巴哈罐头":950,"布里卡隆进化石":0,"帅哥券":0,"席多蓝恩进化石":0,"常见石":0,"幸运草糖饰":0,"幸运薰香":11000,"幸运蛋":3000,"幻之桃桃果":0,"幽尾玄鱼丸":0,"幽灵太晶碎块":2000,"幽灵存储碟":0,"幽灵宝石":0,"幽灵Ｚ":0,"广角镜":20000,"庆祝之铠":3000,"异奇果":80,"异次元黄油":0,"引导石板":0,"引虫香水":400,"弯曲的汤匙":3000,"弱点保险":50000,"弹子萁":140,"弹珠":0,"强制锻炼器":0,"强力香草":30000,"强化口袋":0,"彗星碎片":50000,"彩嵌邮件":0,"彩色螺丝":0,"彩虹石板":0,"影分菇":0,"影子邮件":50,"得文侦测镜":0,"得文潜水装备":0,"得文的物品":0,"心之水滴":0,"心之石板":0,"心之鳞片":10000,"心形甜点":0,"心灵糖果":0,"心灵糖果L":0,"心灵糖果XL":0,"心灵香草":10000,"快龙进化石":0,"怕寂寞薄荷":20000,"急冻鸟的点心":0,"急躁薄荷":20000,"恰雷姆进化石":50000,"恶之宝石":0,"恶太晶碎块":2000,"恶颜石板":1000,"恶Ｚ":0,"悠闲薄荷":20000,"悠闲薰香":9600,"惊声藻":0,"惩戒之壶":0,"感谢邮件":50,"愤怒馒头":1000,"慎重薄荷":20000,"慢吞吞薄荷":20000,"战斗存储碟":0,"戟脊龙进化石":0,"房间钥匙":0,"扁樱果":80,"打空保险":30000,"折价券":0,"护具":10000,"护符金币":30000,"抵抗之羽":300,"抵抗粘糕":0,"拉帝亚斯进化石":0,"拉帝欧斯进化石":0,"招式学习器盒":0,"拳击手套":15000,"拳头石板":1000,"挖洞钻":0,"捕捉口袋":0,"捕捉碰碰":0,"捕网球":1000,"换装箱":0,"捷拉奥拉进化石":0,"探宝器":0,"探测器":0,"探险套装":0,"探险心得":0,"推荐函":0,"推荐邮件":50,"摔角鹰人进化石":0,"攻击增强剂":10000,"故勒顿的球":0,"敏捷糖果":0,"敏捷糖果L":0,"敏捷糖果XL":0,"教学电视":0,"文柚果":80,"新月之羽":0,"无限之笛":0,"无限船票":0,"无青果":0,"日之石":3000,"时之镇宝":0,"时尚名人卡":0,"旺旺谷":200,"星星沙子":6000,"星星碎片":24000,"星星糖饰":0,"星晶太晶碎块":0,"星桃果":80,"晶光花进化石":0,"晶晶蜜":200,"晶耀护符":0,"智力之羽":300,"智力粘糕":0,"智皮卡Ｚ":0,"暗之石":3000,"暴雪王进化石":50000,"暴雪邮件":50,"暴风石板":0,"暴飞龙进化石":100000,"暴鲤龙进化石":100000,"替身护符１":3000,"替身护符２":3000,"替身护符３":3000,"替身护符４":3000,"替身护符５":3000,"月之石":3000,"月亮之笛":0,"月亮球":0,"朋友手册":0,"木子果":80,"木材":0,"木炭":3000,"木箱":0,"木纹邮件":50,"木雕王冠":0,"未知图腾笔记":0,"朱之书":0,"朱红色宝珠":10000,"朱红色花蜜":300,"机变骰子":20000,"机械邮件":50,"机械零件":0,"杏仔果":80,"材料袋":0,"杖尾鳞甲龙Ｚ":0,"杰作茶碗":0,"杰尼龟喷壶":0,"松掉的弹簧":0,"极光船票":0,"极巨甜蜜":0,"极巨糖果":0,"极巨腕带":0,"极巨菇菇":0,"极矿石":0,"果汁牛奶":400,"枝荔果":80,"柔软沙子":3000,"柿仔果":80,"标靶":10000,"树叶信":0,"树果汁":1500,"树果种植盆":0,"树果袋":0,"根状化石":7000,"格斗太晶碎块":2000,"格斗宝石":0,"格斗Ｚ":0,"桃桃果":80,"桃粉色花蜜":300,"桐木箱":0,"桔色徽章":0,"桥梁邮件Ｃ":50,"桥梁邮件Ｈ":50,"桥梁邮件Ｓ":50,"桥梁邮件Ｖ":50,"桥梁邮件Ｗ":50,"梦境球":0,"梦境邮件":50,"梦幻邮件":0,"梦幻Ｚ":0,"森之羊羹":500,"森之镇宝":0,"棱瓜果":80,"椰奶":950,"椰木果":0,"楔石":2100,"榴石果":80,"模仿香草":30000,"樱子果":80,"橄榄油":300,"橘子酱":260,"橙橙果":80,"橙色花瓣":0,"橙色邮件":50,"檬柠果":0,"毁坏石板":0,"毒之宝石":0,"毒太晶碎块":2000,"毒存储碟":0,"毒藻龙进化石":0,"毒Ｚ":0,"比巴果":80,"毛崖蟹棒":500,"气势头带":10000,"气势披带":50000,"气球":15000,"水之宝石":0,"水之石":3000,"水井面具":0,"水太晶碎块":2000,"水晶灯火灵进化石":0,"水流卡带":0,"水滴石板":1000,"水煮蛋":2200,"水煮蛋片":80,"水玉色之带":0,"水箭龟进化石":100000,"水色邮件":50,"水蓝邮件":50,"水边香草":950,"水Ｚ":0,"永恒之冰":0,"汉堡排":380,"沉重球":0,"沙奈朵进化石":100000,"沙沙岩石":8000,"沙滩萝卜":0,"沙鳞果":80,"治愈球":300,"沼之镇宝":0,"泡沫奶油":3000,"波士可多拉进化石":100000,"波涛邮件":50,"泥丸":0,"泥偶巨人进化石":0,"泥炭块":10000,"洁净之符":5000,"洁净薰香":9600,"洋葱片":130,"洛托姆型录":0,"洛托姆自行车":0,"洛拍棒":0,"洛玫果":80,"活力块":5000,"活力小树枝":0,"活力碎片":2000,"活力蕾":400,"浅滩海盐":20,"浅滩贝壳":20,"浑圆之石":2000,"海声铃铛":0,"海岱的钱包":0,"海洋装":0,"海潮薰香":9600,"海边的玻璃":0,"消除麻痹的果实":0,"涟漪薰香":9600,"淘气薄荷":20000,"深海之牙":1000,"深海鳞片":2000,"深灰米果":500,"清净坠饰":30000,"清水存储碟":0,"温和薄荷":20000,"温顺薄荷":20000,"港口邮件":50,"湿湿肥":400,"滚滚豆":200,"演出礼服":0,"演出礼裙":0,"潜水球":1000,"潮湿岩石":8000,"火之宝石":0,"火之石":3000,"火太晶碎块":2000,"火山镇宝":0,"火山镇石":0,"火灶面具":0,"火炎狮进化石":0,"火焰卡带":0,"火焰存储碟":0,"火焰宝珠":15000,"火焰邮件":50,"火焰鸡进化石":1500,"火球石板":1000,"火腿片":170,"火Ｚ":0,"灯浆果":80,"灵界之布":0,"灼伤药":200,"炎武王进化石":0,"炸物拼盘":150,"炸鱼片":360,"点数卡":0,"炽热岩石":8000,"炽焰咆哮虎Ｚ":0,"烈咬陆鲨进化石":70000,"烈咬陆鲨进化石Ｚ":0,"烘蛋":250,"烛木果":80,"烟弹":400,"烟熏尾巴":2200,"烟熏鱼片":330,"烟芋":0,"烟雾球":15000,"烧烤的果实":0,"热带邮件":0,"热椒果":0,"焦点镜":15000,"煎培根":150,"煎辣香肠":150,"熔岩增幅器":0,"熔岩标志":0,"熔岩装":0,"爪子化石":7000,"爱心糖饰":0,"爽喉喷雾":20000,"爽朗薄荷":20000,"牛油果":180,"物品箱":0,"牵绊缰绳":0,"特性护具":20000,"特性胶囊":100000,"特性膏药":500000,"特攻增强剂":10000,"特攻强化":1000,"特选苹果":2200,"特防增强剂":10000,"特防强化":2000,"狙射树枭Ｚ":0,"狠辣椒进化石":0,"狩猎球":0,"玉石":0,"玉虫石板":1000,"玉黍果":0,"王冠车票":0,"王者之证":10000,"玛夏多Ｚ":0,"玛机雅娜进化石":0,"现形镜":0,"玳萝的遗忘物":0,"珍珠":4000,"珠宝邮件":0,"班基拉斯进化石":100000,"球果果":0,"球果盒":0,"球根":5000,"瓜西果":0,"甜松露":0,"甜甜苹果":2200,"甜甜蜜":900,"甜蜜球":0,"甜蜜邮件":50,"生命宝珠":50000,"生火腿":200,"生花果":0,"生菜":90,"由克希之爪":0,"甲壳化石":7000,"甲贺忍蛙进化石":0,"电之宝石":0,"电力增幅器":0,"电太晶碎块":2000,"电子存储碟":0,"电梯钥匙":0,"电气球":3000,"电气种子":20000,"电龙进化石":100000,"电Ｚ":0,"留下的精灵球":0,"番茄片":100,"番茄酱":110,"番荔果":80,"疗草":0,"白玉宝珠":10000,"白球果":200,"白色玻璃哨":0,"白色香草":20000,"白色鬃毛":0,"白金宝珠":10000,"白银喷雾":700,"白银香水":700,"皇叶":0,"皮卡丘Ｚ":0,"皮可西进化石":0,"皮皮玩偶":300,"盐":90,"盔甲鸟进化石":0,"相册":0,"相遇碰碰":0,"盾甲化石":7000,"瞬发之羽":300,"瞬发粘糕":0,"知识糖果":0,"知识糖果L":0,"知识糖果XL":0,"石板碎块":0,"矿诱团":400,"研究所的钥匙卡Ａ":0,"研究所的钥匙卡Ｂ":0,"研究所的钥匙卡Ｃ":0,"研究所的钥匙卡Ｍ":0,"研究所的钥匙卡Ｘ":0,"砖块邮件":0,"破坏基因":0,"破损日记":0,"破旧钓竿":0,"破裂的茶壶":1600,"础石面具":0,"硕果肥":0,"硬石头":3000,"碎瓦片":0,"碎铁":0,"碧之时尚名人卡":0,"碧绿石板":1000,"碧草面具":0,"磁浮列车自由票":0,"磁铁":3000,"祝庆玛芬":0,"神奇的果实":0,"神奇石板":1000,"神奇糖果":10000,"神奇蛋":0,"神石":0,"神秘摆设":3000,"神秘水滴":3000,"神秘船票":0,"神阖之笛":0,"福禄果":80,"离洞绳":1000,"秘传之药":0,"秘传：咸味料":0,"秘传：甜味料":0,"秘传：苦味料":0,"秘传：辣味料":0,"秘传：酸味料":0,"秘密琥珀":30000,"秘密钥匙":0,"究极奈克洛Ｚ":0,"究极球":1000,"究极黄油":0,"空之镇宝":0,"空间邮件":50,"突击背心":50000,"竞赛球":0,"等离子卡":0,"等级球":0,"签名玩偶":0,"米立龙进化石":0,"米饭":280,"粉末瓶":0,"粉球果":200,"粉笔石":0,"粉红头巾":0,"粉红色丝带":0,"粉红色卡娜莉玩偶":0,"粉红花瓣":0,"粗枝大葱":2200,"粗绞肉香肠":400,"粗骨头":0,"粘粘肥":400,"精灵球":200,"精神之羽":300,"精神存储碟":0,"精神种子":20000,"精神粘糕":0,"精通种子":0,"糖果罐":0,"糯糯菇":200,"索妮亚的书":0,"索尔迦雷欧Ｚ":0,"紧绑束带":20000,"紧缠钩爪":10000,"紫之书":0,"紫色花瓣":0,"红宝石":0,"红椒片":240,"红洋葱":230,"红牌":30000,"红球果":200,"红线":20000,"红色卡娜莉玩偶":0,"红色头巾":0,"红色玻璃哨":0,"红色碎片":3000,"红色花瓣":0,"红色锁链":0,"红色鳞片":0,"纪念戒指":0,"纪念球":20,"细骨":950,"经验护符":0,"经验碰碰":0,"经验糖果Ｌ":3000,"经验糖果Ｍ":1000,"经验糖果Ｓ":240,"经验糖果ＸＬ":10000,"经验糖果ＸＳ":20,"结晶碎片":0,"给大吾的信":0,"绽放邮件":50,"绿球果":200,"绿色卡娜莉玩偶":0,"绿色头巾":0,"绿色碎片":3000,"绿色花瓣":0,"缺损的茶壶":38000,"罗勒":280,"罗子果":80,"美丽之羽":2000,"美丽空壳":20000,"美丽鳞片":0,"美味之水":200,"美味垃圾":0,"美味尾巴":9800,"羽毛化石":7000,"老翁龙进化石":0,"耿鬼进化石":50000,"联系绳":8000,"肌力之羽":300,"肌力粘糕":0,"肖像邮件":50,"胆小薄荷":20000,"胆怯球":5000,"背盖化石":7000,"胡地进化石":100000,"胡椒":100,"能力防守":1500,"脏围巾":0,"脏手帕":0,"腐朽的剑":0,"腐朽的盾":0,"腰木果":80,"自大薄荷":20000,"自由船票":0,"自行车":0,"船票":0,"艾姆利多之翅":0,"艾路雷朵进化石":100000,"节拍器":15000,"芒芒果":80,"芝士片":120,"芥末酱":330,"芭亚果":80,"花叶蒂进化石":0,"花啤果":300,"花朵糖饰":0,"花朵薰香":9600,"花案邮件":50,"花生酱":300,"芳香蘑菇":30000,"苦凉果":0,"苦涩的果实":0,"苹果片":130,"苹野果":80,"茄番果":80,"茶":0,"茸丹果":0,"草之宝石":0,"草太晶碎块":2000,"草绿色宝珠":0,"草莓片":140,"草莓糖饰":0,"草蚕果":80,"草Ｚ":0,"莓果酱":120,"莓榴果":80,"莓莓果":80,"莲叶童子喷壶":0,"莲蒲果":80,"菇诱团":400,"萄葡果":80,"萝卜种子":0,"葛拉西蒂亚花":0,"葱首果":0,"葵秋果":0,"蒂安希进化石":0,"蒜蒜果":0,"蓝之光碟":0,"蓝之时尚名人卡":0,"蓝卡":0,"蓝天石板":1000,"蓝天邮件":0,"蓝宝石":0,"蓝球果":200,"蓝色卡娜莉玩偶":0,"蓝色头巾":0,"蓝色玻璃哨":0,"蓝色碎片":3000,"蓝色花瓣":0,"蔓莓果":600,"蕉香果":0,"薄荷的果实":0,"薄雾种子":20000,"藻根果":80,"虫之宝石":0,"虫太晶碎块":2000,"虫子存储碟":0,"虫Ｚ":0,"虹色之羽":0,"虹色之花":0,"蛀球果":0,"蛋黄酱":120,"蜈蚣王进化石":0,"蜜汁苹果":500,"蜜诱团":400,"蜥蜴王进化石":1500,"蝴蝶结糖饰":0,"衣物箱":0,"袋兽进化石":70000,"袋装土豆":400,"袋装果实":2200,"袋装蔬菜":400,"袋装蕈菇":400,"西尔佛检视镜":0,"西梨果":0,"西狮海壬Ｚ":0,"要害攻击":1000,"要害松露":0,"规则书":0,"觉醒之石":3000,"解冻药":200,"解毒的果实":0,"解毒药":200,"解眠药":200,"解麻药":200,"计时球":1000,"认真薄荷":20000,"讲究围巾":100000,"讲究头带":100000,"讲究眼镜":100000,"讲究粽":0,"许可证":0,"许愿星块":0,"证章护符":0,"诅咒之符":3000,"诅咒娃娃进化石":100000,"询问邮件":50,"诱团原料":0,"诱饵球":0,"谜之水晶":0,"谜之碎片Ｌ":0,"谜之碎片Ｓ":0,"谜拟ＱＺ":0,"谜芝果":80,"谷诱团":400,"豆子罐头":400,"豆瓣菜":270,"豆腐":260,"豆诱团":400,"豪华球":3000,"贝壳之铃":20000,"贝壳化石":7000,"贴纸盒":0,"贴纸袋":0,"贵重球":0,"贵重骨头":10000,"赫拉克罗斯进化石":100000,"起源球":0,"起源矿石":0,"超效肥":0,"超极粉":0,"超梦进化石Ｘ":100000,"超梦进化石Ｙ":100000,"超级吊坠":0,"超级坠饰":0,"超级头冠":0,"超级手套":0,"超级手镯":0,"超级护腕":0,"超级环":0,"超级球":600,"超级眼镜":0,"超级碎片":0,"超级脚镯":0,"超级船锚":0,"超级领针":0,"超级黄油":0,"超能力太晶碎块":2000,"超能力宝石":0,"超能力Ｚ":0,"超能妙喵进化石":0,"超重球":320,"越野自行车":0,"路卡利欧进化石":100000,"路卡利欧进化石Ｚ":0,"轮滑鞋":0,"轻石":10000,"辣根":410,"辣酱":320,"达人带":30000,"达克莱伊进化石":0,"进化奇石":50000,"进攻药丸":0,"逃脱按键":30000,"透明铃铛":0,"通心粉":150,"通通果":80,"速度增强剂":10000,"速度强化":1000,"速度球":0,"速度粉":0,"速速肥":400,"遗失物":0,"遗忘物":0,"避难背包":30000,"邀请邮件":50,"部位护具":15000,"配送物品１":0,"酸奶":140,"酸酸苹果":2200,"酸黄瓜片":90,"醋":300,"释出之玉":0,"释陀果":80,"重复球":1000,"重要信件":0,"野莓糖饰":0,"野餐组合":0,"金假牙":0,"金刚宝珠":10000,"金南果":0,"金属粉":0,"金属膜":3000,"金枕果":0,"金珠":20000,"金色凰梨果":0,"金色卡娜莉玩偶":0,"金色叶子":0,"金色王冠":60000,"金色蔓莓果":0,"金色蕉香果":0,"金黄色花蜜":300,"釜炎仙贝":500,"钓竿":0,"钢之宝石":0,"钢太晶碎块":2000,"钢铁存储碟":0,"钢铁石板":1000,"钢铁邮件":50,"钢Ｚ":0,"钥匙卡":0,"钥石":0,"铁壁木耳":0,"铃薯果":0,"铠甲矿石":0,"铠甲车票":0,"银河队钥匙":0,"银粉":3000,"银色之羽":0,"银色凰梨果":0,"银色叶子":0,"银色王冠":20000,"银色蔓莓果":0,"银色蕉香果":0,"锐利之爪":15000,"锐利之牙":10000,"锐利鸟嘴":3000,"长棍面包":0,"长耳兔进化石":100000,"闪亮邮件":0,"闪电卡带":0,"闪耀护符":0,"闪避强化":0,"防守药丸":0,"防尘护目镜":20000,"防御增强剂":10000,"防御强化":2000,"防晃护符":0,"阿克罗玛机器":0,"阿勃梭鲁进化石":100000,"阿勃梭鲁进化石Ｚ":0,"阿罗雷Ｚ":0,"附着针":10000,"陈旧的信":0,"除虫喷雾":400,"除虫草":0,"陨石碎片":0,"隐形眼镜盒":0,"隐身碰碰":0,"隧道邮件":50,"集灰袋":0,"雪丸":0,"雪之镇宝":0,"雪妖女进化石":0,"雪球":5000,"零余果":80,"零花钱碰碰":0,"雷丘进化石Ｘ":0,"雷丘进化石Ｙ":0,"雷之石":3000,"雷电兽进化石":100000,"雷电石板":1000,"雾莲果":80,"露奈雅拉Ｚ":0,"露营组合":0,"霹霹果":80,"青椒片":230,"青草存储碟":0,"青草种子":20000,"青草邮件":50,"青豌果":0,"靛莓果":0,"靛蓝色宝珠":10000,"面条":280,"音符邮件":0,"音速自行车":0,"顽皮薄荷":20000,"颚之化石":20000,"颠倒烧":0,"风铃铃进化石":0,"飞云冰淇淋":200,"飞梭球":0,"飞羽球":140,"飞翔存储碟":0,"飞翼球":340,"飞行太晶碎块":2000,"飞行宝石":0,"飞行Ｚ":0,"饰品盒":0,"饱伯罐头":950,"饱腹薰香":9600,"香料组合":400,"香罗果":80,"香草香肠":400,"香蕉片":80,"香袋":3000,"马志士的签名":0,"马虎薄荷":20000,"驱劲能量":0,"骑行装置":0,"高级球":800,"高级黄油":0,"鬃岩狼人Ｚ":0,"鲜奶油":200,"鲜鲜奶油":950,"鳍之化石":20000,"麻麻鳗鱼王进化石":0,"黄椒片":240,"黄油":250,"黄球果":200,"黄色头巾":0,"黄色玻璃哨":0,"黄色碎片":3000,"黄色花瓣":0,"黄芥末酱":130,"黄金喷雾":900,"黄金的果实":0,"黄金香水":900,"黏丸":800,"黑奇石":0,"黑带":3000,"黑暗存储碟":0,"黑暗球":1000,"黑暗石":0,"黑玉石":0,"黑球果":200,"黑色污泥":10000,"黑色玻璃哨":0,"黑色眼镜":3000,"黑色铁球":20000,"黑色鬃毛":0,"黑萝卜":0,"黑香料":0,"黑鲁加进化石":100000,"龙之宝石":0,"龙之牙":3000,"龙之石板":1000,"龙之骨":0,"龙之鳞片":4000,"龙太晶碎块":2000,"龙头地鼠进化石":0,"龙存储碟":0,"龙火果":80,"龙睛果":80,"龙Ｚ":0,"龟足巨铠进化石":0,"１号客房的钥匙":0,"２号客房的钥匙":0,"２０２号客房的钥匙":0,"４号客房的钥匙":0,"６号客房的钥匙":0,"ＤＳ播放器":0,"ＧＢ播放器":0,"ＧＯＧＯ护目镜":0,"ＧＳ球":0,"ＨＰ回复碰碰":0,"ＨＰ增强剂":10000,"ＰＰ单项全补剂":2000,"ＰＰ单项小补剂":1200,"ＰＰ回复碰碰":0,"ＰＰ多项全补剂":4500,"ＰＰ多项小补剂":3000,"ＰＰ提升剂":10000,"ＰＰ极限提升剂":10000,"ＰＰ草":0,"ＴＭＶ自由票":0,"Ｚ强力手环":0,"Ｚ手环":0};
+    // 按分类给出参考估值（无官方价时的兜底）
+    function devonEstimatePrice(cat,name){
+        const n=String(name||'');
+        const has=(...ks)=>ks.some(k=>n.includes(k));
+        switch(cat){
+            case 'balls':
+                if(has('大师'))return 20000;
+                if(has('究极','竞赛','梦'))return 5000;
+                return 1000;
+            case 'medicine':
+                if(has('全满','活力块'))return 5000;
+                if(has('厉害','全复','极限'))return 3000;
+                if(has('好','活力'))return 1500;
+                return 500;
+            case 'battle':
+                if(has('弱点'))return 5000;
+                if(has('强化'))return 1000;
+                return 1500;
+            case 'held':
+                if(has('气势披带','吃剩','剩饭','生命宝珠','讲究','粗骨头','达人带','焦点镜','凸凸头盔',' charity'))return 10000;
+                if(has('王者之证','美丽空壳','护符金币','金属膜','护具','锐利鸟嘴','奇迹种子','龙之牙','黑带','磁铁','神秘水滴','锐利钩爪','毒针','柔软沙子','尖石','诅咒之躯','岩石记忆'))return 5000;
+                if(has('光苔','火火','打火盒'))return 5000;
+                return 3000;
+            case 'berries':
+                if(has('嘉宝果','雾莲果','龙睛果','星桃果','布拨果','释陀果','芭亚果','无花果','哈密果'))return 3000;
+                if(has('木子果','榴石果','藻根果','比巴果','哈力果','芒芒果','阿开球','莲蔓果'))return 1000;
+                return 200;
+            case 'evolution':
+                if(has('石板','圆孔'))return 3000;
+                if(has('化石'))return 5000;
+                return 3000;
+            case 'training':
+                if(has('极限'))return 20000;
+                if(has('增强剂','补剂'))return 9800;
+                if(has('心之鳞片','神奇糖'))return 5000;
+                return 3000;
+            case 'megaz':
+                if(has('纯晶'))return 10000;
+                return 10000;
+            case 'treasure':
+                if(has('金珠','王冠','彗星'))return 15000;
+                if(has('碎片','珍珠','星星','煤炭','丝绸'))return 5000;
+                return 5000;
+            case 'field':
+                return 600;
+            case 'tms':
+                return 3000;
+            default:
+                return 2000;
+        }
+    }
+    // v0.17.5 价格优先级：已定价(策展兜底) > 52Poké 購入价(朱紫优先) > 官方价表 > 分类估值
+    // priceSource: 'official'=官方价 / 'wiki'=网站价(朱紫) / 'ref'=参考估值 / 'non-sellable'=非卖品(怪力卡)
+    function devonAssignPrice(p){
+        if(p.price!=null)return p; // 策展兜底价（手验正确）最高优先级，保护精选清单
+        if(p.name!=null){
+            const _wp=DEVON_WIKI_ITEM[p.name];
+            if(_wp!==undefined){ // 命中 52Poké 固化价
+                if(_wp>0){ p.price=_wp; p.priceSource='wiki'; }
+                else { p.price=null; p.priceSource='non-sellable'; p.tier=4; } // 非卖品 → 怪力卡专区
+                return p;
+            }
+        }
+        const t=DEVON_PRICE_TABLE[p.name]??DEVON_PRICE_TABLE[p.en]??null;
+        if(t){p.price=t;p.priceSource='official';return p;}
+        p.price=devonEstimatePrice(p.cat||((p.cats&&p.cats[0])||'misc'),p.name);
+        p.priceSource='ref';
+        return p;
+    }
+    function devonNormalizeText(s){ return String(s||'').replace(/\[[^\]]*\]/g,'').replace(/\*/g,'').replace(/\s+/g,' ').trim(); }
+    function devonSlug(s){ return String(s||'item').toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]+/g,'-').replace(/^-+|-+$/g,'').slice(0,70)||('item-'+Math.random().toString(36).slice(2,8)); }
+    function devonFindFallback(name,en){ return DEVON_FALLBACK_PRODUCTS.find(x=>x.name===name||x.en===en); }
+    function devonSetStatus(text){ devonWikiStatus=text; const el=$('pkmn-devon-sync'); if(el)el.textContent=text==='同步中…'?'同步中…':'同步百科'; }
+    function renderDevonCategories(){
+        const el=$('pkmn-devon-categories'); if(!el)return;
+        el.innerHTML=DEVON_CATEGORIES.map(([id,n,ic])=>`<button class="devon-cat ${devonState.category===id?'active':''}" data-devon-cat="${id}"><span>${ic}</span>${n}</button>`).join('');
+        el.querySelectorAll('[data-devon-cat]').forEach(b=>b.onclick=()=>{devonState.category=b.dataset.devonCat;devonState.page=1;saveDevonStore();renderDevonShop();});
+    }
+    // v0.14.4：道具图统一走 wiki 真实图标，加载失败回退分类 emoji
+    function devonPicHTML(p,cls){
+        const fallback=devonIcon(p.cat);
+        if(p.icon&&/^https:\/\//.test(p.icon)){
+            return `<img class="${cls}" src="${esc(p.icon)}" alt="${esc(p.name)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='${fallback}'">`;
+        }
+        return `<span class="${cls}">${esc(fallback)}</span>`;
+    }
+    // v0.15.0：会员横幅（颜色/标语/徽章随会员等级变化）
+    function renderDevonHero(){
+        const hero=$('pkmn-devon-hero'); if(!hero)return;
+        const m=devonState.membership||'gold';
+        hero.className='devon-hero devon-hero-'+m;
+        const strong=hero.querySelector('strong'); if(strong)strong.innerHTML=DEVON_TIER_HERO[m]||DEVON_TIER_HERO.gold;
+        const span=hero.querySelector('span'); if(span)span.textContent=DEVON_TIER_SLOGANS[m]||DEVON_TIER_SLOGANS.gold;
+        const badge=hero.querySelector('.devon-member-badge');
+        const txt=DEVON_TIER_NAMES[m]||DEVON_TIER_NAMES.gold;
+        if(badge)badge.textContent=txt;
+    }
+    // v0.16.0：商品卡渲染（越级商品不再隐藏，改为灰显锁定卡）
+    function devonTierName(t){ return {1:'黄金会员',2:'白金会员',3:'黑金会员',4:'怪力卡'}[t]||'黄金会员'; }
+    function devonCardHTML(p,mt){
+        const locked=(p.tier??1)>mt;
+        if(locked){
+            const need=devonTierName(p.tier??1);
+            return `<article class="devon-product devon-locked" data-devon-locked="${esc(p.id)}" data-devon-need="${esc(need)}"><div class="devon-product-pic">${devonPicHTML(p,'devon-item-img')}<em>${esc(devonCatName(p.cat))}</em><i class="devon-lock-ico">🔒</i></div><div class="devon-product-name devon-locked-name">？？？</div><div class="devon-product-en">未解锁道具</div><div class="devon-product-bottom"><span class="devon-locked-badge">怪力卡解锁</span></div></article>`;
+        }
+        const ownN=(devonState.mvu&&devonState.mvu.bag&&devonState.mvu.bag[p.name])?Number(devonState.mvu.bag[p.name].数量)||0:0; // v0.17.0 持有角标
+        const ownTxt=ownN>0?`<i class="devon-own-badge">持有 ×${ownN}</i>`:'';
+        return `<article class="devon-product" data-devon-product="${esc(p.id)}"><div class="devon-product-pic">${devonPicHTML(p,'devon-item-img')}<em>${esc(devonCatName(p.cat))}</em>${ownTxt}</div><div class="devon-product-name">${esc(p.name)}</div><div class="devon-product-en">${esc(p.en||p.ja||'')}</div><div class="devon-product-bottom"><b>${p.priceSource==='non-sellable'?'非卖品':devonMoney(p.price)}</b><button data-devon-add="${esc(p.id)}" aria-label="加入购物车" ${p.price==null?'disabled':''}>${p.price==null?'?':'＋'}</button></div></article>`;
+    }
+    function renderDevonShop(){
+        renderDevonCategories();
+        renderDevonHero();
+        const ws=$('pkmn-devon-wallet-slot'); if(ws)ws.innerHTML=devonWalletHTML(); // v0.17.0 钱包条
+        const q=(devonState.query||'').trim().toLowerCase();
+        const mt=devonMemberTier();
+        let list=DEVON_PRODUCTS.filter(p=>{
+            if(p.shiny)return false; // v0.16.0 闪光蛋变体仅在详情页出现
+            const cats=p.cats||[p.cat];
+            return (devonState.category==='all'||cats.includes(devonState.category)) && (!q||[p.name,p.en,p.ja,p.desc,p.tag].join(' ').toLowerCase().includes(q));
+        });
+        const lockedN=list.filter(p=>(p.tier??1)>mt).length;
+        const title=$('pkmn-devon-section-title'); if(title) title.textContent=devonState.category==='all'?(q?'搜索结果':'全部道具'):(DEVON_CATEGORIES.find(x=>x[0]===devonState.category)?.[1]||'商品');
+        const rc=$('pkmn-devon-result-count'); if(rc)rc.textContent=`${list.length} 件${devonWikiStatus==='同步完成'?'道具':''}${lockedN?` · ${lockedN} 件待解锁`:''}`;
+        const out=$('pkmn-devon-products'); if(!out)return;
+        const max=Math.max(1,Math.ceil(list.length/DEVON_PAGE_SIZE)); devonState.page=Math.min(Math.max(1,devonState.page||1),max);
+        const visible=list.slice(0,devonState.page*DEVON_PAGE_SIZE);
+        out.innerHTML=visible.map(p=>devonCardHTML(p,mt)).join('')||'<div class="devon-empty">没有找到符合条件的道具</div>';
+        if(visible.length<list.length){ const more=document.createElement('button'); more.className='devon-load-more'; more.textContent=`加载更多（已显示 ${visible.length} / ${list.length}）`; more.onclick=()=>{devonState.page++;renderDevonShop();}; out.appendChild(more); }
+        out.querySelectorAll('[data-devon-product]').forEach(c=>c.onclick=e=>{if(e.target.closest('[data-devon-add]'))return;openDevonDetail(c.dataset.devonProduct);});
+        out.querySelectorAll('[data-devon-add]').forEach(b=>b.onclick=e=>{e.stopPropagation();if(b.disabled)return;addDevonCart(b.dataset.devonAdd);});
+        out.querySelectorAll('[data-devon-locked]').forEach(c=>c.onclick=()=>showToast(`该商品需要「${c.dataset.devonNeed}」才能解锁，无法查看详情`));
+        const cc=$('pkmn-devon-cart-count');if(cc)cc.textContent=devonCartCount();
+    }
+    function addDevonCart(id){ const p=DEVON_PRODUCTS.find(x=>x.id===id); if(!p||p.price==null){showToast('该道具暂无朱紫购买价，暂不能下单');return;} if((p.tier??1)>devonMemberTier()){showToast('该商品尚未解锁，无法加入购物车');return;} devonState.cart[id]=(devonState.cart[id]||0)+1;saveDevonStore();renderDevonShop();showToast('已加入得文商店购物车'); }
+    function openDevonDetail(id){
+        const p=DEVON_PRODUCTS.find(x=>x.id===id); if(!p)return; devonState.selected=id;
+        const el=$('pkmn-devon-detail-body'); if(!el)return;
+        const qty=devonState.cart[id]||0;
+        const cats=(p.cats||[p.cat]).map(c=>DEVON_CATEGORIES.find(x=>x[0]===c)?.[1]).filter(Boolean).join(' / ');
+        const isEgg=p.cat==='nursery'; // v0.16.0 培育屋蛋：✨闪光版开关
+        const shinyBtn=isEgg?`<button class="devon-shiny-toggle ${p.shiny?'devon-shiny-on':''}" id="devon-shiny-switch"><i>✨</i><span>闪光版${p.shiny?' · 已选':''}</span><small>${p.shiny?'点击切回普通版 · 价格×3':'点击选择闪光版 · 价格×3（封顶 1,000 万 ₽）'}</small></button>`:'';
+        const priceBadge=p.priceSource==='nursery'?'<span class="devon-price-badge devon-price-nursery">培育屋定价</span>':(p.priceSource==='wiki'?'<span class="devon-price-badge devon-price-wiki">网站价</span>':(p.priceSource==='non-sellable'?'<span class="devon-price-badge devon-price-locked">怪力卡专供</span>':(p.priceSource==='ref'?'<span class="devon-price-badge">参考价</span>':(p.priceSource==='official'?'<span class="devon-price-badge devon-price-official">官方价</span>':''))));
+        el.innerHTML=`<div class="devon-detail-card"><div class="devon-detail-pic">${devonPicHTML(p,'devon-item-img-lg')}</div><div class="devon-detail-tag">${esc(devonCatName(p.cat))}</div><h1>${esc(p.name)}</h1><div class="devon-detail-en">${esc(p.en||'')}</div><div class="devon-detail-price">${devonMoney(p.price)}${priceBadge}</div><p>${esc(p.desc||'神奇宝贝系列道具。')}</p><div class="devon-detail-meta"><span>${esc(cats||'道具')}</span>${isEgg?'<span>稀有度 · 怪力卡</span>':'<span>52Poké 数据</span>'}${p.ja?`<span>${esc(p.ja)}</span>`:''}</div>${shinyBtn}<div class="devon-buy-row"><button id="devon-detail-minus">−</button><b id="devon-detail-qty">${qty}</b><button id="devon-detail-plus">＋</button></div><button class="devon-buy" id="devon-detail-add" ${p.price==null?'disabled':''}>${p.priceSource==='non-sellable'?'怪力卡专供':(p.price==null?'暂无购买价':'加入购物车')}</button><button class="devon-buy devon-buy-main" id="devon-detail-now" ${p.price==null?'disabled':''}>${p.priceSource==='non-sellable'?'非卖品':(p.price==null?'价格待核实':'立即购买')}</button>${p.source?`<a class="devon-source" href="${esc(p.source)}" target="_blank" rel="noopener noreferrer">查看52Poké道具资料</a>`:''}</div>`;
+        if(isEgg)$('devon-shiny-switch').onclick=()=>openDevonDetail(p.shiny?p.shinyOf:(p.id+'-shiny'));
+        $('devon-detail-minus').onclick=()=>{if((devonState.cart[id]||0)>0){devonState.cart[id]--;if(devonState.cart[id]<=0)delete devonState.cart[id];saveDevonStore();openDevonDetail(id);}};
+        $('devon-detail-plus').onclick=()=>{addDevonCart(id);openDevonDetail(id);};
+        $('devon-detail-add').onclick=()=>{addDevonCart(id);openDevonDetail(id);};
+        $('devon-detail-now').onclick=()=>{addDevonCart(id);openDevonCart();};
+        openView('devonDetail');
+    }
+    function openDevonCart(){
+        const items=Object.entries(devonState.cart).map(([id,q])=>({p:DEVON_PRODUCTS.find(x=>x.id===id),q})).filter(x=>x.p&&x.q>0);
+        const body=$('pkmn-devon-detail-body'); if(!body)return;
+        body.innerHTML=`<div class="devon-cart-page"><div class="devon-wallet">${devonMvuActive()?"<span class='devon-wallet-src'>MVU</span>":""}可用金钱 <b>${devonMoney(devonWalletMoney().val)}</b></div>${items.length?items.map(({p,q})=>`<div class="devon-cart-item"><div class="devon-cart-pic">${devonPicHTML(p,'devon-item-img')}</div><div class="devon-cart-info"><b>${esc(p.name)}</b><small>${devonMoney(p.price)} × ${q}</small></div><div class="devon-cart-controls"><button data-cart-minus="${esc(p.id)}">−</button><b>${q}</b><button data-cart-plus="${esc(p.id)}">＋</button></div></div>`).join(''):'<div class="devon-empty">购物车还是空的</div>'}<div class="devon-cart-total"><span>合计</span><b>${devonMoney(devonCartTotal())}</b></div><button class="devon-buy devon-buy-main" id="devon-checkout" ${items.length?'':'disabled'}>提交订单</button><button class="devon-buy" id="devon-recharge">补充 10,000 ₽ 余额（测试）</button></div>`;
+        body.querySelectorAll('[data-cart-minus]').forEach(b=>b.onclick=()=>{const id=b.dataset.cartMinus;devonState.cart[id]--;if(devonState.cart[id]<=0)delete devonState.cart[id];saveDevonStore();openDevonCart();});
+        body.querySelectorAll('[data-cart-plus]').forEach(b=>b.onclick=()=>{addDevonCart(b.dataset.cartPlus);openDevonCart();});
+        $('devon-checkout').onclick=checkoutDevon;
+        $('devon-recharge').onclick=()=>{devonState.balance+=10000;saveDevonStore();openDevonCart();showToast('余额已补充');};
+        openView('devonDetail');
+    }
+    function checkoutDevon(){
+        const invalid=Object.keys(devonState.cart).some(id=>{const p=DEVON_PRODUCTS.find(x=>x.id===id);return !p||p.price==null;});
+        if(invalid){showToast('购物车中存在暂无朱紫购买价的道具，请移除后再结算');return;}
+        const forbidden=Object.keys(devonState.cart).find(id=>{const p=DEVON_PRODUCTS.find(x=>x.id===id);return p&&(p.tier??1)>devonMemberTier();});
+        if(forbidden){showToast('购物车中存在未解锁商品，请移除后再结算');return;}
+        const total=devonCartTotal(); if(!total)return;
+        const mvuMode=devonMvuActive(); // v0.17.0 方案1A：已对接 MVU 时按训练家金钱判定
+        if((mvuMode?devonWalletMoney().val:devonState.balance)<total){showToast(mvuMode?'金钱不足（以 MVU 训练家金钱为准）':'余额不足，请先补充余额');return;}
+        const items=Object.entries(devonState.cart).map(([id,q])=>({id,q,name:DEVON_PRODUCTS.find(p=>p.id===id)?.name||id}));
+        const order={id:'DV'+Date.now().toString().slice(-8),time:new Date().toLocaleString('zh-CN'),total,items,status:'已下单'};
+        devonState.orders.unshift(order);
+        items.forEach(({id,q,name})=>{ // v0.17.0：交易记录 + 注入；乐观更新背包（MVU 模式下金钱由 AI 更新）
+            const p=DEVON_PRODUCTS.find(x=>x.id===id);
+            devonAdjustBag(name,q,devonMvuCatOf(p),p&&(p.icon||''));
+            devonRecordAction('buy',name,q,p?p.price:0);
+        });
+        if(!mvuMode)devonState.balance-=total;
+        devonState.cart={};saveDevonStore();showToast('得文商店订单已提交，交易已同步给 AI');renderDevonOrders();openView('devonOrders');
+    }
+    function renderDevonOrders(){
+        const el=$('pkmn-devon-orders-body');if(!el)return;
+        el.innerHTML=`<div class="devon-wallet">${devonMvuActive()?'<span class="devon-wallet-src">MVU</span>':''}可用金钱 <b>${devonMoney(devonWalletMoney().val)}</b></div>`+(devonState.orders.length?devonState.orders.map(o=>`<div class="devon-order"><div><b>${esc(o.id)}</b><span>${esc(o.status)}</span></div><small>${esc(o.time)}</small><p>${esc(o.items.map(x=>`${x.name} × ${x.q}`).join('、'))}</p><strong>${devonMoney(o.total)}</strong></div>`).join(''):'<div class="devon-empty">暂无订单</div>');
+    }
+    // v0.14.5：商店设置页渲染（数据概览 + 同步 + 清缓存）
+    function renderDevonSettings(){
+        const el=$('pkmn-devon-settings-body');if(!el)return;
+        let cacheInfo='暂无本地缓存';
+        try{
+            const c=JSON.parse(localStorage.getItem(DEVON_CACHE_KEY)||'null');
+            if(c&&Array.isArray(c.items)) cacheInfo=`本地缓存 ${c.items.length} 件道具 · 更新于 ${new Date(c.time).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}${(c.ver&&c.ver!==VERSION)?' · 版本过期，将自动重新同步':''}`;
+        }catch(_){ }
+        const mvuStatus=devonMvuStatusText();
+        el.innerHTML=`
+            <div class="devon-wallet">数据概览：${esc(cacheInfo)}</div>
+            <div class="devon-set-head">💳 会员卡包 <small>点击卡片切换体验（升级功能暂未开放）</small></div>
+            <div class="devon-vip-cards">${Object.keys(DEVON_TIERS).map(k=>`
+                <div class="devon-vip-card devon-vip-${k} ${devonState.membership===k?'devon-vip-active':''}" data-devon-vip="${k}">
+                    ${devonState.membership===k?'<i class="devon-vip-cur">✔ 使用中</i>':''}
+                    <small>DEVON ${k.toUpperCase()}</small>
+                    <b>${esc(DEVON_TIER_NAMES[k])}</b>
+                    <p>${esc(DEVON_TIER_SLOGANS[k])}</p>
+                    <span>开放 Tier ${DEVON_TIERS[k]} 商品</span>
+                </div>`).join('')}
+            </div>
+            <div class="devon-set-item">
+                <div class="devon-set-ico">🔄</div>
+                <div class="devon-set-info"><b>同步百科</b><p>从 52Poké 百科重新拉取全量道具，重建分类与价格，约需数秒。</p></div>
+                <button class="devon-set-btn" id="pkmn-devon-settings-sync">同步</button>
+            </div>
+            <div class="devon-set-item">
+                <div class="devon-set-ico">🧹</div>
+                <div class="devon-set-info"><b>清空百科缓存</b><p>删除本地缓存并立即重新同步。道具显示异常时使用。</p></div>
+                <button class="devon-set-btn devon-set-danger" id="pkmn-devon-settings-clear">清空重同步</button>
+            </div>
+            <div class="devon-set-item">
+                <div class="devon-set-ico">📊</div>
+                <div class="devon-set-info"><b>MVU 变量同步</b><p>${esc(mvuStatus)}</p></div>
+                <button class="devon-set-btn" id="pkmn-devon-mvu-sync">立即同步</button>
+            </div>
+            <div class="devon-set-item">
+                <div class="devon-set-ico">🔁</div>
+                <div class="devon-set-info"><b>每层楼自动同步</b><p>收到新消息后自动读取最新楼层的金钱与背包，保持商店与游戏状态一致。</p></div>
+                <button class="devon-set-btn" id="pkmn-devon-mvu-auto">${devonState.mvuSync!==false?'已开启':'已关闭'}</button>
+            </div>
+            <div class="devon-set-item">
+                <div class="devon-set-ico">🧾</div>
+                <div class="devon-set-info"><b>交易行为注入正文</b><p>购买/出售后把交易注入提示层，由 AI 更新金钱与背包变量。${devonState.tradeInject!==false?`当前待同步 ${ (devonState.actions||[]).length } 笔`:'注入已关闭，交易仅保留在手机端'}</p></div>
+                <button class="devon-set-btn" id="pkmn-devon-trade-inject">${devonState.tradeInject!==false?'已开启':'已关闭'}</button>
+            </div>
+            <div class="devon-set-item">
+                <div class="devon-set-ico">🎒</div>
+                <div class="devon-set-info"><b>携带背包快照</b><p>注入时附上最近同步的背包快照，帮助 AI 对齐状态（默认关）。</p></div>
+                <button class="devon-set-btn" id="pkmn-devon-trade-snap">${devonState.tradeSnapshot?'已开启':'已关闭'}</button>
+            </div>
+            <div class="devon-set-item">
+                <div class="devon-set-ico">🗑️</div>
+                <div class="devon-set-info"><b>清空交易记录</b><p>删除全部待同步交易并清空注入，AI 不再收到本批交易提醒。</p></div>
+                <button class="devon-set-btn devon-set-danger" id="pkmn-devon-trade-clear">清空</button>
+            </div>
+            <div class="devon-set-note">道具与图片数据来源：52Poké 百科《道具列表》《招式学习器》。价格策略（v0.17.5）：52Poké 購入价（朱紫优先）→ 官方价表 → 分类参考估值；全世代非卖品归入「怪力卡」专区，不可下单。</div>`;
+        el.querySelectorAll('[data-devon-vip]').forEach(c=>c.onclick=()=>{
+            const k=c.dataset.devonVip; if(!DEVON_TIERS[k]||devonState.membership===k)return;
+            devonState.membership=k; saveDevonStore(); renderDevonSettings(); renderDevonShop();
+            showToast(`已切换为${DEVON_TIER_NAMES[k].replace(/^\S+\s/,'')}`);
+        });
+        $('pkmn-devon-settings-sync')?.addEventListener('click',async e=>{
+            const b=e.currentTarget; b.disabled=true; b.textContent='同步中…';
+            await syncDevonFrom52Poke(true);
+            renderDevonSettings();
+        });
+        $('pkmn-devon-settings-clear')?.addEventListener('click',async e=>{
+            const b=e.currentTarget; b.disabled=true; b.textContent='处理中…';
+            try{ localStorage.removeItem(DEVON_CACHE_KEY); }catch(_){ }
+            try{ localStorage.removeItem(DEVON_SYNC_FAIL_KEY); }catch(_){ }
+            showToast('已清空百科缓存，开始重新同步');
+            await syncDevonFrom52Poke(true);
+            renderDevonSettings();
+        });
+        // v0.17.0：MVU 同步按钮 / 自动同步开关
+        $('pkmn-devon-mvu-sync')?.addEventListener('click',async e=>{
+            const b=e.currentTarget; b.disabled=true; b.textContent='同步中…';
+            await devonSyncMvu('manual');
+            renderDevonSettings();
+        });
+        $('pkmn-devon-mvu-auto')?.addEventListener('click',()=>{
+            devonState.mvuSync=devonState.mvuSync===false;
+            saveDevonStore(); renderDevonSettings();
+            showToast(devonState.mvuSync!==false?'已开启每层楼自动同步':'已关闭自动同步，可手动同步');
+        });
+        // v0.17.0 模块C：交易注入开关 / 背包快照 / 清空记录
+        $('pkmn-devon-trade-inject')?.addEventListener('click',()=>{
+            devonState.tradeInject=devonState.tradeInject===false;
+            saveDevonStore(); devonApplyTradeInjection(); renderDevonSettings();
+            showToast(devonState.tradeInject!==false?'已开启交易行为注入':'已关闭交易行为注入');
+        });
+        $('pkmn-devon-trade-snap')?.addEventListener('click',()=>{
+            devonState.tradeSnapshot=!devonState.tradeSnapshot;
+            saveDevonStore(); devonApplyTradeInjection(); renderDevonSettings();
+            showToast(devonState.tradeSnapshot?'已开启背包快照附加':'已关闭背包快照附加');
+        });
+        $('pkmn-devon-trade-clear')?.addEventListener('click',()=>{
+            devonState.actions=[]; saveDevonStore(); devonApplyTradeInjection(); renderDevonSettings();
+            showToast('已清空交易记录');
+        });
+    }
+    const DEVON_SYNC_FAIL_KEY='pkmn_devon_sync_fail_v1';
+    function devonRecentSyncFail(){
+        try{const t=Number(localStorage.getItem(DEVON_SYNC_FAIL_KEY)||0);return t&&Date.now()-t<5*60*1000;}catch(_){return false;}
+    }
+    function devonMarkSyncFail(){try{localStorage.setItem(DEVON_SYNC_FAIL_KEY,String(Date.now()));}catch(_){}}
+    function devonClearSyncFail(){try{localStorage.removeItem(DEVON_SYNC_FAIL_KEY);}catch(_){}}
+    // v0.14.4：名称合法性过滤——丢弃描述混入、日文假名开头、文件名残留、超长行
+    function devonBadName(n){
+        if(!n||n.length>20||n.includes('。'))return true;
+        if(/^[ぁ-ゖァ-ヺーa-zA-Z]/.test(n)&&!/^[A-Za-z]/.test(n))return true;
+        if(/Sprite|Bag_|\.png/i.test(n))return true;
+        return false;
+    }
+    async function syncDevonFrom52Poke(force=false){
+        if(!force){
+            try{
+                const cache=JSON.parse(localStorage.getItem(DEVON_CACHE_KEY)||'null');
+                // v0.17.1：缓存必须与当前扩展版本匹配才使用——修复旧版本同步的不完整数据（如招式学习器只有概览 3 件）被永久复用的问题
+                if(cache&&cache.ver===VERSION&&Array.isArray(cache.items)&&cache.items.length>=40){DEVON_PRODUCTS=cache.items;cache.items.forEach(devonAssignTier);devonInjectNursery();devonSetStatus('同步完成');renderDevonShop();return true;}
+                if(cache&&cache.ver!==VERSION){try{localStorage.removeItem(DEVON_CACHE_KEY);}catch(_){ } }
+            }catch(_){ }
+            // 5 分钟内刚失败过则跳过自动同步，防止每次打开商店都重复请求
+            if(devonRecentSyncFail()){devonSetStatus('同步失败');return false;}
+        }
+        devonSetStatus('同步中…');
+        try{
+            const res=await fetch(DEVON_WIKI_API,{cache:'no-store'}); if(!res.ok)throw new Error('HTTP '+res.status);
+            const data=await res.json(); const html=data?.parse?.text?.['*']; if(!html)throw new Error('百科返回为空');
+            const doc=new DOMParser().parseFromString(html,'text/html'); const items=new Map(); let current=null;
+            [...doc.body.querySelectorAll('h2,h3,h4,table')].forEach(node=>{
+                // v0.14.4：h2/h3/h4 全部尝试映射新分类；未映射标题 = 不收录该区块
+                if(node.tagName==='H2'||node.tagName==='H3'||node.tagName==='H4'){current=DEVON_CAT_MAP[devonNormalizeText(node.textContent)]||null;return;}
+                if(!current||node.tagName!=='TABLE')return;
+                const rows=[...node.querySelectorAll('tr')]; if(!rows.length)return;
+                // v0.14.4 修复：百科道具表为「图标|中文|日文|英文|说明」列结构且各表列序不一，
+                // 按表头文字自动定位列，不再写死取第一列（旧逻辑拿到图标空列导致整表丢弃）。
+                const headCells=[...rows[0].querySelectorAll('th,td')];
+                const headTexts=headCells.map(c=>devonNormalizeText(c.textContent));
+                const ci={};
+                headTexts.forEach((h,idx)=>{
+                    if(h==='中文'&&ci.zh===undefined)ci.zh=idx;
+                    else if(h==='日文'&&ci.ja===undefined)ci.ja=idx;
+                    else if(h==='英文'&&ci.en===undefined)ci.en=idx;
+                    else if((h.includes('說明')||h.includes('说明'))&&ci.desc===undefined)ci.desc=idx;
+                });
+                if(ci.zh===undefined)ci.zh=headCells.length>2?1:0;
+                if(ci.en===undefined)ci.en=ci.zh+2;
+                if(ci.ja===undefined)ci.ja=ci.zh+1;
+                rows.slice(1).forEach(tr=>{
+                    const cells=[...tr.querySelectorAll('th,td')]; if(cells.length<=ci.zh)return;
+                    const name=devonNormalizeText(cells[ci.zh].textContent);
+                    if(devonBadName(name))return;
+                    const a=cells[ci.zh].querySelector('a');
+                    const en=devonNormalizeText(cells[ci.en]?.textContent);
+                    const ja=devonNormalizeText(cells[ci.ja]?.textContent);
+                    const desc=devonNormalizeText(cells[ci.desc]?.textContent||'');
+                    const source=a?.getAttribute('href')||DEVON_WIKI_URL;
+                    // v0.14.4：提取 wiki 真实道具图标（协议相对地址补全 https）
+                    let icon='';
+                    const im=tr.querySelector('img');
+                    if(im?.getAttribute('src')){
+                        let s=im.getAttribute('src');
+                        if(s.startsWith('//'))s='https:'+s;
+                        if(/s1\.52poke\.com|\/wiki\/|\/images\//.test(s))icon=s;
+                    }
+                    const key=(en||name).toLowerCase(); const old=items.get(key);
+                    if(old){
+                        if(current&&!old.cats.includes(current))old.cats.push(current);
+                        if(!old.desc&&desc)old.desc=desc;
+                        if(!old.icon&&icon)old.icon=icon;
+                        if(!old.source&&source)old.source=source;
+                        return;
+                    }
+                    items.set(key,{id:'wiki-'+devonSlug(en||name),name,en,ja,desc,cat:current,cats:[current],icon,source,price:null,sell:null,priceSource:null});
+                });
+            });
+            // v0.15.0：追加全量招式学习器（道具列表页仅有概览 3 件，完整名单取自《招式学习器》页列表段最大表 = 第九世代）
+            try{
+                const tmRes=await fetch('https://wiki.52poke.com/api.php?action=parse&page=%E6%8B%9B%E5%BC%8F%E5%AD%A6%E4%B9%A0%E5%99%A8&prop=text&format=json&origin=*',{cache:'no-store'});
+                if(tmRes.ok){
+                    const tmData=await tmRes.json(); const tmHtml=tmData?.parse?.text?.['*'];
+                    if(tmHtml){
+                        const tmDoc=new DOMParser().parseFromString(tmHtml,'text/html');
+                        const h2s=[...tmDoc.body.querySelectorAll('h2')];
+                        const mHead=h2s.find(h=>devonNormalizeText(h.textContent).includes('招式学习器列表'));
+                        let tmTable=null;
+                        if(mHead){ let node=mHead.nextElementSibling;
+                            while(node&&node.tagName!=='H2'){ if(node.tagName==='TABLE')tmTable=tmTable&&tmTable.querySelectorAll('tr').length>=node.querySelectorAll('tr').length?tmTable:node; node=node.nextElementSibling; }
+                        }
+                        if(tmTable){
+                            [...tmTable.querySelectorAll('tr')].slice(1).forEach(tr=>{
+                                const cells=[...tr.querySelectorAll('th,td')]; if(cells.length<2)return;
+                                const numRaw=devonNormalizeText(cells[0].textContent); const mv=devonNormalizeText(cells[1].textContent);
+                                const num=parseInt(numRaw,10); if(!num||!mv)return;
+                                const name=`招式学习器${String(num).padStart(3,'0')}`;
+                                const key=name.toLowerCase(); if(items.has(key))return;
+                                items.set(key,{id:'wiki-'+devonSlug(name),name,en:'TM'+num,ja:'',desc:`可教授招式：${mv}`,cat:'tms',cats:['tms'],icon:'',source:DEVON_WIKI_URL,price:null,sell:null,priceSource:null});
+                            });
+                        }
+                    }else{ console.warn('[得文商店] 招式学习器页返回为空'); }
+                }else{ console.warn('[得文商店] 招式学习器列表拉取失败：HTTP '+tmRes.status); }
+            }catch(tmErr){ console.warn('[得文商店] 招式学习器同步异常（已忽略）',tmErr); }
+            let list=[...items.values()];
+            // 仅当几乎解析不到任何道具时才判定失败；能解析到则尽量采用
+            if(list.length<40)throw new Error('解析到的道具数量异常：'+list.length);
+            // 把内置兜底道具中未被百科覆盖的条目合并回来
+            DEVON_FALLBACK_PRODUCTS.forEach(fb=>{ if(!list.some(x=>x.id===fb.id||(x.en&&fb.en&&x.en.toLowerCase()===fb.en.toLowerCase()))) list.push({...fb,cats:[fb.cat],priceSource:'official'}); });
+            // v0.14.4：source 只保留站内地址；按价格策略补全所有道具的价格
+            list.forEach(p=>{
+                if(typeof p.source==='string'){ if(p.source.startsWith('https://wiki.52poke.com/')||p.source.startsWith('/wiki/')) p.source=p.source.startsWith('/')?'https://wiki.52poke.com'+p.source:p.source; else p.source=DEVON_WIKI_URL; }
+                devonAssignTier(p);
+                devonAssignPrice(p);
+            });
+            DEVON_PRODUCTS=list; localStorage.setItem(DEVON_CACHE_KEY,JSON.stringify({time:Date.now(),ver:VERSION,items:list}));devonInjectNursery();devonClearSyncFail();devonSetStatus('同步完成');devonState.page=1;saveDevonStore();renderDevonShop();showToast(`已同步 52Poké：${list.length} 件道具`);return true;
+        }catch(e){
+            console.warn('[得文商店] 52Poké同步失败',e);devonMarkSyncFail();devonSetStatus('同步失败');renderDevonShop();showToast('52Poké同步失败，已保留本地道具库');return false;
+        }
+    }
+    function initDevonShop(){
+        $('pkmn-devon-search')?.addEventListener('input',e=>{devonState.query=e.target.value;devonState.page=1;renderDevonShop();});
+        $('pkmn-devon-back')?.addEventListener('click',()=>openView('home'));
+        $('pkmn-devon-cart')?.addEventListener('click',openDevonCart);
+        $('pkmn-devon-detail-back')?.addEventListener('click',()=>{renderDevonShop();openView('devonShop');});
+        $('pkmn-devon-detail-cart')?.addEventListener('click',openDevonCart);
+        $('pkmn-devon-orders')?.addEventListener('click',()=>{renderDevonOrders();openView('devonOrders');});
+        $('pkmn-devon-orders-back')?.addEventListener('click',()=>openView('devonShop'));
+        $('pkmn-devon-sync')?.addEventListener('click',()=>syncDevonFrom52Poke(true));
+        // v0.14.5：商店设置页（同步百科 / 清空缓存重新同步），独立视图仿论坛/通讯录
+        $('pkmn-devon-settings')?.addEventListener('click',()=>{renderDevonSettings();openView('devonSettings');});
+        $('pkmn-devon-settings-back')?.addEventListener('click',()=>openView('devonShop'));
+        // v0.17.0 模块B：我的道具页
+        $('pkmn-devon-bag-entry')?.addEventListener('click',()=>{renderDevonBag();openView('devonBag');});
+        $('pkmn-devon-bag-back')?.addEventListener('click',()=>openView('devonShop'));
+        // v0.17.0 模块A：每层楼自动同步 MVU（延迟 1.2s 等待变量脚本写入完成）
+        const devonMvuAuto=()=>{ if(devonState.mvuSync===false)return; setTimeout(()=>{ devonSyncMvu('event'); },1200); };
+        TH.eventOn('MESSAGE_RECEIVED',devonMvuAuto);
+        TH.eventOn('MESSAGE_SENT',devonMvuAuto);
+        TH.eventOn('GENERATION_ENDED',devonMvuAuto);
+        TH.eventOn('CHAT_CHANGED',devonMvuAuto);
+        devonSyncMvu('boot');
+        renderDevonShop(); syncDevonFrom52Poke(false);
+    }
+    initDevonShop();
+
+    // ============================================================
     // 事件
     // ============================================================
 
-    $('pkmn-open-contacts')?.addEventListener('click', () => { renderContacts(); openView('contacts'); });
+    $('pkmn-open-devon-shop')?.addEventListener('click', () => {
+        // v0.20.0 测试版门禁：未解锁时先弹门禁弹窗
+        if (!devonBetaUnlocked()) {
+            openDevonBetaGate();
+            return;
+        }
+        renderDevonShop(); openView('devonShop');
+    });
+
+    // v0.20.0 得文商店「测试版应用」门禁
+    const DEVON_BETA_PASS = '54321';
+    const DEVON_BETA_KEY = 'pkmn-devon-beta-unlocked';
+    function devonBetaUnlocked() {
+        try { return localStorage.getItem(DEVON_BETA_KEY) === '1'; } catch (_) { return false; }
+    }
+    function openDevonBetaGate() {
+        const modal = $('pkmn-devon-beta-modal');
+        if (!modal) { showToast('测试版弹窗初始化失败'); return; }
+        $('pkmn-devon-beta-input-row').style.display = 'none';
+        $('pkmn-devon-beta-pass').value = '';
+        $('pkmn-devon-beta-hint').textContent = '此为测试版，未开放。';
+        modal.classList.add('show');
+    }
+    function closeDevonBetaGate() {
+        $('pkmn-devon-beta-modal')?.classList.remove('show');
+    }
+    function devonBetaAskPass() {
+        $('pkmn-devon-beta-input-row').style.display = '';
+        $('pkmn-devon-beta-hint').textContent = '测试员模式：请输入口令解锁完整功能。';
+        setTimeout(() => $('pkmn-devon-beta-pass')?.focus(), 50);
+    }
+    function devonBetaTryUnlock() {
+        const val = ($('pkmn-devon-beta-pass')?.value || '').trim();
+        if (val === DEVON_BETA_PASS) {
+            try { localStorage.setItem(DEVON_BETA_KEY, '1'); } catch (_) {}
+            closeDevonBetaGate();
+            showToast('🧪 测试版已解锁');
+            renderDevonShop(); openView('devonShop');
+        } else {
+            showToast('口令错误，请重试');
+            const ip = $('pkmn-devon-beta-pass');
+            if (ip) { ip.value = ''; ip.focus(); }
+        }
+    }
+    $('pkmn-devon-beta-test')?.addEventListener('click', () => {
+        // 第一次点击显示输入框；输入框已显示时，按钮充当提交
+        const row = $('pkmn-devon-beta-input-row');
+        if (!row || row.style.display === 'none') devonBetaAskPass();
+        else devonBetaTryUnlock();
+    });
+    $('pkmn-devon-beta-exit')?.addEventListener('click', closeDevonBetaGate);
+    $('pkmn-devon-beta-pass')?.addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); devonBetaTryUnlock(); }
+    });
+    $('pkmn-open-contacts')?.addEventListener('click', () => { wx2SwitchTab('chats'); renderContacts($('pkmn-contact-search')?.value || ''); openView('contacts'); });
     $('pkmn-contacts-back')?.addEventListener('click', () => openView('home'));
     $('pkmn-contacts-add')?.addEventListener('click', addContact);
+    // v0.17.3 通讯录入口卡
+    $('wx2-entry-add')?.addEventListener('click', addContact);
+    $('wx2-entry-settings')?.addEventListener('click', () => { renderContactSettings(); openView('contactSettings'); });
+    // v0.18.0：群聊入口正式启用，其余仍为占位
+    $('wx2-entry-groups')?.addEventListener('click', () => { renderGroupList(); openView('groupList'); });
+    ['wx2-entry-tags', 'wx2-entry-mp'].forEach(id => $(id)?.addEventListener('click', () => showToast('该功能正在筹备中，敬请期待')));
     $('pkmn-contact-search')?.addEventListener('input', e => renderContacts(e.target.value));
-    $('pkmn-chat-back')?.addEventListener('click', () => { renderContacts(); openView('contacts'); });
+    $('pkmn-chat-back')?.addEventListener('click', () => { wx2SwitchTab('chats'); openView('contacts'); });
     $('pkmn-chat-send')?.addEventListener('click', sendContactMessage);
     $('pkmn-chat-input')?.addEventListener('keydown', e => {
         if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendContactMessage(); }
     });
-    $('pkmn-contact-settings')?.addEventListener('click', () => { renderContactSettings(); openView('contactSettings'); });
+    // v0.17.6 三栏 tab + 初始渲染（设置入口移至「我」页，由 renderWx2Me 动态绑定）
+    $('wx2-tab-chats')?.addEventListener('click', () => wx2SwitchTab('chats'));
+    $('wx2-tab-contacts')?.addEventListener('click', () => wx2SwitchTab('contacts'));
+    $('wx2-tab-me')?.addEventListener('click', () => wx2SwitchTab('me'));
     $('pkmn-chat-more')?.addEventListener('click', () => openCurrentContactSettings());
-    $('pkmn-contact-settings-back')?.addEventListener('click', () => { renderContacts(); openView('contacts'); });
+    $('pkmn-contact-settings-back')?.addEventListener('click', () => { wx2SwitchTab(wx2ActiveTab || 'chats'); openView('contacts'); });
+    renderContacts();
+    renderWx2Chats();
+    renderWx2Me();
     $('pkmn-contact-person-settings-back')?.addEventListener('click', () => { renderChat(); openView('chat'); });
+
+    // ===== v0.18.0 群聊事件 =====
+    $('pkmn-group-list-back')?.addEventListener('click', () => { wx2SwitchTab('contacts'); openView('contacts'); });
+    $('pkmn-group-create')?.addEventListener('click', renderGroupCreate);
+    $('pkmn-group-chat-back')?.addEventListener('click', () => { renderGroupList(); openView('groupList'); });
+    $('pkmn-group-chat-refresh')?.addEventListener('click', () => {
+        const g = contactGroupById(currentGroupId);
+        if (!g) { showToast('请先打开一个群聊'); return; }
+        runGroupChatRound(g.id, groupAiTurns(g));
+    });
+    $('pkmn-group-chat-more')?.addEventListener('click', () => { renderGroupSettings(); openView('groupSettings'); });
+    $('pkmn-group-settings-back')?.addEventListener('click', () => { renderGroupChat(); openView('groupChat'); });
+    $('pkmn-group-send')?.addEventListener('click', sendGroupMessage);
+    $('pkmn-group-input')?.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendGroupMessage(); }
+    });
+    // v0.18.1：@ 成员改为「长按消息头像」触发（见 bindGroupAvatarLongPress）
 
     $('pkmn-open-safe').onclick =
         () => {
@@ -7377,7 +9635,7 @@ function renderChat() {
         }, { passive: false });
     });
 
-    restoreFloatPosition();
+    // v0.14.3：移除重复的 restoreFloatPosition() 调用（上方已执行一次）。
 
 
     // ============================================================
